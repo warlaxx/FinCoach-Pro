@@ -1,0 +1,14 @@
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/service/FinancialScoringService.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/repository/FinancialProfileRepository.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/model/FinancialProfile.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/dto/FinancialProfileRequest.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/dto/ChatRequest.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/controller/FinCoachController.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/FinCoachApplication.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/repository/ActionPlanRepository.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/repository/ChatMessageRepository.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/dto/ActionPlanRequest.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/service/AiChatService.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/config/CorsConfig.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/model/ActionPlan.java
+/Users/abdallah/Personnal Project/FinCoach-Pro/backend/src/main/java/com/fincoach/model/ChatMessage.java

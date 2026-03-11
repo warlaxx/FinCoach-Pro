@@ -3,13 +3,16 @@ package com.fincoach.controller;
 import com.fincoach.model.ActionPlan;
 import com.fincoach.model.ChatMessage;
 import com.fincoach.model.FinancialProfile;
-import com.fincoach.service.*;
+import com.fincoach.repository.ActionPlanRepository;
+import com.fincoach.repository.ChatMessageRepository;
+import com.fincoach.repository.FinancialProfileRepository;
+import com.fincoach.service.AiChatService;
+import com.fincoach.service.FinancialScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,27 +26,20 @@ public class FinCoachController {
     @Autowired private FinancialScoringService scoringService;
     @Autowired private AiChatService aiChatService;
 
-    // ─── DASHBOARD ──────────────────────────────────────────────
-
     @GetMapping("/dashboard/{userId}")
     public ResponseEntity<Map<String, Object>> getDashboard(@PathVariable String userId) {
         Map<String, Object> dashboard = new LinkedHashMap<>();
-
         Optional<FinancialProfile> profileOpt = profileRepo.findTopByUserIdOrderByUpdatedAtDesc(userId);
         if (profileOpt.isPresent()) {
             dashboard.put("profile", buildProfileSummary(profileOpt.get()));
         } else {
             dashboard.put("profile", null);
         }
-
         List<ActionPlan> actions = actionRepo.findByUserIdAndStatusOrderByCreatedAtDesc(userId, "EN_COURS");
         dashboard.put("topActions", actions.stream().limit(4).map(this::buildActionResponse).collect(Collectors.toList()));
         dashboard.put("stats", buildStats(userId));
-
         return ResponseEntity.ok(dashboard);
     }
-
-    // ─── FINANCIAL PROFILE ──────────────────────────────────────
 
     @GetMapping("/profile/{userId}")
     public ResponseEntity<?> getProfile(@PathVariable String userId) {
@@ -56,14 +52,9 @@ public class FinCoachController {
     public ResponseEntity<Map<String, Object>> saveProfile(@RequestBody FinancialProfile profile) {
         scoringService.computeScores(profile);
         FinancialProfile saved = profileRepo.save(profile);
-
-        // Auto-generate action plans based on profile
         generateActionPlans(saved);
-
         return ResponseEntity.ok(buildProfileSummary(saved));
     }
-
-    // ─── ACTION PLANS ───────────────────────────────────────────
 
     @GetMapping("/actions/{userId}")
     public ResponseEntity<List<Map<String, Object>>> getActions(@PathVariable String userId) {
@@ -95,8 +86,6 @@ public class FinCoachController {
         return ResponseEntity.noContent().build();
     }
 
-    // ─── AI CHAT ────────────────────────────────────────────────
-
     @GetMapping("/chat/{userId}")
     public ResponseEntity<List<Map<String, Object>>> getChatHistory(@PathVariable String userId) {
         List<ChatMessage> messages = chatRepo.findByUserIdOrderByCreatedAtAsc(userId);
@@ -107,18 +96,13 @@ public class FinCoachController {
     public ResponseEntity<Map<String, Object>> chat(@RequestBody Map<String, String> body) {
         String userId = body.get("userId");
         String message = body.get("message");
-
         ChatMessage userMsg = new ChatMessage(null, userId, "user", message, null);
         chatRepo.save(userMsg);
-
         List<ChatMessage> history = chatRepo.findTop20ByUserIdOrderByCreatedAtDesc(userId);
         Collections.reverse(history);
-
         String aiResponse = aiChatService.chat(history, message);
-
         ChatMessage assistantMsg = new ChatMessage(null, userId, "assistant", aiResponse, null);
         chatRepo.save(assistantMsg);
-
         return ResponseEntity.ok(buildChatResponse(assistantMsg));
     }
 
@@ -129,8 +113,6 @@ public class FinCoachController {
         return ResponseEntity.noContent().build();
     }
 
-    // ─── HELPERS ────────────────────────────────────────────────
-
     private Map<String, Object> buildProfileSummary(FinancialProfile p) {
         double income = safe(p.getMonthlyIncome()) + safe(p.getOtherIncome());
         double fixed = safe(p.getRent()) + safe(p.getUtilities()) + safe(p.getInsurance())
@@ -139,7 +121,6 @@ public class FinCoachController {
                 + safe(p.getClothing()) + safe(p.getHealth());
         double total = fixed + variable;
         double surplus = income - total;
-
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", p.getId());
         m.put("userId", p.getUserId());
@@ -202,7 +183,6 @@ public class FinCoachController {
         long total = all.size();
         long done = all.stream().filter(a -> "TERMINE".equals(a.getStatus())).count();
         long inProgress = all.stream().filter(a -> "EN_COURS".equals(a.getStatus())).count();
-
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalActions", total);
         stats.put("completedActions", done);
@@ -214,7 +194,6 @@ public class FinCoachController {
     private void generateActionPlans(FinancialProfile p) {
         double income = safe(p.getMonthlyIncome()) + safe(p.getOtherIncome());
         List<ActionPlan> actions = new ArrayList<>();
-
         if (safe(p.getSavingsRate()) < 10 && income > 0) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
@@ -227,7 +206,6 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusMonths(6));
             actions.add(a);
         }
-
         if (safe(p.getCurrentSavings()) < income * 3) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
@@ -240,7 +218,6 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusMonths(12));
             actions.add(a);
         }
-
         if (safe(p.getDebtRatio()) > 25) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
@@ -253,12 +230,11 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusMonths(18));
             actions.add(a);
         }
-
         if (safe(p.getSubscriptions()) > 60) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Auditer vos abonnements");
-            a.setDescription("Listez tous vos abonnements (streaming, salle de sport, apps...) et supprimez ceux que vous utilisez peu. Potentiel d'économie : " + (int)(safe(p.getSubscriptions()) * 0.3) + " €/mois.");
+            a.setDescription("Listez tous vos abonnements et supprimez ceux que vous utilisez peu. Potentiel d'économie : " + (int)(safe(p.getSubscriptions()) * 0.3) + " €/mois.");
             a.setCategory("BUDGET");
             a.setPriority("MOYENNE");
             a.setTargetAmount(safe(p.getSubscriptions()) * 0.3 * 12);
@@ -266,7 +242,6 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusWeeks(2));
             actions.add(a);
         }
-
         if (!actions.isEmpty()) {
             actionRepo.saveAll(actions);
         }

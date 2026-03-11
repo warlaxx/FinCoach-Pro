@@ -1,0 +1,15 @@
+com/fincoach/config/CorsConfig.class
+com/fincoach/FinCoachApplication.class
+com/fincoach/model/ActionPlan.class
+com/fincoach/config/CorsConfig$1.class
+com/fincoach/dto/ChatRequest.class
+com/fincoach/service/AiChatService.class
+com/fincoach/repository/ChatMessageRepository.class
+com/fincoach/repository/FinancialProfileRepository.class
+com/fincoach/controller/FinCoachController.class
+com/fincoach/model/FinancialProfile.class
+com/fincoach/dto/FinancialProfileRequest.class
+com/fincoach/dto/ActionPlanRequest.class
+com/fincoach/model/ChatMessage.class
+com/fincoach/service/FinancialScoringService.class
+com/fincoach/repository/ActionPlanRepository.class
