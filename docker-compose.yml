@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fincoach-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-demo}
+      - SPRING_PROFILES_ACTIVE=default
+    volumes:
+      - fincoach-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/dashboard/health-check", "||", "exit", "0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - fincoach-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fincoach-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - fincoach-net
+
+volumes:
+  fincoach-data:
+
+networks:
+  fincoach-net:
+    driver: bridge
