@@ -1,0 +1,272 @@
+.actions-page {
+  padding: 32px;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  h1 {
+    font-size: 28px;
+  }
+  .subtitle {
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+}
+
+.new-action-form {
+  h3 {
+    font-size: 16px;
+    margin-bottom: 18px;
+  }
+}
+
+.new-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  textarea {
+    resize: vertical;
+  }
+  select {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text-primary);
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 7px 14px;
+  border-radius: 100px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--border-glow);
+    color: var(--text-primary);
+  }
+  &.active {
+    background: var(--gold-bg);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+}
+
+.summary-bar {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+
+  .sum-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    border-right: 1px solid var(--border);
+    &:last-child {
+      border-right: none;
+    }
+  }
+  .sum-val {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .sum-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+}
+
+.text-green {
+  color: var(--green);
+}
+.text-gold {
+  color: var(--gold);
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s;
+
+  &.action-done {
+    opacity: 0.65;
+  }
+  &:hover {
+    border-color: var(--border-glow);
+  }
+}
+
+.action-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.action-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 4px;
+  transition: color 0.15s;
+  &:hover {
+    color: var(--red);
+  }
+}
+
+.action-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.action-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.action-progress {
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .pct {
+    color: var(--gold);
+    font-weight: 600;
+  }
+}
+
+.action-deadline {
+  font-size: 12px;
+  color: var(--text-muted);
+  .overdue {
+    color: var(--red);
+    font-weight: 600;
+  }
+}
+
+.progress-update {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .small-input {
+    font-size: 14px;
+  }
+  .prog-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+}
+
+.action-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  .empty-icon {
+    font-size: 40px;
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+}
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

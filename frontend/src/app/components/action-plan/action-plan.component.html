@@ -1,0 +1,301 @@
+<div class="actions-page">
+  <header class="page-header">
+    <div>
+      <h1>Plan d'actions</h1>
+      <p class="subtitle">Suivez vos objectifs financiers</p>
+    </div>
+    <button class="btn-gold" (click)="showNew = !showNew">
+      {{ showNew ? "✕ Fermer" : "+ Nouvelle action" }}
+    </button>
+  </header>
+
+  <!-- New action form -->
+  <div class="card new-action-form animate-in" *ngIf="showNew">
+    <h3>Créer une action</h3>
+    <div class="new-form-grid">
+      <label
+        >Titre *
+        <input
+          [(ngModel)]="newAction.title"
+          placeholder="Ex: Rembourser le crédit auto"
+        />
+      </label>
+      <label
+        >Catégorie
+        <select [(ngModel)]="newAction.category">
+          <option value="EPARGNE">💰 Épargne</option>
+          <option value="DETTE">📉 Dette</option>
+          <option value="BUDGET">📊 Budget</option>
+          <option value="INVESTISSEMENT">📈 Investissement</option>
+        </select>
+      </label>
+      <label
+        >Priorité
+        <select [(ngModel)]="newAction.priority">
+          <option value="HAUTE">🔴 Haute</option>
+          <option value="MOYENNE">🟠 Moyenne</option>
+          <option value="FAIBLE">🟢 Faible</option>
+        </select>
+      </label>
+      <label
+        >Montant cible (€)
+        <input
+          type="number"
+          [(ngModel)]="newAction.targetAmount"
+          placeholder="1000"
+        />
+      </label>
+      <label
+        >Montant actuel (€)
+        <input
+          type="number"
+          [(ngModel)]="newAction.currentAmount"
+          placeholder="0"
+        />
+      </label>
+      <label
+        >Échéance
+        <input type="date" [(ngModel)]="newAction.deadline" />
+      </label>
+      <label class="full-width"
+        >Description
+        <textarea
+          [(ngModel)]="newAction.description"
+          placeholder="Décrivez votre objectif..."
+          rows="2"
+        ></textarea>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn-ghost" (click)="showNew = false">Annuler</button>
+      <button
+        class="btn-gold"
+        (click)="createAction()"
+        [disabled]="!newAction.title"
+      >
+        Créer l'action
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button
+      class="filter-btn"
+      [class.active]="filter === 'all'"
+      (click)="filter = 'all'; applyFilter()"
+    >
+      Toutes ({{ actions.length }})
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="filter === 'EN_COURS'"
+      (click)="filter = 'EN_COURS'; applyFilter()"
+    >
+      En cours ({{ countByStatus("EN_COURS") }})
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="filter === 'TERMINE'"
+      (click)="filter = 'TERMINE'; applyFilter()"
+    >
+      Terminées ({{ countByStatus("TERMINE") }})
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="filter === 'EPARGNE'"
+      (click)="filter = 'EPARGNE'; applyFilter()"
+    >
+      💰 Épargne
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="filter === 'DETTE'"
+      (click)="filter = 'DETTE'; applyFilter()"
+    >
+      📉 Dettes
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="filter === 'BUDGET'"
+      (click)="filter = 'BUDGET'; applyFilter()"
+    >
+      📊 Budget
+    </button>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="summary-bar card" *ngIf="actions.length > 0">
+    <div class="sum-item">
+      <span class="sum-val">{{ actions.length }}</span>
+      <span class="sum-label">Actions</span>
+    </div>
+    <div class="sum-item">
+      <span class="sum-val text-green">{{ countByStatus("TERMINE") }}</span>
+      <span class="sum-label">Terminées</span>
+    </div>
+    <div class="sum-item">
+      <span class="sum-val text-gold"
+        >{{ totalProgress() | number : "1.0-0" }}%</span
+      >
+      <span class="sum-label">Progression globale</span>
+    </div>
+    <div class="sum-item">
+      <span class="sum-val">{{ totalSaved() | number : "1.0-0" }} €</span>
+      <span class="sum-label">Économisés</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Empty -->
+  <div
+    class="empty-state card"
+    *ngIf="!loading && filtered.length === 0 && actions.length === 0"
+  >
+    <div class="empty-icon">🎯</div>
+    <h2>Aucune action pour le moment</h2>
+    <p>
+      Créez votre premier objectif ou renseignez votre profil financier pour
+      obtenir des suggestions automatiques.
+    </p>
+    <button class="btn-gold" (click)="showNew = true">
+      Créer ma première action →
+    </button>
+  </div>
+
+  <div
+    class="empty-state card"
+    *ngIf="!loading && filtered.length === 0 && actions.length > 0"
+  >
+    <p style="color: var(--text-muted)">
+      Aucune action ne correspond à ce filtre.
+    </p>
+  </div>
+
+  <!-- Actions grid -->
+  <div class="actions-grid" *ngIf="!loading && filtered.length > 0">
+    <div
+      class="action-card card animate-in"
+      *ngFor="let action of filtered; let i = index"
+      [style.animation-delay]="i * 0.05 + 's'"
+      [class.action-done]="action.status === 'TERMINE'"
+    >
+      <div class="action-header">
+        <div class="action-badges">
+          <span
+            class="badge"
+            [class]="'badge-' + action.category.toLowerCase()"
+          >
+            {{ getCategoryIcon(action.category) }} {{ action.category }}
+          </span>
+          <span
+            class="badge"
+            [class]="'badge-' + action.priority.toLowerCase()"
+            >{{ action.priority }}</span
+          >
+        </div>
+        <div class="action-menu">
+          <button
+            class="icon-btn"
+            (click)="deleteAction(action)"
+            title="Supprimer"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <h3 class="action-title">{{ action.title }}</h3>
+      <p class="action-desc" *ngIf="action.description">
+        {{ action.description }}
+      </p>
+
+      <!-- Progress -->
+      <div class="action-progress" *ngIf="action.targetAmount">
+        <div class="progress-meta">
+          <span
+            >{{ action.currentAmount || 0 | number : "1.0-0" }} € /
+            {{ action.targetAmount | number : "1.0-0" }} €</span
+          >
+          <span class="pct"
+            >{{ action.progressPercent | number : "1.0-0" }}%</span
+          >
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [style.width.%]="action.progressPercent || 0"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Deadline -->
+      <div class="action-deadline" *ngIf="action.deadline">
+        📅 Échéance : {{ action.deadline | date : "dd/MM/yyyy" }}
+        <span class="overdue" *ngIf="isOverdue(action)"> — En retard</span>
+      </div>
+
+      <!-- Update progress inline -->
+      <div class="progress-update" *ngIf="editingId === action.id">
+        <input
+          type="number"
+          [(ngModel)]="editAmount"
+          placeholder="Montant actuel"
+          class="small-input"
+        />
+        <div class="prog-btns">
+          <button class="btn-ghost" (click)="editingId = null">Annuler</button>
+          <button class="btn-gold" (click)="updateProgress(action)">
+            Mettre à jour
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions bar -->
+      <div class="action-footer">
+        <div class="status-select">
+          <span
+            class="badge"
+            [class]="'badge-' + (action.status || 'en_cours').toLowerCase()"
+          >
+            {{
+              action.status === "TERMINE"
+                ? "✓"
+                : action.status === "REPORTE"
+                ? "⏸"
+                : "▶"
+            }}
+            {{ action.status || "EN_COURS" }}
+          </span>
+        </div>
+        <div class="action-btns">
+          <button
+            class="btn-ghost btn-sm"
+            *ngIf="action.targetAmount && action.status !== 'TERMINE'"
+            (click)="startEdit(action)"
+          >
+            Mettre à jour
+          </button>
+          <button
+            class="btn-gold btn-sm"
+            *ngIf="action.status !== 'TERMINE'"
+            (click)="markDone(action)"
+          >
+            ✓ Terminer
+          </button>
+          <button
+            class="btn-ghost btn-sm text-gold"
+            *ngIf="action.status === 'TERMINE'"
+            (click)="reopen(action)"
+          >
+            ↩ Réouvrir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

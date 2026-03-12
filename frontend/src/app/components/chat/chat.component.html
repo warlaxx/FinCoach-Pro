@@ -1,0 +1,144 @@
+<div class="chat-page">
+  <div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="chat-avatar">
+        <span>🤖</span>
+        <div class="status-dot"></div>
+      </div>
+      <div class="chat-meta">
+        <div class="chat-name">FinCoach IA</div>
+        <div class="chat-status">Assistant financier personnel · En ligne</div>
+      </div>
+      <button
+        class="btn-ghost btn-clear"
+        (click)="clearHistory()"
+        title="Effacer la conversation"
+      >
+        🗑 Effacer
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" #messagesEnd>
+      <!-- Welcome message -->
+      <div
+        class="message message-assistant animate-in"
+        *ngIf="messages.length === 0 && !loading"
+      >
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">
+          <div class="msg-content">
+            <p>
+              Bonjour ! Je suis <strong>FinCoach</strong>, votre assistant
+              financier personnel.
+            </p>
+            <p>Je peux vous aider sur :</p>
+            <div class="suggestions">
+              <button
+                class="suggestion-chip"
+                *ngFor="let s of suggestions"
+                (click)="sendSuggestion(s)"
+              >
+                {{ s }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngFor="let msg of messages; let i = index">
+        <div
+          class="message"
+          [class.message-user]="msg.role === 'user'"
+          [class.message-assistant]="msg.role === 'assistant'"
+          [style.animation-delay]="0.05 + 's'"
+        >
+          <div class="msg-avatar" *ngIf="msg.role === 'assistant'">🤖</div>
+
+          <div class="msg-bubble">
+            <div
+              class="msg-content"
+              [innerHTML]="formatMessage(msg.content)"
+            ></div>
+            <div class="msg-time">{{ msg.createdAt | date : "HH:mm" }}</div>
+          </div>
+
+          <div class="msg-avatar user-av" *ngIf="msg.role === 'user'">U</div>
+        </div>
+      </ng-container>
+
+      <!-- Typing indicator -->
+      <div class="message message-assistant" *ngIf="typing">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble typing-bubble">
+          <span class="dot"></span><span class="dot"></span
+          ><span class="dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick suggestions -->
+    <div class="quick-suggestions" *ngIf="messages.length > 0">
+      <button
+        class="suggestion-chip sm"
+        *ngFor="let s of quickSuggestions"
+        (click)="sendSuggestion(s)"
+      >
+        {{ s }}
+      </button>
+    </div>
+
+    <!-- Input area -->
+    <div class="chat-input-area">
+      <textarea
+        [(ngModel)]="inputMessage"
+        (keydown.enter)="onEnter($event)"
+        placeholder="Posez votre question financière... (Entrée pour envoyer)"
+        rows="2"
+        [disabled]="typing"
+        class="chat-input"
+      ></textarea>
+      <button
+        class="send-btn"
+        (click)="sendMessage()"
+        [disabled]="!inputMessage.trim() || typing"
+      >
+        <svg
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          viewBox="0 0 24 24"
+        >
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="chat-disclaimer">
+      FinCoach donne des conseils à titre informatif. Pour des décisions
+      importantes, consultez un conseiller financier agréé.
+    </div>
+  </div>
+
+  <!-- Side panel: topics -->
+  <div class="chat-sidebar">
+    <h3>💡 Sujets populaires</h3>
+    <div class="topic-list">
+      <div
+        class="topic-card"
+        *ngFor="let topic of topics"
+        (click)="sendSuggestion(topic.q)"
+      >
+        <span class="topic-icon">{{ topic.icon }}</span>
+        <div>
+          <div class="topic-title">{{ topic.title }}</div>
+          <div class="topic-q">{{ topic.q }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

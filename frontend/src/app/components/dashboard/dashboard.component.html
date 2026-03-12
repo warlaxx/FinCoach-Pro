@@ -1,0 +1,348 @@
+<div class="dashboard">
+  <header class="page-header">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p class="subtitle">Votre santé financière en un coup d'œil</p>
+    </div>
+    <button class="btn-gold" (click)="showForm = !showForm">
+      {{ showForm ? "✕ Fermer" : "+ Mettre à jour mon profil" }}
+    </button>
+  </header>
+
+  <!-- Profile Form -->
+  <div class="profile-form card animate-in" *ngIf="showForm">
+    <h2 class="form-title">💼 Profil Financier Mensuel</h2>
+    <p class="form-subtitle">
+      Renseignez vos données pour obtenir des conseils personnalisés
+    </p>
+
+    <div class="form-grid">
+      <div class="form-section">
+        <h3>📥 Revenus</h3>
+        <label
+          >Salaire net mensuel (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.monthlyIncome"
+            placeholder="2500"
+          />
+        </label>
+        <label
+          >Autres revenus (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.otherIncome"
+            placeholder="0"
+          />
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>🏠 Charges fixes</h3>
+        <label
+          >Loyer / Crédit immobilier (€)
+          <input type="number" [(ngModel)]="profile.rent" placeholder="800" />
+        </label>
+        <label
+          >Énergie / Internet (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.utilities"
+            placeholder="120"
+          />
+        </label>
+        <label
+          >Assurances (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.insurance"
+            placeholder="80"
+          />
+        </label>
+        <label
+          >Crédits à la consommation (€)
+          <input type="number" [(ngModel)]="profile.loans" placeholder="0" />
+        </label>
+        <label
+          >Abonnements (streaming, salle...) (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.subscriptions"
+            placeholder="50"
+          />
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>🛒 Charges variables</h3>
+        <label
+          >Alimentation (€)
+          <input type="number" [(ngModel)]="profile.food" placeholder="300" />
+        </label>
+        <label
+          >Transport (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.transport"
+            placeholder="100"
+          />
+        </label>
+        <label
+          >Loisirs / Sorties (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.leisure"
+            placeholder="150"
+          />
+        </label>
+        <label
+          >Vêtements (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.clothing"
+            placeholder="60"
+          />
+        </label>
+        <label
+          >Santé (€)
+          <input type="number" [(ngModel)]="profile.health" placeholder="40" />
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>💰 Épargne & Dettes</h3>
+        <label
+          >Épargne actuelle (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.currentSavings"
+            placeholder="5000"
+          />
+        </label>
+        <label
+          >Total des dettes (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.totalDebt"
+            placeholder="0"
+          />
+        </label>
+        <label
+          >Objectif épargne mensuelle (€)
+          <input
+            type="number"
+            [(ngModel)]="profile.monthlySavingsGoal"
+            placeholder="200"
+          />
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-ghost" (click)="showForm = false">Annuler</button>
+      <button class="btn-gold" (click)="saveProfile()" [disabled]="saving">
+        {{ saving ? "Analyse en cours..." : "🔍 Analyser mon profil" }}
+      </button>
+    </div>
+  </div>
+
+  <!-- No profile state -->
+  <div
+    class="empty-state card animate-in"
+    *ngIf="!loading && !data?.profile && !showForm"
+  >
+    <div class="empty-icon">📊</div>
+    <h2>Commencez votre bilan financier</h2>
+    <p>
+      Renseignez votre profil pour obtenir votre score de santé financière et un
+      plan d'action personnalisé.
+    </p>
+    <button class="btn-gold" (click)="showForm = true">
+      Créer mon profil →
+    </button>
+  </div>
+
+  <!-- Dashboard content -->
+  <ng-container *ngIf="data?.profile as p">
+    <!-- KPI Row -->
+    <div class="kpi-grid animate-in">
+      <div class="kpi-card">
+        <div class="kpi-label">Score Santé</div>
+        <div class="kpi-main">
+          <div class="score-badge" [class]="'score-' + p.financialScore">
+            {{ p.financialScore }}
+          </div>
+          <div class="kpi-sub">{{ getScoreLabel(p.financialScore) }}</div>
+        </div>
+      </div>
+
+      <div
+        class="kpi-card"
+        [class.kpi-positive]="p.monthlySurplus > 0"
+        [class.kpi-negative]="p.monthlySurplus < 0"
+      >
+        <div class="kpi-label">Surplus mensuel</div>
+        <div
+          class="kpi-value"
+          [class.text-green]="p.monthlySurplus > 0"
+          [class.text-red]="p.monthlySurplus < 0"
+        >
+          {{ p.monthlySurplus > 0 ? "+" : ""
+          }}{{ p.monthlySurplus | number : "1.0-0" }} €
+        </div>
+        <div class="kpi-sub">Revenus − Dépenses</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Taux d'épargne</div>
+        <div
+          class="kpi-value"
+          [class.text-green]="p.savingsRate >= 20"
+          [class.text-orange]="p.savingsRate > 0 && p.savingsRate < 20"
+          [class.text-red]="p.savingsRate <= 0"
+        >
+          {{ p.savingsRate }}%
+        </div>
+        <div class="kpi-sub">Objectif : ≥ 20%</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Ratio d'endettement</div>
+        <div
+          class="kpi-value"
+          [class.text-green]="p.debtRatio <= 15"
+          [class.text-orange]="p.debtRatio > 15 && p.debtRatio <= 33"
+          [class.text-red]="p.debtRatio > 33"
+        >
+          {{ p.debtRatio }}%
+        </div>
+        <div class="kpi-sub">Limite recommandée : 33%</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Revenus mensuels</div>
+        <div class="kpi-value text-gold">
+          {{ p.monthlyIncome | number : "1.0-0" }} €
+        </div>
+        <div class="kpi-sub">
+          Dépenses : {{ p.totalExpenses | number : "1.0-0" }} €
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget breakdown + Insights -->
+    <div class="mid-grid animate-in">
+      <div class="card breakdown-card">
+        <h3 class="card-title">Répartition du budget</h3>
+        <div class="breakdown-chart">
+          <ng-container *ngFor="let item of getBreakdownItems(p)">
+            <div class="breakdown-item">
+              <div class="breakdown-info">
+                <span class="breakdown-icon">{{ item.icon }}</span>
+                <span class="breakdown-label">{{ item.label }}</span>
+              </div>
+              <div class="breakdown-right">
+                <div class="breakdown-bar-wrap">
+                  <div class="breakdown-bar">
+                    <div
+                      class="breakdown-fill"
+                      [style.width.%]="item.percent"
+                      [style.background]="item.color"
+                    ></div>
+                  </div>
+                </div>
+                <span class="breakdown-amount"
+                  >{{ item.amount | number : "1.0-0" }} €</span
+                >
+                <span class="breakdown-pct"
+                  >{{ item.percent | number : "1.0-0" }}%</span
+                >
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="card insights-card">
+        <h3 class="card-title">💡 Recommandations IA</h3>
+        <div class="insights-list">
+          <div
+            class="insight-item"
+            *ngFor="let insight of p.insights; let i = index"
+            [style.animation-delay]="i * 0.08 + 's'"
+          >
+            <span class="insight-dot"></span>
+            <span>{{ insight }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Actions -->
+    <div class="card animate-in" *ngIf="data?.topActions?.length">
+      <div class="card-header">
+        <h3 class="card-title">🎯 Actions prioritaires</h3>
+        <a href="/actions" class="link-see-all">Voir toutes →</a>
+      </div>
+      <div class="actions-mini-grid">
+        <div class="action-mini-card" *ngFor="let action of data!.topActions">
+          <div class="action-mini-header">
+            <span
+              class="badge"
+              [class]="'badge-' + action.category.toLowerCase()"
+              >{{ action.category }}</span
+            >
+            <span
+              class="badge"
+              [class]="'badge-' + action.priority.toLowerCase()"
+              >{{ action.priority }}</span
+            >
+          </div>
+          <div class="action-mini-title">{{ action.title }}</div>
+          <div class="progress-bar" *ngIf="action.targetAmount">
+            <div
+              class="progress-fill"
+              [style.width.%]="action.progressPercent || 0"
+            ></div>
+          </div>
+          <div class="action-mini-meta" *ngIf="action.targetAmount">
+            {{ action.currentAmount | number : "1.0-0" }} € /
+            {{ action.targetAmount | number : "1.0-0" }} € ({{
+              action.progressPercent | number : "1.0-0"
+            }}%)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row animate-in" *ngIf="data?.stats">
+      <div class="stat-item">
+        <span class="stat-value">{{ data!.stats.totalActions }}</span>
+        <span class="stat-label">Actions totales</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value text-green">{{
+          data!.stats.completedActions
+        }}</span>
+        <span class="stat-label">Terminées</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value text-gold">{{
+          data!.stats.inProgressActions
+        }}</span>
+        <span class="stat-label">En cours</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ data!.stats.completionRate }}%</span>
+        <span class="stat-label">Taux de complétion</span>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Chargement de votre tableau de bord...</p>
+  </div>
+</div>
