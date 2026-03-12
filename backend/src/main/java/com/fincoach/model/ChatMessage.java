@@ -19,23 +19,55 @@ public class ChatMessage {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public ChatMessage() {}
+    public ChatMessage() {
+    }
 
     public ChatMessage(Long id, String userId, String role, String content, LocalDateTime createdAt) {
-        this.id = id; this.userId = userId; this.role = role;
-        this.content = content; this.createdAt = createdAt;
+        this.id = id;
+        this.userId = userId;
+        this.role = role;
+        this.content = content;
+        this.createdAt = createdAt;
     }
 
     @PrePersist
-    protected void onCreate() { createdAt = LocalDateTime.now(); }
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

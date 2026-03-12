@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface FinancialProfileRepository extends JpaRepository<FinancialProfile, Long> {
     Optional<FinancialProfile> findTopByUserIdOrderByUpdatedAtDesc(String userId);
+
     List<FinancialProfile> findByUserIdOrderByCreatedAtDesc(String userId);
 }

@@ -20,11 +20,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class FinCoachController {
 
-    @Autowired private FinancialProfileRepository profileRepo;
-    @Autowired private ActionPlanRepository actionRepo;
-    @Autowired private ChatMessageRepository chatRepo;
-    @Autowired private FinancialScoringService scoringService;
-    @Autowired private AiChatService aiChatService;
+    @Autowired
+    private FinancialProfileRepository profileRepo;
+    @Autowired
+    private ActionPlanRepository actionRepo;
+    @Autowired
+    private ChatMessageRepository chatRepo;
+    @Autowired
+    private FinancialScoringService scoringService;
+    @Autowired
+    private AiChatService aiChatService;
 
     @GetMapping("/dashboard/{userId}")
     public ResponseEntity<Map<String, Object>> getDashboard(@PathVariable String userId) {
@@ -36,7 +41,8 @@ public class FinCoachController {
             dashboard.put("profile", null);
         }
         List<ActionPlan> actions = actionRepo.findByUserIdAndStatusOrderByCreatedAtDesc(userId, "EN_COURS");
-        dashboard.put("topActions", actions.stream().limit(4).map(this::buildActionResponse).collect(Collectors.toList()));
+        dashboard.put("topActions",
+                actions.stream().limit(4).map(this::buildActionResponse).collect(Collectors.toList()));
         dashboard.put("stats", buildStats(userId));
         return ResponseEntity.ok(dashboard);
     }
@@ -141,8 +147,8 @@ public class FinCoachController {
                 "transport", safe(p.getTransport()),
                 "leisure", safe(p.getLeisure()),
                 "loans", safe(p.getLoans()),
-                "other", safe(p.getUtilities()) + safe(p.getInsurance()) + safe(p.getSubscriptions()) + safe(p.getClothing()) + safe(p.getHealth())
-        ));
+                "other", safe(p.getUtilities()) + safe(p.getInsurance()) + safe(p.getSubscriptions())
+                        + safe(p.getClothing()) + safe(p.getHealth())));
         m.put("updatedAt", p.getUpdatedAt());
         return m;
     }
@@ -198,7 +204,8 @@ public class FinCoachController {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Atteindre 10% de taux d'épargne");
-            a.setDescription("Mettez en place un virement automatique dès réception du salaire. Objectif : épargner " + (int)(income * 0.10) + " €/mois.");
+            a.setDescription("Mettez en place un virement automatique dès réception du salaire. Objectif : épargner "
+                    + (int) (income * 0.10) + " €/mois.");
             a.setCategory("EPARGNE");
             a.setPriority("HAUTE");
             a.setTargetAmount(income * 0.10 * 12);
@@ -210,7 +217,8 @@ public class FinCoachController {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Constituer un fonds d'urgence (3 mois)");
-            a.setDescription("Objectif : " + (int)(income * 3) + " € sur Livret A. Ce coussin vous protège des imprévus.");
+            a.setDescription(
+                    "Objectif : " + (int) (income * 3) + " € sur Livret A. Ce coussin vous protège des imprévus.");
             a.setCategory("EPARGNE");
             a.setPriority("HAUTE");
             a.setTargetAmount(income * 3);
@@ -222,7 +230,8 @@ public class FinCoachController {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Réduire le ratio d'endettement");
-            a.setDescription("Votre taux d'endettement dépasse 25%. Appliquez la méthode avalanche : remboursez en priorité la dette au taux le plus élevé.");
+            a.setDescription(
+                    "Votre taux d'endettement dépasse 25%. Appliquez la méthode avalanche : remboursez en priorité la dette au taux le plus élevé.");
             a.setCategory("DETTE");
             a.setPriority("HAUTE");
             a.setTargetAmount(safe(p.getTotalDebt()) * 0.3);
@@ -234,7 +243,9 @@ public class FinCoachController {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Auditer vos abonnements");
-            a.setDescription("Listez tous vos abonnements et supprimez ceux que vous utilisez peu. Potentiel d'économie : " + (int)(safe(p.getSubscriptions()) * 0.3) + " €/mois.");
+            a.setDescription(
+                    "Listez tous vos abonnements et supprimez ceux que vous utilisez peu. Potentiel d'économie : "
+                            + (int) (safe(p.getSubscriptions()) * 0.3) + " €/mois.");
             a.setCategory("BUDGET");
             a.setPriority("MOYENNE");
             a.setTargetAmount(safe(p.getSubscriptions()) * 0.3 * 12);
@@ -247,5 +258,7 @@ public class FinCoachController {
         }
     }
 
-    private double safe(Double v) { return v == null ? 0.0 : v; }
+    private double safe(Double v) {
+        return v == null ? 0.0 : v;
+    }
 }
