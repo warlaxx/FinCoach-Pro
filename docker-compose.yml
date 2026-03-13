@@ -10,7 +10,19 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # Docker Compose reads .env automatically from the project root
+      # All variables below are injected from that file (or from the shell environment)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-demo}
+      - JWT_SECRET=${JWT_SECRET:-ZmluY29hY2gtcHJvLWp3dC1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudA==}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID:-}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET:-}
+      - APPLE_CLIENT_ID=${APPLE_CLIENT_ID:-}
+      - APPLE_TEAM_ID=${APPLE_TEAM_ID:-}
+      - APPLE_KEY_ID=${APPLE_KEY_ID:-}
+      - APPLE_PRIVATE_KEY=${APPLE_PRIVATE_KEY:-}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4200}
       - SPRING_PROFILES_ACTIVE=default
     volumes:
       - fincoach-data:/app/data
