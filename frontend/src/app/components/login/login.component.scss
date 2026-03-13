@@ -1,0 +1,198 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-main, #0f1117);
+}
+
+// ─── Card ────────────────────────────────────────────────────────────────────
+.login-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card, #1a1d2e);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 20px;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+// ─── Logo ────────────────────────────────────────────────────────────────────
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .logo-icon { font-size: 36px; }
+
+  .logo-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold, #c9a84c);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-muted, #6b7280);
+    text-transform: uppercase;
+  }
+}
+
+// ─── Titles ──────────────────────────────────────────────────────────────────
+.login-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary, #f1f5f9);
+  margin: 0;
+  text-align: center;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: var(--text-muted, #6b7280);
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+// ─── Error ───────────────────────────────────────────────────────────────────
+.login-error {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #f87171;
+  font-size: 13px;
+
+  svg { flex-shrink: 0; }
+}
+
+// ─── Buttons ─────────────────────────────────────────────────────────────────
+.login-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-provider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 13px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  .provider-icon, .provider-spinner {
+    display: flex;
+    align-items: center;
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-google {
+  background: #fff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+
+  &:hover:not(:disabled) {
+    background: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+}
+
+.btn-microsoft {
+  background: var(--bg-card-hover, #252840);
+  color: var(--text-primary, #f1f5f9);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+
+  &:hover:not(:disabled) {
+    background: var(--bg-card, #1e2235);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+}
+
+.btn-apple {
+  background: #000;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+}
+
+// ─── Spinner animation ───────────────────────────────────────────────────────
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+// ─── Note ────────────────────────────────────────────────────────────────────
+.login-note {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+// ─── Background decoration ───────────────────────────────────────────────────
+.login-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+}
+
+.bg-circle-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--gold, #c9a84c);
+  top: -100px;
+  right: -100px;
+}
+
+.bg-circle-2 {
+  width: 300px;
+  height: 300px;
+  background: #3b82f6;
+  bottom: -80px;
+  left: -80px;
+}

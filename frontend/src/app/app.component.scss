@@ -117,14 +117,48 @@
     font-size: 14px;
   }
 
+  .user-avatar-img {
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .user-details {
+    flex: 1;
+    min-width: 0; // allows text truncation to work
+  }
+
   .user-name {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .user-plan {
+  .user-email {
     font-size: 11px;
     color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.btn-logout {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
   }
 }
 
