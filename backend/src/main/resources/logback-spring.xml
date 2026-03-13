@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ============================================================
+         Log format shared between console and file appenders.
+         %d   = timestamp
+         %t   = thread name
+         %-5p = log level (left-aligned, padded to 5 chars)
+         %c{36} = logger class name (truncated to 36 chars)
+         %m   = log message
+         %n   = newline
+    ============================================================ -->
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- Directory where log files will be written (relative to the JVM working directory) -->
+    <property name="LOG_DIR" value="logs"/>
+
+
+    <!-- ============================================================
+         CONSOLE APPENDER
+         Prints all logs to stdout so they are visible in the terminal
+         and in Docker logs (docker logs fincoach-backend).
+    ============================================================ -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- ============================================================
+         FILE APPENDER — one file per day
+         TimeBasedRollingPolicy automatically creates a new file at
+         midnight using the date in the filename pattern.
+         The active file for today is: logs/fincoach_logs_2026-03-13.log
+         At midnight it is closed and a new one is opened with tomorrow's date.
+         maxHistory = keep the last 30 days of log files, then delete older ones.
+         totalSizeCap = never exceed 500 MB of total log storage.
+    ============================================================ -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/fincoach_logs_%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- ============================================================
+         APPLICATION LOGGER
+         All classes under com.fincoach are logged at DEBUG level so
+         we see the detailed calculation and request traces we added.
+         additivity="false" prevents these logs from also being
+         processed by the root logger (avoids duplicate lines).
+    ============================================================ -->
+    <logger name="com.fincoach" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+
+    <!-- ============================================================
+         ROOT LOGGER
+         Everything else (Spring, Hibernate, Tomcat, etc.) at INFO.
+         This keeps the logs readable without drowning in framework noise.
+    ============================================================ -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
