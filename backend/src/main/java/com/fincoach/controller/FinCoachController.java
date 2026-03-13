@@ -8,6 +8,8 @@ import com.fincoach.repository.ChatMessageRepository;
 import com.fincoach.repository.FinancialProfileRepository;
 import com.fincoach.service.AiChatService;
 import com.fincoach.service.FinancialScoringService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api")
 public class FinCoachController {
+
+    private static final Logger log = LoggerFactory.getLogger(FinCoachController.class);
 
     @Autowired
     private FinancialProfileRepository profileRepo;
@@ -33,74 +37,119 @@ public class FinCoachController {
 
     @GetMapping("/dashboard/{userId}")
     public ResponseEntity<Map<String, Object>> getDashboard(@PathVariable String userId) {
+        log.info("GET /dashboard/{} - building dashboard", userId);
         Map<String, Object> dashboard = new LinkedHashMap<>();
+
         Optional<FinancialProfile> profileOpt = profileRepo.findTopByUserIdOrderByUpdatedAtDesc(userId);
         if (profileOpt.isPresent()) {
+            log.debug("Profile found for userId={} (id={}, score={})",
+                    userId, profileOpt.get().getId(), profileOpt.get().getFinancialScore());
             dashboard.put("profile", buildProfileSummary(profileOpt.get()));
         } else {
+            log.warn("No financial profile found for userId={}", userId);
             dashboard.put("profile", null);
         }
+
         List<ActionPlan> actions = actionRepo.findByUserIdAndStatusOrderByCreatedAtDesc(userId, "EN_COURS");
+        log.debug("Found {} active action plan(s) for userId={}", actions.size(), userId);
         dashboard.put("topActions",
                 actions.stream().limit(4).map(this::buildActionResponse).collect(Collectors.toList()));
         dashboard.put("stats", buildStats(userId));
+
+        log.info("Dashboard built for userId={} - hasProfile={}, activeActions={}",
+                userId, profileOpt.isPresent(), actions.size());
         return ResponseEntity.ok(dashboard);
     }
 
     @GetMapping("/profile/{userId}")
     public ResponseEntity<?> getProfile(@PathVariable String userId) {
-        return profileRepo.findTopByUserIdOrderByUpdatedAtDesc(userId)
-                .map(p -> ResponseEntity.ok(buildProfileSummary(p)))
-                .orElse(ResponseEntity.notFound().build());
+        log.info("GET /profile/{} - fetching profile", userId);
+        Optional<FinancialProfile> profileOpt = profileRepo.findTopByUserIdOrderByUpdatedAtDesc(userId);
+        if (profileOpt.isEmpty()) {
+            log.warn("No profile found for userId={}", userId);
+            return ResponseEntity.notFound().build();
+        }
+        log.debug("Profile returned for userId={} (id={}, updatedAt={})",
+                userId, profileOpt.get().getId(), profileOpt.get().getUpdatedAt());
+        return ResponseEntity.ok(buildProfileSummary(profileOpt.get()));
     }
 
     @PostMapping("/profile")
     public ResponseEntity<Map<String, Object>> saveProfile(@RequestBody FinancialProfile profile) {
+        log.info("POST /profile - saving profile for userId={}", profile.getUserId());
         scoringService.computeScores(profile);
+        log.debug("Scores computed for userId={} - savingsRate={}%, debtRatio={}%, financialScore={}",
+                profile.getUserId(), profile.getSavingsRate(), profile.getDebtRatio(), profile.getFinancialScore());
+
         FinancialProfile saved = profileRepo.save(profile);
+        log.info("Profile saved - id={}, userId={}, score={}", saved.getId(), saved.getUserId(), saved.getFinancialScore());
+
         generateActionPlans(saved);
         return ResponseEntity.ok(buildProfileSummary(saved));
     }
 
     @GetMapping("/actions/{userId}")
     public ResponseEntity<List<Map<String, Object>>> getActions(@PathVariable String userId) {
+        log.info("GET /actions/{} - fetching all action plans", userId);
         List<ActionPlan> actions = actionRepo.findByUserIdOrderByPriorityAscCreatedAtDesc(userId);
+        log.debug("Found {} action plan(s) for userId={}", actions.size(), userId);
         return ResponseEntity.ok(actions.stream().map(this::buildActionResponse).collect(Collectors.toList()));
     }
 
     @PostMapping("/actions")
     public ResponseEntity<Map<String, Object>> createAction(@RequestBody ActionPlan action) {
+        log.info("POST /actions - creating action '{}' for userId={}", action.getTitle(), action.getUserId());
         ActionPlan saved = actionRepo.save(action);
+        log.info("Action created - id={}, title='{}', category={}, priority={}",
+                saved.getId(), saved.getTitle(), saved.getCategory(), saved.getPriority());
         return ResponseEntity.ok(buildActionResponse(saved));
     }
 
     @PutMapping("/actions/{id}/status")
     public ResponseEntity<Map<String, Object>> updateActionStatus(
             @PathVariable Long id, @RequestBody Map<String, String> body) {
+        log.info("PUT /actions/{}/status - payload={}", id, body);
         return actionRepo.findById(id).map(action -> {
             if (body.containsKey("status") && body.get("status") != null) {
+                log.debug("Updating action id={} status: '{}' -> '{}'", id, action.getStatus(), body.get("status"));
                 action.setStatus(body.get("status"));
             }
             if (body.containsKey("currentAmount") && body.get("currentAmount") != null) {
                 try {
-                    action.setCurrentAmount(Double.parseDouble(body.get("currentAmount")));
+                    double newAmount = Double.parseDouble(body.get("currentAmount"));
+                    log.debug("Updating action id={} currentAmount: {} -> {}", id, action.getCurrentAmount(), newAmount);
+                    action.setCurrentAmount(newAmount);
                 } catch (NumberFormatException e) {
-                    // ignore malformed value, keep existing amount
+                    log.warn("Malformed currentAmount value '{}' for action id={} - keeping existing value",
+                            body.get("currentAmount"), id);
                 }
             }
-            return ResponseEntity.ok(buildActionResponse(actionRepo.save(action)));
-        }).orElse(ResponseEntity.notFound().build());
+            ActionPlan updated = actionRepo.save(action);
+            log.info("Action id={} updated - status={}, currentAmount={}", id, updated.getStatus(), updated.getCurrentAmount());
+            return ResponseEntity.ok(buildActionResponse(updated));
+        }).orElseGet(() -> {
+            log.warn("Action id={} not found for status update", id);
+            return ResponseEntity.notFound().build();
+        });
     }
 
     @DeleteMapping("/actions/{id}")
     public ResponseEntity<Void> deleteAction(@PathVariable Long id) {
+        log.info("DELETE /actions/{} - deleting action plan", id);
+        if (!actionRepo.existsById(id)) {
+            log.warn("Action id={} not found for deletion", id);
+            return ResponseEntity.notFound().build();
+        }
         actionRepo.deleteById(id);
+        log.info("Action id={} deleted successfully", id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/chat/{userId}")
     public ResponseEntity<List<Map<String, Object>>> getChatHistory(@PathVariable String userId) {
+        log.info("GET /chat/{} - fetching chat history", userId);
         List<ChatMessage> messages = chatRepo.findByUserIdOrderByCreatedAtAsc(userId);
+        log.debug("Found {} message(s) in chat history for userId={}", messages.size(), userId);
         return ResponseEntity.ok(messages.stream().map(this::buildChatResponse).collect(Collectors.toList()));
     }
 
@@ -108,20 +157,32 @@ public class FinCoachController {
     public ResponseEntity<Map<String, Object>> chat(@RequestBody Map<String, String> body) {
         String userId = body.get("userId");
         String message = body.get("message");
+        log.info("POST /chat - message from userId={} ({} chars)", userId, message != null ? message.length() : 0);
+
         ChatMessage userMsg = new ChatMessage(null, userId, "user", message, null);
         chatRepo.save(userMsg);
+        log.debug("User message saved for userId={}", userId);
+
         List<ChatMessage> history = chatRepo.findTop20ByUserIdOrderByCreatedAtDesc(userId);
         Collections.reverse(history);
+        log.debug("Chat context built with {} previous message(s) for userId={}", history.size(), userId);
+
         String aiResponse = aiChatService.chat(history, message);
+        log.debug("AI response generated for userId={} ({} chars)", userId, aiResponse != null ? aiResponse.length() : 0);
+
         ChatMessage assistantMsg = new ChatMessage(null, userId, "assistant", aiResponse, null);
         chatRepo.save(assistantMsg);
+        log.info("Chat exchange completed for userId={}", userId);
         return ResponseEntity.ok(buildChatResponse(assistantMsg));
     }
 
     @DeleteMapping("/chat/{userId}")
     public ResponseEntity<Void> clearChat(@PathVariable String userId) {
+        log.info("DELETE /chat/{} - clearing chat history", userId);
         List<ChatMessage> all = chatRepo.findByUserIdOrderByCreatedAtAsc(userId);
+        log.debug("Deleting {} message(s) for userId={}", all.size(), userId);
         chatRepo.deleteAll(all);
+        log.info("Chat history cleared for userId={} ({} messages deleted)", userId, all.size());
         return ResponseEntity.noContent().build();
     }
 
@@ -195,6 +256,7 @@ public class FinCoachController {
         long total = all.size();
         long done = all.stream().filter(a -> "TERMINE".equals(a.getStatus())).count();
         long inProgress = all.stream().filter(a -> "EN_COURS".equals(a.getStatus())).count();
+        log.debug("Stats for userId={} - total={}, done={}, inProgress={}", userId, total, done, inProgress);
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalActions", total);
         stats.put("completedActions", done);
@@ -204,8 +266,11 @@ public class FinCoachController {
     }
 
     private void generateActionPlans(FinancialProfile p) {
+        log.debug("Evaluating action plans to generate for userId={} (savingsRate={}%, debtRatio={}%, subscriptions={}€)",
+                p.getUserId(), p.getSavingsRate(), p.getDebtRatio(), p.getSubscriptions());
         double income = safe(p.getMonthlyIncome()) + safe(p.getOtherIncome());
         List<ActionPlan> actions = new ArrayList<>();
+
         if (safe(p.getSavingsRate()) < 10 && income > 0
                 && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Atteindre 10% de taux d'épargne", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
@@ -219,7 +284,9 @@ public class FinCoachController {
             a.setCurrentAmount(0.0);
             a.setDeadline(LocalDate.now().plusMonths(6));
             actions.add(a);
+            log.debug("Action plan queued: 'Atteindre 10% de taux d'épargne' for userId={}", p.getUserId());
         }
+
         if (safe(p.getCurrentSavings()) < income * 3
                 && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Constituer un fonds d'urgence (3 mois)", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
@@ -233,7 +300,9 @@ public class FinCoachController {
             a.setCurrentAmount(safe(p.getCurrentSavings()));
             a.setDeadline(LocalDate.now().plusMonths(12));
             actions.add(a);
+            log.debug("Action plan queued: 'Constituer un fonds d'urgence' for userId={}", p.getUserId());
         }
+
         if (safe(p.getDebtRatio()) > 25
                 && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Réduire le ratio d'endettement", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
@@ -247,7 +316,9 @@ public class FinCoachController {
             a.setCurrentAmount(0.0);
             a.setDeadline(LocalDate.now().plusMonths(18));
             actions.add(a);
+            log.debug("Action plan queued: 'Réduire le ratio d'endettement' for userId={}", p.getUserId());
         }
+
         if (safe(p.getSubscriptions()) > 60
                 && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Auditer vos abonnements", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
@@ -262,9 +333,14 @@ public class FinCoachController {
             a.setCurrentAmount(0.0);
             a.setDeadline(LocalDate.now().plusWeeks(2));
             actions.add(a);
+            log.debug("Action plan queued: 'Auditer vos abonnements' for userId={}", p.getUserId());
         }
+
         if (!actions.isEmpty()) {
             actionRepo.saveAll(actions);
+            log.info("{} action plan(s) generated and saved for userId={}", actions.size(), p.getUserId());
+        } else {
+            log.debug("No new action plans to generate for userId={}", p.getUserId());
         }
     }
 
