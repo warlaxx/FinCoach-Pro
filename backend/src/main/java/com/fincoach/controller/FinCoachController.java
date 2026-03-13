@@ -78,9 +78,15 @@ public class FinCoachController {
     public ResponseEntity<Map<String, Object>> updateActionStatus(
             @PathVariable Long id, @RequestBody Map<String, String> body) {
         return actionRepo.findById(id).map(action -> {
-            action.setStatus(body.get("status"));
-            if (body.containsKey("currentAmount")) {
-                action.setCurrentAmount(Double.parseDouble(body.get("currentAmount")));
+            if (body.containsKey("status") && body.get("status") != null) {
+                action.setStatus(body.get("status"));
+            }
+            if (body.containsKey("currentAmount") && body.get("currentAmount") != null) {
+                try {
+                    action.setCurrentAmount(Double.parseDouble(body.get("currentAmount")));
+                } catch (NumberFormatException e) {
+                    // ignore malformed value, keep existing amount
+                }
             }
             return ResponseEntity.ok(buildActionResponse(actionRepo.save(action)));
         }).orElse(ResponseEntity.notFound().build());
@@ -200,7 +206,8 @@ public class FinCoachController {
     private void generateActionPlans(FinancialProfile p) {
         double income = safe(p.getMonthlyIncome()) + safe(p.getOtherIncome());
         List<ActionPlan> actions = new ArrayList<>();
-        if (safe(p.getSavingsRate()) < 10 && income > 0) {
+        if (safe(p.getSavingsRate()) < 10 && income > 0
+                && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Atteindre 10% de taux d'épargne", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Atteindre 10% de taux d'épargne");
@@ -213,7 +220,8 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusMonths(6));
             actions.add(a);
         }
-        if (safe(p.getCurrentSavings()) < income * 3) {
+        if (safe(p.getCurrentSavings()) < income * 3
+                && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Constituer un fonds d'urgence (3 mois)", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Constituer un fonds d'urgence (3 mois)");
@@ -226,7 +234,8 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusMonths(12));
             actions.add(a);
         }
-        if (safe(p.getDebtRatio()) > 25) {
+        if (safe(p.getDebtRatio()) > 25
+                && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Réduire le ratio d'endettement", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Réduire le ratio d'endettement");
@@ -239,7 +248,8 @@ public class FinCoachController {
             a.setDeadline(LocalDate.now().plusMonths(18));
             actions.add(a);
         }
-        if (safe(p.getSubscriptions()) > 60) {
+        if (safe(p.getSubscriptions()) > 60
+                && !actionRepo.existsByUserIdAndTitleAndStatus(p.getUserId(), "Auditer vos abonnements", "EN_COURS")) {
             ActionPlan a = new ActionPlan();
             a.setUserId(p.getUserId());
             a.setTitle("Auditer vos abonnements");
