@@ -5,6 +5,9 @@ import com.fincoach.model.ChatMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,6 +16,8 @@ import java.util.*;
 
 @Service
 public class AiChatService {
+
+    private static final Logger log = LoggerFactory.getLogger(AiChatService.class);
 
     @Value("${openai.api.key:demo}")
     private String openAiKey;
@@ -72,6 +77,7 @@ public class AiChatService {
             return (String) msg.get("content");
 
         } catch (Exception e) {
+            log.error("OpenAI API call failed: {}", e.getMessage(), e);
             return generateDemoResponse(userMessage);
         }
     }
