@@ -1,0 +1,200 @@
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar">
+  <div class="nav-logo" (click)="goHome()" style="cursor:pointer">
+    <span class="logo-icon">💰</span>
+    <div>
+      <span class="logo-name">FinCoach</span>
+      <span class="logo-pro">PRO</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a routerLink="/">Accueil</a>
+    <a class="active-link">Marches</a>
+  </div>
+  <button class="btn-gold" routerLink="/login">Se connecter</button>
+</nav>
+
+<!-- ========== PAGE HEADER ========== -->
+<section class="page-header">
+  <div class="header-content">
+    <div class="header-left">
+      <div class="header-badge">
+        <span class="live-dot"></span>
+        Marches en temps reel
+      </div>
+      <h1>Suivez les marches financiers</h1>
+      <p>Recherchez, suivez et ajoutez en favoris vos actions, indices, cryptos et plus encore.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SEARCH & FILTERS ========== -->
+<section class="controls">
+  <div class="search-box">
+    <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input
+      type="text"
+      placeholder="Rechercher une action, un indice, une crypto..."
+      [(ngModel)]="searchQuery"
+      (input)="onSearchChange()"
+    />
+    <span class="search-count" *ngIf="searchQuery">{{ filteredStocks.length }} resultat(s)</span>
+  </div>
+
+  <div class="filters-row">
+    <div class="category-tabs">
+      <button
+        *ngFor="let cat of categories"
+        class="cat-tab"
+        [class.active]="activeCategory === cat"
+        (click)="setCategory(cat)"
+      >
+        {{ cat }}
+      </button>
+    </div>
+    <button
+      class="fav-toggle"
+      [class.active]="showFavoritesOnly"
+      (click)="toggleFavoritesFilter()"
+    >
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      Favoris
+      <span class="fav-count" *ngIf="favorites.size > 0">({{ favorites.size }})</span>
+    </button>
+  </div>
+</section>
+
+<!-- ========== STOCKS GRID ========== -->
+<section class="stocks-section">
+  <div class="stocks-grid" *ngIf="filteredStocks.length > 0">
+    <div
+      class="stock-card card"
+      *ngFor="let stock of filteredStocks; let i = index"
+      (click)="selectStock(stock)"
+    >
+      <div class="stock-card-header">
+        <div class="stock-info">
+          <div class="stock-symbol">{{ stock.symbol }}</div>
+          <div class="stock-name">{{ stock.name }}</div>
+        </div>
+        <button
+          class="fav-btn"
+          [class.is-fav]="isFavorite(stock.symbol)"
+          (click)="toggleFavorite($event, stock)"
+          [attr.title]="isFavorite(stock.symbol) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="isFavorite(stock.symbol) ? '#C9A84C' : 'none'" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="stock-price-row">
+        <span class="stock-price">{{ formatPrice(stock.price) }}</span>
+        <span class="stock-badge" [class.positive]="stock.changePercent >= 0" [class.negative]="stock.changePercent < 0">
+          {{ stock.changePercent >= 0 ? '+' : '' }}{{ stock.changePercent | number:'1.2-2' }}%
+        </span>
+      </div>
+
+      <div class="stock-chart-wrap">
+        <canvas #miniCanvas></canvas>
+      </div>
+
+      <div class="stock-category-tag">{{ stock.category }}</div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="filteredStocks.length === 0">
+    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <h3>Aucun resultat</h3>
+    <p *ngIf="showFavoritesOnly && favorites.size === 0">Vous n'avez pas encore de favoris. Cliquez sur l'etoile pour en ajouter.</p>
+    <p *ngIf="!showFavoritesOnly || favorites.size > 0">Essayez un autre terme de recherche ou changez de categorie.</p>
+  </div>
+</section>
+
+<!-- ========== DETAIL MODAL ========== -->
+<div class="detail-overlay" *ngIf="selectedStock" (click)="closeDetail()">
+  <div class="detail-modal card" (click)="$event.stopPropagation()">
+    <div class="detail-header">
+      <div>
+        <div class="detail-symbol">{{ selectedStock.symbol }}</div>
+        <div class="detail-name">{{ selectedStock.name }}</div>
+      </div>
+      <div class="detail-actions">
+        <button
+          class="fav-btn-lg"
+          [class.is-fav]="isFavorite(selectedStock.symbol)"
+          (click)="toggleFavorite($event, selectedStock)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="isFavorite(selectedStock.symbol) ? '#C9A84C' : 'none'" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          {{ isFavorite(selectedStock.symbol) ? 'Favori' : 'Ajouter' }}
+        </button>
+        <button class="close-btn" (click)="closeDetail()">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="detail-price-row">
+      <span class="detail-price">{{ formatPrice(selectedStock.price) }}</span>
+      <span class="detail-currency" *ngIf="!selectedStock.symbol.includes('/')">EUR</span>
+      <span class="detail-badge" [class.positive]="selectedStock.changePercent >= 0" [class.negative]="selectedStock.changePercent < 0">
+        {{ selectedStock.changePercent >= 0 ? '▲' : '▼' }}
+        {{ selectedStock.changePercent >= 0 ? '+' : '' }}{{ selectedStock.changePercent | number:'1.2-2' }}%
+      </span>
+    </div>
+
+    <div class="detail-variation">
+      <span [class.up]="selectedStock.change >= 0" [class.down]="selectedStock.change < 0">
+        {{ selectedStock.change >= 0 ? '+' : '' }}{{ selectedStock.change | number:'1.2-2' }}
+      </span>
+      sur 50 points
+    </div>
+
+    <div class="detail-chart-wrap">
+      <canvas #detailCanvas></canvas>
+    </div>
+
+    <div class="detail-info-grid">
+      <div class="detail-info-item">
+        <span class="info-label">Categorie</span>
+        <span class="info-value">{{ selectedStock.category }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="info-label">Prix actuel</span>
+        <span class="info-value">{{ formatPrice(selectedStock.price) }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="info-label">Plus haut (50pts)</span>
+        <span class="info-value up">{{ formatPrice(getMax(selectedStock)) }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="info-label">Plus bas (50pts)</span>
+        <span class="info-value down">{{ formatPrice(getMin(selectedStock)) }}</span>
+      </div>
+    </div>
+
+    <div class="detail-disclaimer">
+      Les donnees affichees sont simulees a des fins de demonstration.
+    </div>
+  </div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer class="markets-footer">
+  <div class="footer-note">
+    Les donnees de marche affichees sont simulees a des fins de demonstration.
+  </div>
+  <div class="footer-copy">&copy; 2026 FinCoach Pro &middot; Tous droits reserves</div>
+</footer>
