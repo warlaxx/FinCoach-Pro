@@ -1,0 +1,203 @@
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <span class="logo-icon">💰</span>
+    <div>
+      <span class="logo-name">FinCoach</span>
+      <span class="logo-pro">PRO</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#markets">Marchés</a>
+    <a href="#testimonials">Témoignages</a>
+  </div>
+  <button class="btn-gold" (click)="goToLogin()">Commencer gratuitement →</button>
+</nav>
+
+<!-- ========== LIVE TICKER ========== -->
+<div class="ticker-bar">
+  <div class="ticker-track">
+    <span class="ticker-item" *ngFor="let t of tickerStocks">
+      <span class="ticker-symbol">{{ t.symbol }}</span>
+      <span class="ticker-price">{{ formatPrice(t.price) }}</span>
+      <span class="ticker-change" [class.up]="t.change >= 0" [class.down]="t.change < 0">
+        {{ t.change >= 0 ? '+' : '' }}{{ t.change | number:'1.2-2' }}%
+      </span>
+    </span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item" *ngFor="let t of tickerStocks">
+      <span class="ticker-symbol">{{ t.symbol }}</span>
+      <span class="ticker-price">{{ formatPrice(t.price) }}</span>
+      <span class="ticker-change" [class.up]="t.change >= 0" [class.down]="t.change < 0">
+        {{ t.change >= 0 ? '+' : '' }}{{ t.change | number:'1.2-2' }}%
+      </span>
+    </span>
+  </div>
+</div>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="live-dot"></span>
+    Marchés en temps réel · IA Financière · Coaching Personnalisé
+  </div>
+  <h1 class="hero-title">
+    Maîtrisez vos finances.<br />
+    <span class="text-gradient">Investissez avec confiance.</span>
+  </h1>
+  <p class="hero-subtitle">
+    FinCoach Pro analyse votre situation financière, génère votre score de santé,
+    et vous guide pas à pas vers la liberté financière — avec un assistant IA disponible 24h/24.
+  </p>
+  <div class="hero-cta">
+    <button class="btn-gold btn-lg" (click)="goToLogin()">
+      Créer mon tableau de bord gratuit
+    </button>
+    <button class="btn-ghost btn-lg" (click)="goToLogin()">
+      Voir une démo →
+    </button>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="stat-num">+2 400</span>
+      <span class="stat-lbl">Utilisateurs actifs</span>
+    </div>
+    <div class="hero-stat-sep"></div>
+    <div class="hero-stat">
+      <span class="stat-num">€ 3,2M</span>
+      <span class="stat-lbl">Économisés par nos membres</span>
+    </div>
+    <div class="hero-stat-sep"></div>
+    <div class="hero-stat">
+      <span class="stat-num">4,9 ★</span>
+      <span class="stat-lbl">Note moyenne</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== LIVE MARKETS ========== -->
+<section class="markets" id="markets">
+  <div class="section-header">
+    <div class="section-label">
+      <span class="live-dot"></span>
+      Marchés financiers en direct
+    </div>
+    <h2>Suivez les marchés mondiaux</h2>
+    <p>Cours mis à jour en temps réel. Restez informé pour prendre les meilleures décisions.</p>
+  </div>
+
+  <div class="markets-grid">
+    <div class="market-card card" *ngFor="let stock of stocks; let i = index">
+      <div class="market-card-top">
+        <div>
+          <div class="market-symbol">{{ stock.symbol }}</div>
+          <div class="market-name">{{ stock.name }}</div>
+        </div>
+        <div class="market-badge" [class.positive]="stock.changePercent >= 0" [class.negative]="stock.changePercent < 0">
+          {{ stock.changePercent >= 0 ? '▲' : '▼' }}
+          {{ stock.changePercent >= 0 ? '+' : '' }}{{ stock.changePercent | number:'1.2-2' }}%
+        </div>
+      </div>
+      <div class="market-price">{{ formatPrice(stock.price) }}
+        <span class="market-currency" *ngIf="stock.symbol !== 'EUR/USD'">€</span>
+      </div>
+      <div class="market-chart-wrap">
+        <canvas #stockCanvas [id]="stock.canvasId"></canvas>
+      </div>
+      <div class="market-change" [class.up]="stock.change >= 0" [class.down]="stock.change < 0">
+        {{ stock.change >= 0 ? '+' : '' }}{{ stock.change | number:'1.2-2' }} sur 30 points
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FEATURES ========== -->
+<section class="features" id="features">
+  <div class="section-header">
+    <div class="section-label">Tout ce dont vous avez besoin</div>
+    <h2>Votre coach financier personnel</h2>
+    <p>Des outils puissants pour analyser, optimiser et faire croître votre patrimoine.</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card card" *ngFor="let f of features">
+      <div class="feature-icon">{{ f.icon }}</div>
+      <h3>{{ f.title }}</h3>
+      <p>{{ f.desc }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== HOW IT WORKS ========== -->
+<section class="how-it-works">
+  <div class="section-header">
+    <div class="section-label">Simple &amp; Rapide</div>
+    <h2>Démarrez en 3 étapes</h2>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Connectez-vous</h3>
+      <p>Créez votre compte en un clic via Google, Microsoft ou Apple. Aucune carte bancaire requise.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Renseignez votre profil</h3>
+      <p>Saisissez vos revenus, dépenses et épargne. Notre IA calcule votre score financier instantanément.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Suivez votre plan</h3>
+      <p>Recevez un plan d'actions personnalisé et chattez avec votre coach IA pour progresser chaque mois.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TESTIMONIALS ========== -->
+<section class="testimonials" id="testimonials">
+  <div class="section-header">
+    <div class="section-label">Ils nous font confiance</div>
+    <h2>Des résultats concrets</h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card card" *ngFor="let t of testimonials">
+      <div class="testimonial-header">
+        <div class="testimonial-avatar">{{ t.name.charAt(0) }}</div>
+        <div>
+          <div class="testimonial-name">{{ t.name }}</div>
+          <div class="testimonial-role">{{ t.role }}</div>
+        </div>
+        <div class="score-badge score-{{ t.score }} ml-auto">{{ t.score }}</div>
+      </div>
+      <p class="testimonial-text">"{{ t.text }}"</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CTA SECTION ========== -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <h2>Prêt à reprendre le contrôle de vos finances ?</h2>
+  <p>Rejoignez plus de 2 400 membres qui ont transformé leur rapport à l'argent.</p>
+  <button class="btn-gold btn-lg" (click)="goToLogin()">
+    Commencer gratuitement — c'est gratuit
+  </button>
+  <div class="cta-note">Connexion sécurisée · Aucune carte bancaire · Données privées</div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="landing-footer">
+  <div class="footer-logo">
+    <span>💰</span>
+    <span class="logo-name">FinCoach</span>
+    <span class="logo-pro">PRO</span>
+  </div>
+  <p class="footer-tagline">Votre santé financière, notre priorité.</p>
+  <div class="footer-note">
+    Les données de marché affichées sont simulées à des fins de démonstration.
+  </div>
+  <div class="footer-copy">© 2026 FinCoach Pro · Tous droits réservés</div>
+</footer>

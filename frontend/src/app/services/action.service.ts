@@ -1,36 +1,29 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { ActionPlan } from "../models/action-plan.model";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ActionPlan } from '../models/action-plan.model';
+import { AuthService } from './auth.service';
 
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 export class ActionService {
-  private base = "http://localhost:8080/api";
-  private userId = "user-demo"; // TODO: replace with auth service
+  private base = 'http://localhost:8080/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AuthService) {}
 
   getActions(): Observable<ActionPlan[]> {
-    return this.http.get<ActionPlan[]>(`${this.base}/actions/${this.userId}`);
+    const userId = this.auth.getCurrentUserId();
+    return this.http.get<ActionPlan[]>(`${this.base}/actions/${userId}`);
   }
 
   createAction(action: ActionPlan): Observable<ActionPlan> {
-    return this.http.post<ActionPlan>(`${this.base}/actions`, {
-      ...action,
-      userId: this.userId,
-    });
+    const userId = this.auth.getCurrentUserId();
+    return this.http.post<ActionPlan>(`${this.base}/actions`, { ...action, userId });
   }
 
-  updateActionStatus(
-    id: number,
-    status: string,
-    currentAmount?: number
-  ): Observable<ActionPlan> {
+  updateActionStatus(id: number, status: string, currentAmount?: number): Observable<ActionPlan> {
     return this.http.put<ActionPlan>(`${this.base}/actions/${id}/status`, {
       status,
-      ...(currentAmount !== undefined
-        ? { currentAmount: String(currentAmount) }
-        : {}),
+      ...(currentAmount !== undefined ? { currentAmount: String(currentAmount) } : {}),
     });
   }
 

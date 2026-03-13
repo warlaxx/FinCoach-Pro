@@ -4,6 +4,8 @@ import { FormsModule } from "@angular/forms";
 import { ApiService } from "../../services/api.service";
 import { FinancialProfile } from "src/app/models/financial-profile.model";
 import { DashboardData } from "src/app/models/dashboard-data.model";
+import { timeout, catchError } from "rxjs/operators";
+import { of } from "rxjs";
 
 @Component({
   selector: "app-dashboard",
@@ -45,15 +47,15 @@ export class DashboardComponent implements OnInit {
 
   load() {
     this.loading = true;
-    this.api.dashboard.getDashboard().subscribe({
-      next: (d) => {
+    this.api.dashboard.getDashboard()
+      .pipe(
+        timeout(10000),
+        catchError(() => of(null))
+      )
+      .subscribe((d) => {
         this.data = d;
         this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+      });
   }
 
   saveProfile() {
