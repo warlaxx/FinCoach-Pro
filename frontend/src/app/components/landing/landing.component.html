@@ -10,7 +10,6 @@
   <div class="nav-links">
     <a href="#features">Fonctionnalités</a>
     <a routerLink="/markets">Marchés</a>
-    <a href="#testimonials">Témoignages</a>
   </div>
   <button class="btn-gold" (click)="goToLogin()">Commencer gratuitement →</button>
 </nav>
@@ -57,22 +56,6 @@
     <button class="btn-ghost btn-lg" (click)="goToLogin()">
       Voir une démo →
     </button>
-  </div>
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <span class="stat-num">+2 400</span>
-      <span class="stat-lbl">Utilisateurs actifs</span>
-    </div>
-    <div class="hero-stat-sep"></div>
-    <div class="hero-stat">
-      <span class="stat-num">€ 3,2M</span>
-      <span class="stat-lbl">Économisés par nos membres</span>
-    </div>
-    <div class="hero-stat-sep"></div>
-    <div class="hero-stat">
-      <span class="stat-num">4,9 ★</span>
-      <span class="stat-lbl">Note moyenne</span>
-    </div>
   </div>
 </section>
 
@@ -156,36 +139,15 @@
   </div>
 </section>
 
-<!-- ========== TESTIMONIALS ========== -->
-<section class="testimonials" id="testimonials">
-  <div class="section-header">
-    <div class="section-label">Ils nous font confiance</div>
-    <h2>Des résultats concrets</h2>
-  </div>
-  <div class="testimonials-grid">
-    <div class="testimonial-card card" *ngFor="let t of testimonials">
-      <div class="testimonial-header">
-        <div class="testimonial-avatar">{{ t.name.charAt(0) }}</div>
-        <div>
-          <div class="testimonial-name">{{ t.name }}</div>
-          <div class="testimonial-role">{{ t.role }}</div>
-        </div>
-        <div class="score-badge score-{{ t.score }} ml-auto">{{ t.score }}</div>
-      </div>
-      <p class="testimonial-text">"{{ t.text }}"</p>
-    </div>
-  </div>
-</section>
-
 <!-- ========== CTA SECTION ========== -->
 <section class="cta-section">
   <div class="cta-glow"></div>
-  <h2>Prêt à reprendre le contrôle de vos finances ?</h2>
-  <p>Rejoignez plus de 2 400 membres qui ont transformé leur rapport à l'argent.</p>
+  <h2>Pret a reprendre le controle de vos finances ?</h2>
+  <p>Transformez votre rapport a l'argent avec un coach IA personnalise.</p>
   <button class="btn-gold btn-lg" (click)="goToLogin()">
-    Commencer gratuitement — c'est gratuit
+    Commencer gratuitement
   </button>
-  <div class="cta-note">Connexion sécurisée · Aucune carte bancaire · Données privées</div>
+  <div class="cta-note">Connexion securisee &middot; Aucune carte bancaire &middot; Donnees privees</div>
 </section>
 
 <!-- ========== FOOTER ========== -->

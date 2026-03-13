@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
+import { TwelveDataService } from '../../services/twelve-data.service';
 
 Chart.register(...registerables);
 
@@ -38,6 +39,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private tickerInterval?: ReturnType<typeof setInterval>;
   private chartInterval?: ReturnType<typeof setInterval>;
+  private refreshInterval?: ReturnType<typeof setInterval>;
 
   stocks: StockData[] = [
     {
@@ -75,7 +77,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       symbol: 'LVMH',
-      name: 'LVMH Moët Hennessy',
+      name: 'LVMH Moet Hennessy',
       price: 712.40,
       change: +9.60,
       changePercent: +1.36,
@@ -123,65 +125,66 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     { symbol: 'EUR/USD', price: 1.0842, change: -0.11 },
   ];
 
+  // Mapping ticker symbols to TwelveData-friendly symbols
+  private tickerApiMap: Record<string, string> = {
+    'CAC 40': 'CAC 40',
+    'S&P 500': 'S&P 500',
+    'DAX': 'DAX',
+    'NASDAQ': 'NASDAQ',
+    'BTC': 'BTC/EUR',
+    'ETH': 'ETH/EUR',
+    'AAPL': 'AAPL',
+    'MSFT': 'MSFT',
+    'LVMH': 'LVMH',
+    'TotalEnergies': 'TTE',
+    'Or (XAU)': 'XAU',
+    'EUR/USD': 'EUR/USD',
+  };
+
   features = [
     {
       icon: '📊',
-      title: 'Score de santé financière',
-      desc: 'Obtenez une note de A à F basée sur votre situation réelle : revenus, dépenses, épargne, dettes.',
+      title: 'Score de sante financiere',
+      desc: 'Obtenez une note de A a F basee sur votre situation reelle : revenus, depenses, epargne, dettes.',
     },
     {
       icon: '🤖',
-      title: 'Coach IA personnalisé',
-      desc: 'Posez vos questions financières à notre assistant IA et recevez des conseils sur mesure 24h/24.',
+      title: 'Coach IA personnalise',
+      desc: 'Posez vos questions financieres a notre assistant IA et recevez des conseils sur mesure 24h/24.',
     },
     {
       icon: '🎯',
       title: "Plan d'actions concret",
-      desc: "Suivez vos objectifs financiers avec un plan structuré : réduire les dettes, épargner, investir.",
+      desc: "Suivez vos objectifs financiers avec un plan structure : reduire les dettes, epargner, investir.",
     },
     {
       icon: '💰',
-      title: 'Suivi budgétaire',
-      desc: "Visualisez la répartition de vos dépenses et identifiez les postes à optimiser en un coup d'oeil.",
+      title: 'Suivi budgetaire',
+      desc: "Visualisez la repartition de vos depenses et identifiez les postes a optimiser en un coup d'oeil.",
     },
     {
       icon: '📈',
       title: "Objectifs d'investissement",
-      desc: "Définissez vos cibles d'investissement et suivez votre progression mois après mois.",
+      desc: "Definissez vos cibles d'investissement et suivez votre progression mois apres mois.",
     },
     {
       icon: '🔒',
-      title: 'Données sécurisées',
-      desc: 'Connexion via Google, Microsoft ou Apple. Vos données restent privées et chiffrées.',
+      title: 'Donnees securisees',
+      desc: 'Connexion via Google, Microsoft ou Apple. Vos donnees restent privees et chiffrees.',
     },
   ];
 
-  testimonials = [
-    {
-      name: 'Sophie M.',
-      role: 'Ingénieure, Lyon',
-      text: "En 3 mois, j'ai économisé 400 EUR de plus par mois grâce au plan d'actions FinCoach. Le score financier m'a vraiment ouvert les yeux.",
-      score: 'A',
-    },
-    {
-      name: 'Thomas R.',
-      role: 'Entrepreneur, Paris',
-      text: "L'assistant IA répond à toutes mes questions fiscales. C'est comme avoir un conseiller financier personnel disponible à tout moment.",
-      score: 'B',
-    },
-    {
-      name: 'Marie-Claire D.',
-      role: 'Infirmière, Bordeaux',
-      text: "J'ai remboursé mes crédits à la consommation en suivant les recommandations. Mon taux d'endettement est passé de 38% à 12%.",
-      score: 'A',
-    },
-  ];
-
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private twelveData: TwelveDataService,
+  ) {}
 
   ngOnInit(): void {
     this.initHistories();
     this.startTickerUpdates();
+    this.loadRealMarketData();
+    // Refresh every 2 minutes
+    this.refreshInterval = setInterval(() => this.loadRealMarketData(), 120_000);
   }
 
   ngAfterViewInit(): void {
@@ -194,12 +197,74 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.tickerInterval) clearInterval(this.tickerInterval);
     if (this.chartInterval) clearInterval(this.chartInterval);
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
     this.stocks.forEach((s) => s.chart?.destroy());
   }
 
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
+
+  // ========== LOAD REAL DATA ==========
+
+  private loadRealMarketData(): void {
+    // Load quotes for market cards
+    const cardSymbols = this.stocks.map(s => s.symbol);
+    this.twelveData.getQuotes(cardSymbols).subscribe(quotes => {
+      quotes.forEach((quote, symbol) => {
+        const stock = this.stocks.find(s => s.symbol === symbol);
+        if (stock && quote.price > 0) {
+          stock.price = quote.price;
+          stock.change = quote.change;
+          stock.changePercent = quote.changePercent;
+          stock.basePrice = quote.price;
+          // Re-generate history around real price
+          stock.history = this.generateHistoryAround(quote.price, 30, quote.changePercent);
+
+          if (stock.chart) {
+            const isPositive = stock.changePercent >= 0;
+            const lineColor = isPositive ? stock.color : '#EF4444';
+            stock.chart.data.labels = stock.history.map((_, i) => i.toString());
+            stock.chart.data.datasets[0].data = stock.history;
+            stock.chart.data.datasets[0].borderColor = lineColor;
+            stock.chart.update('none');
+          }
+        }
+      });
+
+      // Also update ticker with real prices
+      this.updateTickerFromQuotes(quotes);
+    });
+  }
+
+  private updateTickerFromQuotes(quotes: Map<string, any>): void {
+    for (const ticker of this.tickerStocks) {
+      const apiSymbol = this.tickerApiMap[ticker.symbol];
+      if (apiSymbol) {
+        const quote = quotes.get(apiSymbol);
+        if (quote && quote.price > 0) {
+          ticker.price = quote.price;
+          ticker.change = quote.changePercent;
+        }
+      }
+    }
+  }
+
+  private generateHistoryAround(price: number, points: number, trendPercent: number): number[] {
+    const history: number[] = [];
+    const startPrice = price * (1 - trendPercent / 100);
+    history.push(startPrice);
+    for (let i = 1; i < points; i++) {
+      const last = history[i - 1];
+      const trend = (price - startPrice) / points;
+      const noise = (Math.random() - 0.5) * (price * 0.003);
+      history.push(+(last + trend + noise).toFixed(4));
+    }
+    history[points - 1] = price;
+    return history;
+  }
+
+  // ========== EXISTING METHODS ==========
 
   private initHistories(): void {
     this.stocks.forEach((stock) => {

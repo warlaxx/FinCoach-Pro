@@ -25,6 +25,12 @@
       <h1>Suivez les marches financiers</h1>
       <p>Recherchez, suivez et ajoutez en favoris vos actions, indices, cryptos et plus encore.</p>
     </div>
+    <div class="header-right" *ngIf="lastUpdate">
+      <div class="last-update">
+        <span class="live-dot"></span>
+        Derniere MAJ : {{ getLastUpdateTime() }}
+      </div>
+    </div>
   </div>
 </section>
 

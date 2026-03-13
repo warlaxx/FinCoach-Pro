@@ -11,3 +11,12 @@ logs/
 # Environment variables — contains secrets, NEVER commit this file
 # Use .env.example as the template (that one IS committed)
 .env
+
+# Angular environment files with API keys
+frontend/src/environments/environment.ts
+frontend/src/environments/environment.development.ts
+
+# IDE & data files
+.idea/
+data/
+FinCoach/
