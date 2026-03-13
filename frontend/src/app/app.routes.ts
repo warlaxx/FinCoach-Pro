@@ -4,10 +4,12 @@ import { ActionPlanComponent } from './components/action-plan/action-plan.compon
 import { ChatComponent } from './components/chat/chat.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
+import { LandingComponent } from './components/landing/landing.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   // Public routes — no JWT required
+  { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'auth/callback', component: AuthCallbackComponent },
 
@@ -16,7 +18,5 @@ export const routes: Routes = [
   { path: 'actions', component: ActionPlanComponent, canActivate: [authGuard] },
   { path: 'chat', component: ChatComponent, canActivate: [authGuard] },
 
-  // Default redirect
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: '' }
 ];

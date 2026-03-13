@@ -16,12 +16,12 @@ export class AppComponent implements OnInit {
 
   /**
    * The sidebar should only appear on authenticated pages.
-   * On /login and /auth/callback the user sees a full-screen layout (no sidebar).
-   * We check the current URL to decide — Angular's Router.url is synchronously available.
+   * On /, /login and /auth/callback the user sees a full-screen layout (no sidebar).
    */
   get showSidebar(): boolean {
-    const hiddenRoutes = ['/login', '/auth/callback'];
-    return !hiddenRoutes.some(r => this.router.url.startsWith(r));
+    const url = this.router.url;
+    const hiddenRoutes = ['/', '/login', '/auth/callback'];
+    return !hiddenRoutes.some(r => url === r || (r !== '/' && url.startsWith(r)));
   }
 
   constructor(
@@ -30,9 +30,6 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to the reactive user stream from AuthService.
-    // currentUser$ is a BehaviorSubject — it emits immediately with the current value,
-    // then again on every change (login/logout). This keeps the sidebar up to date.
     this.auth.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
