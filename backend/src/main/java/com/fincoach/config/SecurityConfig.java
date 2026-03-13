@@ -108,11 +108,11 @@ public class SecurityConfig {
      */
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository(
-            @Value("${spring.security.oauth2.client.registration.google.client-id:}") String googleId,
-            @Value("${spring.security.oauth2.client.registration.google.client-secret:}") String googleSecret,
-            @Value("${spring.security.oauth2.client.registration.microsoft.client-id:}") String msId,
-            @Value("${spring.security.oauth2.client.registration.microsoft.client-secret:}") String msSecret,
-            @Value("${spring.security.oauth2.client.registration.apple.client-id:}") String appleId,
+            @Value("${GOOGLE_CLIENT_ID:}") String googleId,
+            @Value("${GOOGLE_CLIENT_SECRET:}") String googleSecret,
+            @Value("${MICROSOFT_CLIENT_ID:}") String msId,
+            @Value("${MICROSOFT_CLIENT_SECRET:}") String msSecret,
+            @Value("${APPLE_CLIENT_ID:}") String appleId,
             @Value("${apple.team-id:}") String appleTeamId,
             @Value("${apple.key-id:}") String appleKeyId,
             @Value("${apple.private-key:}") String applePrivateKey) {
