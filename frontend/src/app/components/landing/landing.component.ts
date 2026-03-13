@@ -136,18 +136,18 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       icon: '🎯',
-      title: 'Plan d'actions concret',
-      desc: 'Suivez vos objectifs financiers avec un plan structuré : réduire les dettes, épargner, investir.',
+      title: "Plan d'actions concret",
+      desc: "Suivez vos objectifs financiers avec un plan structuré : réduire les dettes, épargner, investir.",
     },
     {
       icon: '💰',
       title: 'Suivi budgétaire',
-      desc: 'Visualisez la répartition de vos dépenses et identifiez les postes à optimiser en un coup d'œil.',
+      desc: "Visualisez la répartition de vos dépenses et identifiez les postes à optimiser en un coup d'oeil.",
     },
     {
       icon: '📈',
-      title: 'Objectifs d'investissement',
-      desc: 'Définissez vos cibles d'investissement et suivez votre progression mois après mois.',
+      title: "Objectifs d'investissement",
+      desc: "Définissez vos cibles d'investissement et suivez votre progression mois après mois.",
     },
     {
       icon: '🔒',
@@ -160,19 +160,19 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       name: 'Sophie M.',
       role: 'Ingénieure, Lyon',
-      text: 'En 3 mois, j'ai économisé 400 € de plus par mois grâce au plan d'actions FinCoach. Le score financier m'a vraiment ouvert les yeux.',
+      text: "En 3 mois, j'ai économisé 400 EUR de plus par mois grâce au plan d'actions FinCoach. Le score financier m'a vraiment ouvert les yeux.",
       score: 'A',
     },
     {
       name: 'Thomas R.',
       role: 'Entrepreneur, Paris',
-      text: 'L'assistant IA répond à toutes mes questions fiscales. C'est comme avoir un conseiller financier personnel disponible à tout moment.',
+      text: "L'assistant IA répond à toutes mes questions fiscales. C'est comme avoir un conseiller financier personnel disponible à tout moment.",
       score: 'B',
     },
     {
       name: 'Marie-Claire D.',
       role: 'Infirmière, Bordeaux',
-      text: 'J'ai remboursé mes crédits à la consommation en suivant les recommandations. Mon taux d'endettement est passé de 38% à 12%.',
+      text: "J'ai remboursé mes crédits à la consommation en suivant les recommandations. Mon taux d'endettement est passé de 38% à 12%.",
       score: 'A',
     },
   ];
