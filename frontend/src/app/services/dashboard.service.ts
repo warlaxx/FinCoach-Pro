@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DashboardData } from '../models/dashboard-data.model';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
-  private base = 'http://localhost:8080/api';
+  private base = `${environment.apiBaseUrl}/api`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
