@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FinancialProfile } from '../models/financial-profile.model';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  private base = 'http://localhost:8080/api';
+  private base = `${environment.apiBaseUrl}/api`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.fincoach.util.NumberUtils.orZero;
+
 @Service
 public class FinancialScoringService {
 
@@ -16,11 +18,11 @@ public class FinancialScoringService {
     public void computeScores(FinancialProfile p) {
         log.debug("Computing scores for userId={}", p.getUserId());
 
-        double totalIncome = safe(p.getMonthlyIncome()) + safe(p.getOtherIncome());
-        double totalFixed = safe(p.getRent()) + safe(p.getUtilities()) + safe(p.getInsurance())
-                + safe(p.getLoans()) + safe(p.getSubscriptions());
-        double totalVariable = safe(p.getFood()) + safe(p.getTransport()) + safe(p.getLeisure())
-                + safe(p.getClothing()) + safe(p.getHealth());
+        double totalIncome = orZero(p.getMonthlyIncome()) + orZero(p.getOtherIncome());
+        double totalFixed = orZero(p.getRent()) + orZero(p.getUtilities()) + orZero(p.getInsurance())
+                + orZero(p.getLoans()) + orZero(p.getSubscriptions());
+        double totalVariable = orZero(p.getFood()) + orZero(p.getTransport()) + orZero(p.getLeisure())
+                + orZero(p.getClothing()) + orZero(p.getHealth());
         double total = totalFixed + totalVariable;
         double surplus = totalIncome - total;
 
@@ -102,33 +104,33 @@ public class FinancialScoringService {
     public List<String> generateInsights(FinancialProfile p) {
         log.debug("Generating insights for userId={}", p.getUserId());
         List<String> insights = new ArrayList<>();
-        double income = safe(p.getMonthlyIncome()) + safe(p.getOtherIncome());
-        double surplus = income - (safe(p.getRent()) + safe(p.getUtilities()) + safe(p.getInsurance())
-                + safe(p.getLoans()) + safe(p.getSubscriptions()) + safe(p.getFood())
-                + safe(p.getTransport()) + safe(p.getLeisure()) + safe(p.getClothing()) + safe(p.getHealth()));
+        double income = orZero(p.getMonthlyIncome()) + orZero(p.getOtherIncome());
+        double surplus = income - (orZero(p.getRent()) + orZero(p.getUtilities()) + orZero(p.getInsurance())
+                + orZero(p.getLoans()) + orZero(p.getSubscriptions()) + orZero(p.getFood())
+                + orZero(p.getTransport()) + orZero(p.getLeisure()) + orZero(p.getClothing()) + orZero(p.getHealth()));
 
-        if (safe(p.getSavingsRate()) < 10) {
+        if (orZero(p.getSavingsRate()) < 10) {
             insights.add("Votre taux d'épargne est inférieur à 10%. Objectif recommandé : 20% minimum.");
             log.debug("Insight triggered: low savings rate ({}%)", p.getSavingsRate());
         }
-        if (safe(p.getDebtRatio()) > 33) {
+        if (orZero(p.getDebtRatio()) > 33) {
             insights.add("Vos remboursements de dettes dépassent 33% de vos revenus. Priorisez le désendettement.");
             log.debug("Insight triggered: high debt ratio ({}%)", p.getDebtRatio());
         }
-        if (safe(p.getLeisure()) > income * 0.15) {
+        if (orZero(p.getLeisure()) > income * 0.15) {
             insights.add("Vos dépenses loisirs représentent plus de 15% de vos revenus.");
             log.debug("Insight triggered: high leisure spending ({}€ vs max {}€)", p.getLeisure(), income * 0.15);
         }
-        if (safe(p.getCurrentSavings()) < income * 3) {
+        if (orZero(p.getCurrentSavings()) < income * 3) {
             insights.add("Votre fonds d'urgence couvre moins de 3 mois de revenus. Objectif : 6 mois.");
             log.debug("Insight triggered: insufficient emergency fund ({}€ vs target {}€)", p.getCurrentSavings(), income * 3);
         }
-        if (surplus > 0 && safe(p.getMonthlySavingsGoal()) == 0) {
+        if (surplus > 0 && orZero(p.getMonthlySavingsGoal()) == 0) {
             insights.add("Vous avez un surplus mensuel de " + (int) surplus + " €. Définissez un objectif d'épargne !");
             log.debug("Insight triggered: surplus without savings goal (surplus={}€)", surplus);
         }
-        if (safe(p.getSubscriptions()) > 50) {
-            insights.add("Vous dépensez " + (int) safe(p.getSubscriptions()) + " € en abonnements. Passez-les en revue.");
+        if (orZero(p.getSubscriptions()) > 50) {
+            insights.add("Vous dépensez " + (int) orZero(p.getSubscriptions()) + " € en abonnements. Passez-les en revue.");
             log.debug("Insight triggered: high subscriptions cost ({}€)", p.getSubscriptions());
         }
 
@@ -141,7 +143,4 @@ public class FinancialScoringService {
         return insights;
     }
 
-    private double safe(Double v) {
-        return v == null ? 0.0 : v;
-    }
 }

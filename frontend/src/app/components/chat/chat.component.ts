@@ -8,6 +8,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ApiService } from "../../services/api.service";
+import { AuthService } from "../../services/auth.service";
 import { ChatMessage } from "src/app/models/chat-message.model";
 
 @Component({
@@ -82,7 +83,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit() {
     this.loading = true;
@@ -113,7 +114,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     if (!text || this.typing) return;
 
     const userMsg: ChatMessage = {
-      userId: "user-demo",
+      userId: this.auth.getCurrentUserId(),
       role: "user",
       content: text,
       createdAt: new Date().toISOString(),
@@ -129,7 +130,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       },
       error: () => {
         this.messages.push({
-          userId: "user-demo",
+          userId: this.auth.getCurrentUserId(),
           role: "assistant",
           content:
             "Une erreur est survenue. Vérifiez que le backend est démarré.",

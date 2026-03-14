@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ActionPlan } from '../models/action-plan.model';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ActionService {
-  private base = 'http://localhost:8080/api';
+  private base = `${environment.apiBaseUrl}/api`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -23,7 +24,7 @@ export class ActionService {
   updateActionStatus(id: number, status: string, currentAmount?: number): Observable<ActionPlan> {
     return this.http.put<ActionPlan>(`${this.base}/actions/${id}/status`, {
       status,
-      ...(currentAmount !== undefined ? { currentAmount: String(currentAmount) } : {}),
+      ...(currentAmount !== undefined ? { currentAmount } : {}),
     });
   }
 
