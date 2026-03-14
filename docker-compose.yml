@@ -2,6 +2,26 @@ version: '3.9'
 
 services:
 
+  # ─── PostgreSQL ───────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: fincoach-postgres
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-fincoach}
+      POSTGRES_USER:     ${POSTGRES_USER:-fincoach}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fincoach}
+    volumes:
+      - fincoach-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fincoach} -d ${POSTGRES_DB:-fincoach}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - fincoach-net
+
+  # ─── Backend (Spring Boot) ────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -9,11 +29,18 @@ services:
     container_name: fincoach-backend
     ports:
       - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      # Docker Compose reads .env automatically from the project root
-      # All variables below are injected from that file (or from the shell environment)
+      # Database
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB:-fincoach}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-fincoach}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-fincoach}
+      # App secrets
       - OPENAI_API_KEY=${OPENAI_API_KEY:-demo}
       - JWT_SECRET=${JWT_SECRET:-ZmluY29hY2gtcHJvLWp3dC1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudA==}
+      # OAuth2
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID:-}
@@ -22,10 +49,14 @@ services:
       - APPLE_TEAM_ID=${APPLE_TEAM_ID:-}
       - APPLE_KEY_ID=${APPLE_KEY_ID:-}
       - APPLE_PRIVATE_KEY=${APPLE_PRIVATE_KEY:-}
+      # Mail (optional — emails are logged to console if not configured)
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      # URLs
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4200}
       - SPRING_PROFILES_ACTIVE=default
-    volumes:
-      - fincoach-data:/app/data
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/dashboard/health-check", "||", "exit", "0"]
       interval: 30s
@@ -35,6 +66,7 @@ services:
     networks:
       - fincoach-net
 
+  # ─── Frontend (Angular + Nginx) ───────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -49,7 +81,7 @@ services:
       - fincoach-net
 
 volumes:
-  fincoach-data:
+  fincoach-pgdata:   # PostgreSQL data
 
 networks:
   fincoach-net:

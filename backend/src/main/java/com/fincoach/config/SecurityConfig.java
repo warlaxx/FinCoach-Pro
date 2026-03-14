@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -71,7 +73,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // OAuth2 flow endpoints — must be public (browser navigates here without a JWT)
                 .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
-                // Our auth endpoint — used by Angular to get current user info
+                // Auth endpoints — registration, login, email verification, and current user
                 .requestMatchers("/api/auth/**").permitAll()
                 // Everything else requires a valid JWT
                 .anyRequest().authenticated()
@@ -193,5 +195,14 @@ public class SecurityConfig {
         }
 
         return new InMemoryClientRegistrationRepository(registrations);
+    }
+
+    /**
+     * BCrypt password encoder used for hashing and verifying LOCAL account passwords.
+     * Strength 12 is a good balance between security and registration latency (~200-400ms).
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
     }
 }
