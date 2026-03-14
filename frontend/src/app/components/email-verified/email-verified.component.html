@@ -1,0 +1,51 @@
+<div class="verify-page">
+
+  <div class="verify-card">
+
+    <!-- Logo -->
+    <div class="verify-logo">
+      <span class="logo-icon">💰</span>
+      <div>
+        <div class="logo-name">FinCoach</div>
+        <div class="logo-sub">PRO</div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="verify-state" *ngIf="status === 'loading'">
+      <div class="spinner-ring"></div>
+      <p class="verify-text">Vérification en cours…</p>
+    </div>
+
+    <!-- Success -->
+    <div class="verify-state" *ngIf="status === 'success'">
+      <div class="status-icon success-icon">
+        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h2 class="verify-title">E-mail vérifié !</h2>
+      <p class="verify-text">{{ message }}</p>
+      <p class="verify-redirect">Redirection vers votre tableau de bord…</p>
+    </div>
+
+    <!-- Error -->
+    <div class="verify-state" *ngIf="status === 'error'">
+      <div class="status-icon error-icon">
+        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h2 class="verify-title">Lien invalide</h2>
+      <p class="verify-text">{{ message }}</p>
+      <a routerLink="/login" class="btn-back">Retour à la connexion</a>
+    </div>
+
+  </div>
+
+  <div class="verify-bg">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+  </div>
+
+</div>

@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     // Used as fallback when email is available but provider ID is not yet linked
     Optional<User> findByEmail(String email);
+
+    // Used to verify email address via the token sent in the verification email
+    Optional<User> findByEmailVerificationToken(String token);
 }

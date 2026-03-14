@@ -1,0 +1,182 @@
+<div class="auth-page">
+
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <span class="logo-icon">💰</span>
+      <div>
+        <div class="logo-name">FinCoach</div>
+        <div class="logo-sub">PRO</div>
+      </div>
+    </div>
+
+    <h1 class="auth-title">Créer un compte</h1>
+    <p class="auth-subtitle">Rejoignez FinCoach Pro et prenez le contrôle de vos finances.</p>
+
+    <!-- Success message -->
+    <div class="auth-success" *ngIf="successMessage">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      {{ successMessage }}
+    </div>
+
+    <!-- Error message -->
+    <div class="auth-error" *ngIf="errorMessage">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Registration form -->
+    <form class="auth-form" (ngSubmit)="onSubmit()" *ngIf="!successMessage" #f="ngForm" novalidate>
+
+      <!-- Name row -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">Prénom</label>
+          <input
+            id="firstName"
+            type="text"
+            name="firstName"
+            [(ngModel)]="form.firstName"
+            placeholder="Jean"
+            required
+            minlength="2"
+            autocomplete="given-name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Nom de famille</label>
+          <input
+            id="lastName"
+            type="text"
+            name="lastName"
+            [(ngModel)]="form.lastName"
+            placeholder="Dupont"
+            required
+            minlength="2"
+            autocomplete="family-name"
+          />
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Adresse e-mail</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          [(ngModel)]="form.email"
+          placeholder="jean.dupont@exemple.fr"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <!-- Age -->
+      <div class="form-group">
+        <label for="age">Âge</label>
+        <input
+          id="age"
+          type="number"
+          name="age"
+          [(ngModel)]="form.age"
+          placeholder="30"
+          required
+          min="16"
+          max="120"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <div class="input-with-toggle">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="form.password"
+            placeholder="Minimum 8 caractères"
+            required
+            minlength="8"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-pw" (click)="showPassword = !showPassword" tabindex="-1">
+            <svg *ngIf="!showPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg *ngIf="showPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirm password -->
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <div class="input-with-toggle">
+          <input
+            id="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            name="confirmPassword"
+            [(ngModel)]="form.confirmPassword"
+            placeholder="Répétez votre mot de passe"
+            required
+            autocomplete="new-password"
+            [class.input-error]="form.confirmPassword && !passwordsMatch"
+          />
+          <button type="button" class="toggle-pw" (click)="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+            <svg *ngIf="!showConfirmPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg *ngIf="showConfirmPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+        <span class="field-error" *ngIf="form.confirmPassword && !passwordsMatch">
+          Les mots de passe ne correspondent pas
+        </span>
+      </div>
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="loading || !passwordsMatch"
+      >
+        <svg *ngIf="loading" class="spin" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        {{ loading ? 'Inscription en cours…' : 'Créer mon compte' }}
+      </button>
+
+    </form>
+
+    <p class="auth-link">
+      Déjà inscrit ?
+      <a routerLink="/login">Se connecter</a>
+    </p>
+
+    <p class="auth-note">
+      En vous inscrivant, vous acceptez que vos données soient traitées uniquement
+      pour personnaliser votre coaching financier.
+    </p>
+
+  </div>
+
+  <!-- Decorative background -->
+  <div class="auth-bg">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+  </div>
+
+</div>
