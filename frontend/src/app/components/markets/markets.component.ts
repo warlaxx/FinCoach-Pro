@@ -23,12 +23,9 @@ interface StockItem {
   change: number;
   changePercent: number;
   history: number[];
-  basePrice: number;
   color: string;
   category: string;
   chart?: Chart;
-  apiLoaded: boolean;
-  loading: boolean;
 }
 
 @Component({
@@ -42,64 +39,64 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren('miniCanvas') miniCanvases!: QueryList<ElementRef<HTMLCanvasElement>>;
   @ViewChild('detailCanvas') detailCanvas?: ElementRef<HTMLCanvasElement>;
 
-  private updateInterval?: ReturnType<typeof setInterval>;
-  private refreshInterval?: ReturnType<typeof setInterval>;
+  private priceRefreshInterval?: ReturnType<typeof setInterval>;
   private readonly FAVORITES_KEY = 'fincoach_favorite_stocks';
 
-  searchQuery = '';
-  activeCategory = 'Tous';
-  showFavoritesOnly = false;
+  searchQuery         = '';
+  activeCategory      = 'Tous';
+  showFavoritesOnly   = false;
   favorites: Set<string> = new Set();
   selectedStock: StockItem | null = null;
   private detailChart?: Chart;
-  isLoading = true;
+  isLoadingQuotes     = true;
   lastUpdate: Date | null = null;
 
-  categories = ['Tous', 'Indices', 'Actions', 'Crypto', 'Matieres premieres', 'Devises'];
+  categories = ['Tous', 'Indices', 'Actions', 'Crypto', 'Matières premières', 'Devises'];
 
   allStocks: StockItem[] = [
     // Indices
-    { symbol: 'CAC 40', name: 'Bourse de Paris', price: 0, change: 0, changePercent: 0, history: [], basePrice: 8147, color: '#C9A84C', category: 'Indices', apiLoaded: false, loading: true },
-    { symbol: 'S&P 500', name: 'Standard & Poor\'s 500', price: 0, change: 0, changePercent: 0, history: [], basePrice: 5248, color: '#3B82F6', category: 'Indices', apiLoaded: false, loading: true },
-    { symbol: 'NASDAQ', name: 'NASDAQ Composite', price: 0, change: 0, changePercent: 0, history: [], basePrice: 16421, color: '#8B5CF6', category: 'Indices', apiLoaded: false, loading: true },
-    { symbol: 'DAX', name: 'Bourse de Francfort', price: 0, change: 0, changePercent: 0, history: [], basePrice: 18432, color: '#EAB308', category: 'Indices', apiLoaded: false, loading: true },
-    { symbol: 'FTSE 100', name: 'Bourse de Londres', price: 0, change: 0, changePercent: 0, history: [], basePrice: 7930, color: '#14B8A6', category: 'Indices', apiLoaded: false, loading: true },
-    { symbol: 'NIKKEI 225', name: 'Bourse de Tokyo', price: 0, change: 0, changePercent: 0, history: [], basePrice: 39245, color: '#EF4444', category: 'Indices', apiLoaded: false, loading: true },
+    { symbol: 'CAC 40',     name: 'Bourse de Paris',          price: 0, change: 0, changePercent: 0, history: [], color: '#C9A84C', category: 'Indices' },
+    { symbol: 'S&P 500',    name: "Standard & Poor's 500",    price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Indices' },
+    { symbol: 'NASDAQ',     name: 'NASDAQ Composite',         price: 0, change: 0, changePercent: 0, history: [], color: '#8B5CF6', category: 'Indices' },
+    { symbol: 'DAX',        name: 'Bourse de Francfort',      price: 0, change: 0, changePercent: 0, history: [], color: '#EAB308', category: 'Indices' },
+    { symbol: 'FTSE 100',   name: 'Bourse de Londres',        price: 0, change: 0, changePercent: 0, history: [], color: '#14B8A6', category: 'Indices' },
+    { symbol: 'NIKKEI 225', name: 'Bourse de Tokyo',          price: 0, change: 0, changePercent: 0, history: [], color: '#EF4444', category: 'Indices' },
 
-    // Actions
-    { symbol: 'AAPL', name: 'Apple Inc.', price: 0, change: 0, changePercent: 0, history: [], basePrice: 189, color: '#8B5CF6', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'MSFT', name: 'Microsoft Corp.', price: 0, change: 0, changePercent: 0, history: [], basePrice: 415, color: '#3B82F6', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 0, change: 0, changePercent: 0, history: [], basePrice: 155, color: '#22C55E', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 0, change: 0, changePercent: 0, history: [], basePrice: 182, color: '#F97316', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'TSLA', name: 'Tesla Inc.', price: 0, change: 0, changePercent: 0, history: [], basePrice: 248, color: '#EF4444', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 0, change: 0, changePercent: 0, history: [], basePrice: 875, color: '#22C55E', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'META', name: 'Meta Platforms', price: 0, change: 0, changePercent: 0, history: [], basePrice: 505, color: '#3B82F6', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'LVMH', name: 'LVMH Moet Hennessy', price: 0, change: 0, changePercent: 0, history: [], basePrice: 712, color: '#C9A84C', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'TTE', name: 'TotalEnergies SE', price: 0, change: 0, changePercent: 0, history: [], basePrice: 62, color: '#EF4444', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'AIR', name: 'Airbus SE', price: 0, change: 0, changePercent: 0, history: [], basePrice: 158, color: '#3B82F6', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'SAN', name: 'Sanofi SA', price: 0, change: 0, changePercent: 0, history: [], basePrice: 92, color: '#8B5CF6', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'BNP', name: 'BNP Paribas', price: 0, change: 0, changePercent: 0, history: [], basePrice: 61, color: '#14B8A6', category: 'Actions', apiLoaded: false, loading: true },
-    { symbol: 'OR', name: 'L\'Oreal SA', price: 0, change: 0, changePercent: 0, history: [], basePrice: 402, color: '#C9A84C', category: 'Actions', apiLoaded: false, loading: true },
+    // Actions US
+    { symbol: 'AAPL',  name: 'Apple Inc.',      price: 0, change: 0, changePercent: 0, history: [], color: '#8B5CF6', category: 'Actions' },
+    { symbol: 'MSFT',  name: 'Microsoft Corp.', price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Actions' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.',   price: 0, change: 0, changePercent: 0, history: [], color: '#22C55E', category: 'Actions' },
+    { symbol: 'AMZN',  name: 'Amazon.com Inc.', price: 0, change: 0, changePercent: 0, history: [], color: '#F97316', category: 'Actions' },
+    { symbol: 'TSLA',  name: 'Tesla Inc.',      price: 0, change: 0, changePercent: 0, history: [], color: '#EF4444', category: 'Actions' },
+    { symbol: 'NVDA',  name: 'NVIDIA Corp.',    price: 0, change: 0, changePercent: 0, history: [], color: '#22C55E', category: 'Actions' },
+    { symbol: 'META',  name: 'Meta Platforms',  price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Actions' },
+    // Actions FR
+    { symbol: 'LVMH', name: 'LVMH Moet Hennessy', price: 0, change: 0, changePercent: 0, history: [], color: '#C9A84C', category: 'Actions' },
+    { symbol: 'TTE',  name: 'TotalEnergies SE',   price: 0, change: 0, changePercent: 0, history: [], color: '#EF4444', category: 'Actions' },
+    { symbol: 'AIR',  name: 'Airbus SE',           price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Actions' },
+    { symbol: 'SAN',  name: 'Sanofi SA',           price: 0, change: 0, changePercent: 0, history: [], color: '#8B5CF6', category: 'Actions' },
+    { symbol: 'BNP',  name: 'BNP Paribas',         price: 0, change: 0, changePercent: 0, history: [], color: '#14B8A6', category: 'Actions' },
+    { symbol: 'OR',   name: "L'Oréal SA",           price: 0, change: 0, changePercent: 0, history: [], color: '#C9A84C', category: 'Actions' },
 
     // Crypto
-    { symbol: 'BTC/EUR', name: 'Bitcoin', price: 0, change: 0, changePercent: 0, history: [], basePrice: 61420, color: '#F97316', category: 'Crypto', apiLoaded: false, loading: true },
-    { symbol: 'ETH/EUR', name: 'Ethereum', price: 0, change: 0, changePercent: 0, history: [], basePrice: 3247, color: '#8B5CF6', category: 'Crypto', apiLoaded: false, loading: true },
-    { symbol: 'SOL/EUR', name: 'Solana', price: 0, change: 0, changePercent: 0, history: [], basePrice: 142, color: '#14B8A6', category: 'Crypto', apiLoaded: false, loading: true },
-    { symbol: 'ADA/EUR', name: 'Cardano', price: 0, change: 0, changePercent: 0, history: [], basePrice: 0.62, color: '#3B82F6', category: 'Crypto', apiLoaded: false, loading: true },
-    { symbol: 'XRP/EUR', name: 'Ripple', price: 0, change: 0, changePercent: 0, history: [], basePrice: 0.58, color: '#22C55E', category: 'Crypto', apiLoaded: false, loading: true },
+    { symbol: 'BTC/EUR',  name: 'Bitcoin',   price: 0, change: 0, changePercent: 0, history: [], color: '#F97316', category: 'Crypto' },
+    { symbol: 'ETH/EUR',  name: 'Ethereum',  price: 0, change: 0, changePercent: 0, history: [], color: '#8B5CF6', category: 'Crypto' },
+    { symbol: 'SOL/EUR',  name: 'Solana',    price: 0, change: 0, changePercent: 0, history: [], color: '#14B8A6', category: 'Crypto' },
+    { symbol: 'ADA/EUR',  name: 'Cardano',   price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Crypto' },
+    { symbol: 'XRP/EUR',  name: 'Ripple',    price: 0, change: 0, changePercent: 0, history: [], color: '#22C55E', category: 'Crypto' },
 
-    // Matieres premieres
-    { symbol: 'XAU', name: 'Or (Gold)', price: 0, change: 0, changePercent: 0, history: [], basePrice: 2342, color: '#C9A84C', category: 'Matieres premieres', apiLoaded: false, loading: true },
-    { symbol: 'XAG', name: 'Argent (Silver)', price: 0, change: 0, changePercent: 0, history: [], basePrice: 27, color: '#8892A4', category: 'Matieres premieres', apiLoaded: false, loading: true },
-    { symbol: 'WTI', name: 'Petrole brut WTI', price: 0, change: 0, changePercent: 0, history: [], basePrice: 78, color: '#F97316', category: 'Matieres premieres', apiLoaded: false, loading: true },
-    { symbol: 'BRENT', name: 'Petrole Brent', price: 0, change: 0, changePercent: 0, history: [], basePrice: 82, color: '#EAB308', category: 'Matieres premieres', apiLoaded: false, loading: true },
-    { symbol: 'GAS', name: 'Gaz naturel', price: 0, change: 0, changePercent: 0, history: [], basePrice: 2.15, color: '#3B82F6', category: 'Matieres premieres', apiLoaded: false, loading: true },
+    // Matières premières
+    { symbol: 'XAU',   name: 'Or (Gold)',        price: 0, change: 0, changePercent: 0, history: [], color: '#C9A84C', category: 'Matières premières' },
+    { symbol: 'XAG',   name: 'Argent (Silver)',  price: 0, change: 0, changePercent: 0, history: [], color: '#8892A4', category: 'Matières premières' },
+    { symbol: 'WTI',   name: 'Pétrole brut WTI', price: 0, change: 0, changePercent: 0, history: [], color: '#F97316', category: 'Matières premières' },
+    { symbol: 'BRENT', name: 'Pétrole Brent',    price: 0, change: 0, changePercent: 0, history: [], color: '#EAB308', category: 'Matières premières' },
+    { symbol: 'GAS',   name: 'Gaz naturel',      price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Matières premières' },
 
     // Devises
-    { symbol: 'EUR/USD', name: 'Euro / Dollar US', price: 0, change: 0, changePercent: 0, history: [], basePrice: 1.0842, color: '#3B82F6', category: 'Devises', apiLoaded: false, loading: true },
-    { symbol: 'GBP/EUR', name: 'Livre sterling / Euro', price: 0, change: 0, changePercent: 0, history: [], basePrice: 1.1645, color: '#22C55E', category: 'Devises', apiLoaded: false, loading: true },
-    { symbol: 'USD/JPY', name: 'Dollar US / Yen', price: 0, change: 0, changePercent: 0, history: [], basePrice: 151, color: '#EF4444', category: 'Devises', apiLoaded: false, loading: true },
-    { symbol: 'EUR/CHF', name: 'Euro / Franc suisse', price: 0, change: 0, changePercent: 0, history: [], basePrice: 0.9632, color: '#14B8A6', category: 'Devises', apiLoaded: false, loading: true },
+    { symbol: 'EUR/USD', name: 'Euro / Dollar US',          price: 0, change: 0, changePercent: 0, history: [], color: '#3B82F6', category: 'Devises' },
+    { symbol: 'GBP/EUR', name: 'Livre sterling / Euro',     price: 0, change: 0, changePercent: 0, history: [], color: '#22C55E', category: 'Devises' },
+    { symbol: 'USD/JPY', name: 'Dollar US / Yen',           price: 0, change: 0, changePercent: 0, history: [], color: '#EF4444', category: 'Devises' },
+    { symbol: 'EUR/CHF', name: 'Euro / Franc suisse',       price: 0, change: 0, changePercent: 0, history: [], color: '#14B8A6', category: 'Devises' },
   ];
 
   filteredStocks: StockItem[] = [];
@@ -109,108 +106,111 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
     private twelveData: TwelveDataService,
   ) {}
 
+  // ─────────────────────────────────────────────
+  // Lifecycle
+  // ─────────────────────────────────────────────
+
   ngOnInit(): void {
     this.loadFavorites();
-    // Initialize with fallback data while API loads
-    this.initFallbackHistories();
     this.applyFilters();
-    // Fetch real data from TwelveData
-    this.loadRealData();
-    // Refresh prices every 60 seconds
-    this.refreshInterval = setInterval(() => this.refreshPrices(), 60_000);
+    // 1. Charger les quotes en batch
+    this.loadAllQuotes();
+    // 2. Charger les time series pour les graphiques
+    this.loadAllTimeSeries();
+    // 3. Rafraîchir les prix toutes les 60s
+    this.priceRefreshInterval = setInterval(() => this.refreshVisiblePrices(), 60_000);
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initMiniCharts();
-      this.startSimulatedUpdates();
-    }, 150);
-  }
+  ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
-    if (this.updateInterval) clearInterval(this.updateInterval);
-    if (this.refreshInterval) clearInterval(this.refreshInterval);
+    if (this.priceRefreshInterval) clearInterval(this.priceRefreshInterval);
     this.allStocks.forEach(s => s.chart?.destroy());
     this.detailChart?.destroy();
   }
 
-  // ========== API DATA LOADING ==========
+  // ─────────────────────────────────────────────
+  // Chargement initial des données API
+  // ─────────────────────────────────────────────
 
-  private loadRealData(): void {
-    this.isLoading = true;
+  /**
+   * Charge les quotes pour tous les instruments en batch.
+   */
+  private loadAllQuotes(): void {
     const symbols = this.allStocks.map(s => s.symbol);
+    this.isLoadingQuotes = true;
 
     this.twelveData.getQuotes(symbols).subscribe({
       next: (quotes) => {
         quotes.forEach((quote, symbol) => {
           const stock = this.allStocks.find(s => s.symbol === symbol);
           if (stock && quote.price > 0) {
-            stock.price = quote.price;
-            stock.change = quote.change;
+            stock.price         = quote.price;
+            stock.change        = quote.change;
             stock.changePercent = quote.changePercent;
-            stock.basePrice = quote.price;
-            stock.apiLoaded = true;
-            stock.loading = false;
-            // Re-generate history around real price
-            stock.history = this.generateHistoryAround(quote.price, 50, quote.changePercent);
           }
         });
-        this.isLoading = false;
+        this.isLoadingQuotes = false;
         this.lastUpdate = new Date();
         this.applyFilters();
-        setTimeout(() => this.initMiniCharts(), 100);
       },
       error: () => {
-        this.isLoading = false;
-        // Keep fallback data
-        this.allStocks.forEach(s => s.loading = false);
+        this.isLoadingQuotes = false;
       },
     });
   }
 
-  private refreshPrices(): void {
-    // Refresh only visible stocks to save API credits
-    const symbols = this.filteredStocks
-      .slice(0, 8) // Max 8 at a time
-      .map(s => s.symbol);
+  /**
+   * Charge les séries temporelles (30 jours) pour construire les mini-graphiques.
+   * Échelonné à raison de 1 appel toutes les 8s pour respecter la limite 8 req/min.
+   */
+  private loadAllTimeSeries(): void {
+    let delay = 0;
+    this.allStocks.forEach(stock => {
+      setTimeout(() => {
+        this.twelveData.getTimeSeries(stock.symbol, '1day', 30).subscribe(series => {
+          if (series.length > 0) {
+            stock.history = series.map(p => p.close);
+            // Restituer le graphique si la carte est visible
+            this.redrawMiniChart(stock);
+          }
+        });
+      }, delay);
+      delay += 8_000;
+    });
+  }
 
-    if (symbols.length === 0) return;
+  /**
+   * Refresh prix léger — seulement les 8 premiers instruments visibles.
+   */
+  private refreshVisiblePrices(): void {
+    const visible = this.filteredStocks.slice(0, 8).map(s => s.symbol);
+    if (!visible.length) return;
 
-    this.twelveData.getPrices(symbols).subscribe(prices => {
-      prices.forEach((price, symbol) => {
+    this.twelveData.getPrices(visible).subscribe(prices => {
+      prices.forEach((newPrice, symbol) => {
         const stock = this.allStocks.find(s => s.symbol === symbol);
-        if (stock && price > 0) {
-          const oldPrice = stock.price;
-          stock.price = price;
-          stock.change = +(price - stock.basePrice).toFixed(4);
-          stock.changePercent = +((stock.change / stock.basePrice) * 100).toFixed(2);
-
-          // Add new point to history
-          stock.history.push(price);
-          if (stock.history.length > 50) stock.history.shift();
-
-          stock.apiLoaded = true;
+        if (stock && newPrice > 0) {
+          const old = stock.price;
+          stock.price = newPrice;
+          if (old > 0) {
+            stock.change        = +(newPrice - old).toFixed(4);
+            stock.changePercent = +((stock.change / old) * 100).toFixed(2);
+          }
+          if (stock.history.length > 0) {
+            stock.history.push(newPrice);
+            stock.history.shift();
+            this.redrawMiniChart(stock);
+          }
         }
       });
       this.lastUpdate = new Date();
     });
   }
 
-  private generateHistoryAround(price: number, points: number, trendPercent: number): number[] {
-    const history: number[] = [];
-    const startPrice = price * (1 - trendPercent / 100);
-    history.push(startPrice);
-    for (let i = 1; i < points; i++) {
-      const last = history[i - 1];
-      const trend = (price - startPrice) / points;
-      const noise = (Math.random() - 0.5) * (price * 0.005);
-      history.push(+(last + trend + noise).toFixed(4));
-    }
-    history[points - 1] = price;
-    return history;
-  }
-
-  // ========== FAVORITES ==========
+  // ─────────────────────────────────────────────
+  // Favoris
+  // ─────────────────────────────────────────────
 
   private loadFavorites(): void {
     try {
@@ -225,11 +225,9 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFavorite(event: Event, stock: StockItem): void {
     event.stopPropagation();
-    if (this.favorites.has(stock.symbol)) {
-      this.favorites.delete(stock.symbol);
-    } else {
-      this.favorites.add(stock.symbol);
-    }
+    this.favorites.has(stock.symbol)
+      ? this.favorites.delete(stock.symbol)
+      : this.favorites.add(stock.symbol);
     this.saveFavorites();
     if (this.showFavoritesOnly) this.applyFilters();
   }
@@ -243,11 +241,11 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  // ========== SEARCH & FILTERS ==========
+  // ─────────────────────────────────────────────
+  // Recherche & filtres
+  // ─────────────────────────────────────────────
 
-  onSearchChange(): void {
-    this.applyFilters();
-  }
+  onSearchChange(): void { this.applyFilters(); }
 
   setCategory(cat: string): void {
     this.activeCategory = cat;
@@ -260,11 +258,9 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.activeCategory !== 'Tous') {
       result = result.filter(s => s.category === this.activeCategory);
     }
-
     if (this.showFavoritesOnly) {
       result = result.filter(s => this.favorites.has(s.symbol));
     }
-
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
       result = result.filter(s =>
@@ -273,18 +269,20 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.filteredStocks = result;
-    setTimeout(() => this.initMiniCharts(), 100);
+    setTimeout(() => this.initAllMiniCharts(), 100);
   }
 
-  // ========== DETAIL VIEW ==========
+  // ─────────────────────────────────────────────
+  // Vue détail
+  // ─────────────────────────────────────────────
 
   selectStock(stock: StockItem): void {
     this.selectedStock = stock;
-    // Fetch time series for detailed chart
-    this.twelveData.getTimeSeries(stock.symbol, '1day', 50).subscribe(series => {
+    // Charger time series 1min pour affichage détaillé
+    this.twelveData.getTimeSeries(stock.symbol, '1h', 48).subscribe(series => {
       if (series.length > 0) {
         stock.history = series.map(p => p.close);
-        stock.price = series[series.length - 1].close;
+        if (stock.price === 0) stock.price = series[series.length - 1].close;
       }
       setTimeout(() => this.initDetailChart(), 100);
     });
@@ -296,128 +294,81 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedStock = null;
   }
 
-  // ========== FALLBACK DATA ==========
+  // ─────────────────────────────────────────────
+  // Graphiques Chart.js
+  // ─────────────────────────────────────────────
 
-  private initFallbackHistories(): void {
-    this.allStocks.forEach(stock => {
-      stock.history = this.generateHistory(stock.basePrice, 50);
-      stock.price = stock.history[stock.history.length - 1];
-      const first = stock.history[0];
-      stock.change = +(stock.price - first).toFixed(2);
-      stock.changePercent = +((stock.change / first) * 100).toFixed(2);
-    });
-  }
-
-  private generateHistory(base: number, points: number): number[] {
-    const history: number[] = [base];
-    for (let i = 1; i < points; i++) {
-      const last = history[i - 1];
-      const drift = (Math.random() - 0.48) * (last * 0.008);
-      history.push(+(last + drift).toFixed(4));
-    }
-    return history;
-  }
-
-  private startSimulatedUpdates(): void {
-    // Light simulated updates between API refreshes for visual smoothness
-    this.updateInterval = setInterval(() => {
-      this.allStocks.forEach(stock => {
-        const last = stock.history[stock.history.length - 1];
-        const drift = (Math.random() - 0.48) * (last * 0.002);
-        const newPoint = +(last + drift).toFixed(4);
-        stock.history.push(newPoint);
-        stock.history.shift();
-
-        stock.price = newPoint;
-        const first = stock.history[0];
-        stock.change = +(newPoint - first).toFixed(2);
-        stock.changePercent = +((stock.change / first) * 100).toFixed(2);
-
-        if (stock.chart) {
-          const isPositive = stock.changePercent >= 0;
-          const lineColor = isPositive ? stock.color : '#EF4444';
-          stock.chart.data.labels = stock.history.map((_, i) => i.toString());
-          stock.chart.data.datasets[0].data = stock.history;
-          stock.chart.data.datasets[0].borderColor = lineColor;
-          stock.chart.update('none');
-        }
-      });
-
-      // Update detail chart
-      if (this.selectedStock && this.detailChart) {
-        const stock = this.selectedStock;
-        const isPositive = stock.changePercent >= 0;
-        const lineColor = isPositive ? stock.color : '#EF4444';
-        this.detailChart.data.labels = stock.history.map((_, i) => i.toString());
-        this.detailChart.data.datasets[0].data = stock.history;
-        this.detailChart.data.datasets[0].borderColor = lineColor;
-        this.detailChart.update('none');
-      }
-    }, 5000);
-  }
-
-  // ========== CHARTS ==========
-
-  private initMiniCharts(): void {
+  private initAllMiniCharts(): void {
     this.filteredStocks.forEach(s => {
       s.chart?.destroy();
       s.chart = undefined;
     });
-
     if (!this.miniCanvases) return;
 
     this.miniCanvases.forEach((canvasRef, index) => {
       const stock = this.filteredStocks[index];
-      if (!stock || !canvasRef?.nativeElement) return;
+      if (!stock || !canvasRef?.nativeElement || stock.history.length === 0) return;
+      this.buildMiniChart(stock, canvasRef.nativeElement);
+    });
+  }
 
-      const canvas = canvasRef.nativeElement;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+  private redrawMiniChart(stock: StockItem): void {
+    const index = this.filteredStocks.indexOf(stock);
+    if (index === -1 || !this.miniCanvases) return;
+    const canvasRef = this.miniCanvases.get(index);
+    if (!canvasRef?.nativeElement) return;
 
-      const isPositive = stock.changePercent >= 0;
-      const lineColor = isPositive ? stock.color : '#EF4444';
+    stock.chart?.destroy();
+    stock.chart = undefined;
+    this.buildMiniChart(stock, canvasRef.nativeElement);
+  }
 
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, lineColor + '33');
-      gradient.addColorStop(1, lineColor + '00');
+  private buildMiniChart(stock: StockItem, canvas: HTMLCanvasElement): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx || stock.history.length === 0) return;
 
-      stock.chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: stock.history.map((_, i) => i.toString()),
-          datasets: [{
-            data: stock.history,
-            borderColor: lineColor,
-            borderWidth: 2,
-            fill: true,
-            backgroundColor: gradient,
-            pointRadius: 0,
-            tension: 0.4,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 0 },
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          scales: { x: { display: false }, y: { display: false } },
-        },
-      });
+    const isPositive = stock.changePercent >= 0;
+    const lineColor  = isPositive ? stock.color : '#EF4444';
+    const gradient   = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, lineColor + '33');
+    gradient.addColorStop(1, lineColor + '00');
+
+    stock.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: stock.history.map((_, i) => i.toString()),
+        datasets: [{
+          data: stock.history,
+          borderColor: lineColor,
+          borderWidth: 2,
+          fill: true,
+          backgroundColor: gradient,
+          pointRadius: 0,
+          tension: 0.4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false } },
+      },
     });
   }
 
   private initDetailChart(): void {
     this.detailChart?.destroy();
     if (!this.selectedStock || !this.detailCanvas?.nativeElement) return;
+    if (this.selectedStock.history.length === 0) return;
 
-    const stock = this.selectedStock;
-    const ctx = this.detailCanvas.nativeElement.getContext('2d');
+    const stock  = this.selectedStock;
+    const ctx    = this.detailCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
     const isPositive = stock.changePercent >= 0;
-    const lineColor = isPositive ? stock.color : '#EF4444';
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, this.detailCanvas.nativeElement.height);
+    const lineColor  = isPositive ? stock.color : '#EF4444';
+    const gradient   = ctx.createLinearGradient(0, 0, 0, this.detailCanvas.nativeElement.height);
     gradient.addColorStop(0, lineColor + '33');
     gradient.addColorStop(1, lineColor + '00');
 
@@ -452,7 +403,7 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
             borderWidth: 1,
             padding: 10,
             callbacks: {
-              label: (ctx) => `${this.formatPrice(ctx.raw as number)}`,
+              label: (c) => `${this.formatPrice(c.raw as number)}`,
             },
           },
         },
@@ -469,29 +420,25 @@ export class MarketsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // ========== UTILS ==========
+  // ─────────────────────────────────────────────
+  // Utilitaires
+  // ─────────────────────────────────────────────
 
   formatPrice(price: number): string {
+    if (price <= 0)     return '—';
     if (price >= 10000) return price.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    if (price >= 100) return price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (price >= 1) return price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (price >= 100)   return price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (price >= 1)     return price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return price.toLocaleString('fr-FR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
   }
 
-  getMax(stock: StockItem): number {
-    return Math.max(...stock.history);
-  }
-
-  getMin(stock: StockItem): number {
-    return Math.min(...stock.history);
-  }
+  getMax(stock: StockItem): number { return stock.history.length ? Math.max(...stock.history) : 0; }
+  getMin(stock: StockItem): number { return stock.history.length ? Math.min(...stock.history) : 0; }
 
   getLastUpdateTime(): string {
     if (!this.lastUpdate) return '';
     return this.lastUpdate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
-  goHome(): void {
-    this.router.navigate(['/']);
-  }
+  goHome(): void { this.router.navigate(['/']); }
 }
