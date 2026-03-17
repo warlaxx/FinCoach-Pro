@@ -1,4 +1,4 @@
-name: Claude BugBot
+name: Claude Code Review
 
 on:
   pull_request:
@@ -12,6 +12,8 @@ on:
       - "backend/**/*.yml"
       - "backend/**/*.yaml"
       - ".github/**/*.yml"
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -19,8 +21,8 @@ permissions:
   issues: write
 
 jobs:
-  claude-bugbot:
-    name: Claude — BugBot Review
+  claude-review:
+    name: Claude — Code Review
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
@@ -29,8 +31,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Claude BugBot
-        uses: rekpero/claude-bugbot-github-action@v1.0.9
+      - name: Claude Code Action Official
+        uses: anthropics/claude-code-action@v1
         with:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
