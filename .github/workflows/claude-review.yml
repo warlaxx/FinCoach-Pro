@@ -22,8 +22,8 @@ jobs:
   claude-review:
     name: Claude — Code Review
     runs-on: ubuntu-latest
-    # Skip draft PRs
-    if: github.event.pull_request.draft == false
+    # Skip draft PRs and runs without API key configured
+    if: github.event.pull_request.draft == false && secrets.ANTHROPIC_API_KEY != ''
 
     steps:
       - uses: actions/checkout@v4
