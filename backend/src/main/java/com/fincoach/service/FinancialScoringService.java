@@ -30,7 +30,7 @@ public class FinancialScoringService {
                 p.getUserId(), totalIncome, totalFixed, totalVariable, total, surplus);
 
         double savingsRate = totalIncome > 0 ? (surplus / totalIncome) * 100 : 0;
-        double debtRatio = totalIncome > 0 ? (safe(p.getLoans()) / totalIncome) * 100 : 0;
+        double debtRatio = totalIncome > 0 ? (orZero(p.getLoans()) / totalIncome) * 100 : 0;
 
         log.debug("userId={} - savingsRate={}%, debtRatio={}%", p.getUserId(), savingsRate, debtRatio);
 

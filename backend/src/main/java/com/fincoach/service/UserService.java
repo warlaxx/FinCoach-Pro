@@ -3,6 +3,7 @@ package com.fincoach.service;
 import com.fincoach.dto.AuthResponse;
 import com.fincoach.dto.LoginRequest;
 import com.fincoach.dto.RegisterRequest;
+import com.fincoach.dto.UpdateProfileRequest;
 import com.fincoach.model.Role;
 import com.fincoach.model.User;
 import com.fincoach.repository.UserRepository;
@@ -16,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
- * Handles email/password account registration, login, and email verification.
+ * Handles email/password account registration, login, email verification,
+ * profile updates, and resend verification.
  */
 @Service
 public class UserService {
@@ -28,21 +30,9 @@ public class UserService {
     @Autowired private JwtService jwtService;
     @Autowired private EmailService emailService;
 
-    /**
-     * Registers a new LOCAL user.
-     *
-     * Steps:
-     * 1. Validate that the email is not already taken
-     * 2. Hash the password
-     * 3. Generate a verification token
-     * 4. Persist the user
-     * 5. Send the verification email
-     *
-     * @throws IllegalArgumentException if the email is already registered
-     */
     @Transactional
     public AuthResponse register(RegisterRequest req) {
-        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+        if (userRepo.findByEmail(req.getEmail().toLowerCase().trim()).isPresent()) {
             throw new IllegalArgumentException("Cette adresse e-mail est déjà utilisée.");
         }
 
@@ -56,7 +46,6 @@ public class UserService {
         user.setRole(Role.USER);
         user.setEmailVerified(false);
         user.setEmailVerificationToken(UUID.randomUUID().toString());
-        // Display name for OAuth2SuccessHandler / JWT claims
         user.setName(req.getFirstName() + " " + req.getLastName());
 
         userRepo.save(user);
@@ -70,12 +59,6 @@ public class UserService {
         return response;
     }
 
-    /**
-     * Authenticates a LOCAL user with email + password.
-     *
-     * @throws IllegalArgumentException if credentials are wrong or account not found
-     * @throws IllegalStateException    if the email has not been verified yet
-     */
     public AuthResponse login(LoginRequest req) {
         User user = userRepo.findByEmail(req.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new IllegalArgumentException("E-mail ou mot de passe incorrect."));
@@ -97,23 +80,9 @@ public class UserService {
         String token = jwtService.generateToken(user);
         log.info("LOCAL login success for userId={}", user.getId());
 
-        AuthResponse response = new AuthResponse();
-        response.setToken(token);
-        response.setUserId(user.getId());
-        response.setEmail(user.getEmail());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setRole(user.getRole().name());
-        response.setEmailVerified(true);
-        return response;
+        return buildAuthResponse(user, token);
     }
 
-    /**
-     * Verifies a user's email address using the token sent by email.
-     *
-     * @param token the UUID token from the verification link
-     * @throws IllegalArgumentException if the token is unknown or already used
-     */
     @Transactional
     public AuthResponse verifyEmail(String token) {
         User user = userRepo.findByEmailVerificationToken(token)
@@ -124,23 +93,78 @@ public class UserService {
         }
 
         user.setEmailVerified(true);
-        user.setEmailVerificationToken(null); // invalidate the token after use
+        user.setEmailVerificationToken(null);
         userRepo.save(user);
 
         log.info("Email verified for userId={}", user.getId());
 
-        // Issue a JWT so the user is logged in immediately after clicking the link
         String jwt = jwtService.generateToken(user);
 
+        AuthResponse response = buildAuthResponse(user, jwt);
+        response.setMessage("E-mail vérifié avec succès. Bienvenue sur FinCoach Pro !");
+        return response;
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(String userId, UpdateProfileRequest req) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable."));
+
+        // Update basic info
+        user.setFirstName(req.getFirstName().trim());
+        user.setLastName(req.getLastName().trim());
+        user.setAge(req.getAge());
+        user.setName(req.getFirstName().trim() + " " + req.getLastName().trim());
+
+        // Password change (optional)
+        if (req.getNewPassword() != null && !req.getNewPassword().isBlank()) {
+            if (req.getCurrentPassword() == null || req.getCurrentPassword().isBlank()) {
+                throw new IllegalArgumentException("Le mot de passe actuel est requis pour changer de mot de passe.");
+            }
+            if (user.getPasswordHash() == null) {
+                throw new IllegalArgumentException("Ce compte utilise la connexion sociale. Le mot de passe ne peut pas être modifié ici.");
+            }
+            if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPasswordHash())) {
+                throw new IllegalArgumentException("Le mot de passe actuel est incorrect.");
+            }
+            user.setPasswordHash(passwordEncoder.encode(req.getNewPassword()));
+            log.info("Password changed for userId={}", userId);
+        }
+
+        userRepo.save(user);
+        log.info("Profile updated for userId={}", userId);
+
+        // Generate a fresh JWT with updated claims
+        String token = jwtService.generateToken(user);
+        return buildAuthResponse(user, token);
+    }
+
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        User user = userRepo.findByEmail(email.toLowerCase().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Aucun compte trouvé avec cette adresse e-mail."));
+
+        if (user.isEmailVerified()) {
+            throw new IllegalArgumentException("Ce compte est déjà activé. Vous pouvez vous connecter.");
+        }
+
+        // Generate new token
+        user.setEmailVerificationToken(UUID.randomUUID().toString());
+        userRepo.save(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), user.getEmailVerificationToken());
+        log.info("Verification email resent to {}", email);
+    }
+
+    private AuthResponse buildAuthResponse(User user, String token) {
         AuthResponse response = new AuthResponse();
-        response.setToken(jwt);
+        response.setToken(token);
         response.setUserId(user.getId());
         response.setEmail(user.getEmail());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setRole(user.getRole().name());
-        response.setEmailVerified(true);
-        response.setMessage("E-mail vérifié avec succès. Bienvenue sur FinCoach Pro !");
+        response.setEmailVerified(user.isEmailVerified());
         return response;
     }
 }

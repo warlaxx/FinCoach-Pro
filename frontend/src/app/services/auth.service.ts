@@ -11,6 +11,16 @@ export interface AuthUser {
   role: string;
   firstName: string;
   lastName: string;
+  age?: number;
+  emailVerified?: boolean;
+}
+
+export interface UpdateProfilePayload {
+  firstName: string;
+  lastName: string;
+  age: number;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 export interface RegisterPayload {
@@ -103,6 +113,23 @@ export class AuthService {
     return this.http.get<AuthResponse>(`${this.API}/api/auth/verify-email`, {
       params: { token }
     });
+  }
+
+  /** Resends the verification email. */
+  resendVerification(email: string): Observable<any> {
+    return this.http.post(`${this.API}/api/auth/resend-verification`, { email });
+  }
+
+  /** Updates the current user's profile. */
+  updateProfile(payload: UpdateProfilePayload): Observable<AuthResponse> {
+    return this.http.put<AuthResponse>(`${this.API}/api/auth/profile`, payload).pipe(
+      tap(res => {
+        if (res.token) {
+          localStorage.setItem(this.TOKEN_KEY, res.token);
+          this.loadCurrentUser();
+        }
+      })
+    );
   }
 
   logout(): void {

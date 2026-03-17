@@ -65,6 +65,8 @@ public class JwtService {
                 .claim("role", user.getRole() != null ? user.getRole().name() : "USER")
                 .claim("firstName", user.getFirstName())
                 .claim("lastName", user.getLastName())
+                .claim("age", user.getAge())
+                .claim("emailVerified", user.isEmailVerified())
                 .issuedAt(now)
                 .expiration(expiresAt)
                 .signWith(getSigningKey())

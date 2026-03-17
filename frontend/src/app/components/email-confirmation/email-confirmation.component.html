@@ -1,0 +1,80 @@
+<div class="confirm-page">
+
+  <div class="confirm-card">
+
+    <!-- Logo -->
+    <div class="confirm-logo">
+      <span class="logo-icon">💰</span>
+      <div>
+        <div class="logo-name">FinCoach</div>
+        <div class="logo-sub">PRO</div>
+      </div>
+    </div>
+
+    <!-- Mail icon -->
+    <div class="mail-icon-wrapper">
+      <div class="mail-icon-bg">
+        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+        </svg>
+      </div>
+      <div class="mail-pulse"></div>
+    </div>
+
+    <h1 class="confirm-title">Vérifiez votre e-mail</h1>
+
+    <p class="confirm-text">
+      Nous avons envoyé un lien de vérification à
+    </p>
+    <p class="confirm-email">{{ email }}</p>
+    <p class="confirm-text">
+      Cliquez sur le lien dans l'e-mail pour activer votre compte.
+      Pensez à vérifier vos spams si vous ne trouvez pas le message.
+    </p>
+
+    <!-- Resend success -->
+    <div class="confirm-success" *ngIf="resendSuccess">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      E-mail renvoyé avec succès !
+    </div>
+
+    <!-- Resend error -->
+    <div class="confirm-error" *ngIf="resendError">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ resendError }}
+    </div>
+
+    <!-- Resend button -->
+    <button
+      class="btn-resend"
+      (click)="resendEmail()"
+      [disabled]="resending || countdown > 0"
+    >
+      <svg *ngIf="resending" class="spin" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      <ng-container *ngIf="countdown > 0; else resendLabel">
+        Renvoyer dans {{ countdown }}s
+      </ng-container>
+      <ng-template #resendLabel>
+        {{ resending ? 'Envoi en cours…' : 'Renvoyer l\'e-mail' }}
+      </ng-template>
+    </button>
+
+    <p class="confirm-link">
+      <a routerLink="/login">Retour à la connexion</a>
+    </p>
+
+  </div>
+
+  <!-- Decorative background -->
+  <div class="confirm-bg">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+  </div>
+
+</div>

@@ -1,0 +1,248 @@
+<div class="settings-page">
+
+  <div class="settings-header">
+    <h1 class="settings-title">Paramètres du compte</h1>
+    <p class="settings-subtitle">Gérez vos informations personnelles et votre sécurité.</p>
+  </div>
+
+  <div class="settings-grid">
+
+    <!-- Profile section -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Informations personnelles</h2>
+          <p class="card-desc">Modifiez votre nom et vos informations de base.</p>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div class="msg-success" *ngIf="successMessage">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        {{ successMessage }}
+      </div>
+
+      <!-- Error -->
+      <div class="msg-error" *ngIf="errorMessage">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ errorMessage }}
+      </div>
+
+      <form class="settings-form" (ngSubmit)="onSaveProfile()" novalidate>
+        <!-- Email (read-only) -->
+        <div class="form-group">
+          <label>Adresse e-mail</label>
+          <input type="email" [value]="user?.email" disabled class="input-disabled" />
+          <span class="field-hint">L'adresse e-mail ne peut pas être modifiée.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Prénom</label>
+            <input
+              id="firstName"
+              type="text"
+              name="firstName"
+              [(ngModel)]="form.firstName"
+              required
+              minlength="2"
+              autocomplete="given-name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Nom de famille</label>
+            <input
+              id="lastName"
+              type="text"
+              name="lastName"
+              [(ngModel)]="form.lastName"
+              required
+              minlength="2"
+              autocomplete="family-name"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="age">Âge</label>
+          <input
+            id="age"
+            type="number"
+            name="age"
+            [(ngModel)]="form.age"
+            required
+            min="16"
+            max="120"
+          />
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          <svg *ngIf="loading" class="spin" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          {{ loading ? 'Enregistrement…' : 'Enregistrer les modifications' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Password section -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Changer le mot de passe</h2>
+          <p class="card-desc">Mettez à jour votre mot de passe pour sécuriser votre compte.</p>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div class="msg-success" *ngIf="passwordSuccess">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        {{ passwordSuccess }}
+      </div>
+
+      <!-- Error -->
+      <div class="msg-error" *ngIf="passwordError">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ passwordError }}
+      </div>
+
+      <form class="settings-form" (ngSubmit)="onChangePassword()" novalidate>
+        <div class="form-group">
+          <label for="currentPassword">Mot de passe actuel</label>
+          <div class="input-with-toggle">
+            <input
+              id="currentPassword"
+              [type]="showCurrentPassword ? 'text' : 'password'"
+              name="currentPassword"
+              [(ngModel)]="passwordForm.currentPassword"
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="toggle-pw" (click)="showCurrentPassword = !showCurrentPassword" tabindex="-1">
+              <svg *ngIf="!showCurrentPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showCurrentPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">Nouveau mot de passe</label>
+          <div class="input-with-toggle">
+            <input
+              id="newPassword"
+              [type]="showNewPassword ? 'text' : 'password'"
+              name="newPassword"
+              [(ngModel)]="passwordForm.newPassword"
+              required
+              minlength="8"
+              placeholder="Minimum 8 caractères"
+              autocomplete="new-password"
+            />
+            <button type="button" class="toggle-pw" (click)="showNewPassword = !showNewPassword" tabindex="-1">
+              <svg *ngIf="!showNewPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showNewPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmNewPassword">Confirmer le nouveau mot de passe</label>
+          <div class="input-with-toggle">
+            <input
+              id="confirmNewPassword"
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              name="confirmPassword"
+              [(ngModel)]="passwordForm.confirmPassword"
+              required
+              autocomplete="new-password"
+              [class.input-error]="passwordForm.confirmPassword && !passwordsMatch"
+            />
+            <button type="button" class="toggle-pw" (click)="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+              <svg *ngIf="!showConfirmPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showConfirmPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="passwordForm.confirmPassword && !passwordsMatch">
+            Les mots de passe ne correspondent pas
+          </span>
+        </div>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="passwordLoading || !passwordsMatch || !passwordForm.currentPassword || !passwordForm.newPassword"
+        >
+          <svg *ngIf="passwordLoading" class="spin" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          {{ passwordLoading ? 'Modification…' : 'Changer le mot de passe' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Account info card -->
+    <div class="settings-card info-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Informations du compte</h2>
+          <p class="card-desc">Détails de votre compte FinCoach Pro.</p>
+        </div>
+      </div>
+
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-label">Statut du compte</span>
+          <span class="info-value badge-active">Actif</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Abonnement</span>
+          <span class="info-value">{{ user?.role === 'PREMIUM' ? 'Premium' : 'Gratuit' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">E-mail vérifié</span>
+          <span class="info-value" [class.text-green]="true">Oui</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

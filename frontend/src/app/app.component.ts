@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
    */
   get showSidebar(): boolean {
     const url = this.router.url;
-    const hiddenRoutes = ['/', '/login', '/auth/callback', '/markets'];
+    const hiddenRoutes = ['/', '/login', '/register', '/auth/callback', '/markets', '/confirm-email', '/verify-email'];
     return !hiddenRoutes.some(r => url === r || (r !== '/' && url.startsWith(r)));
   }
 

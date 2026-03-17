@@ -54,11 +54,11 @@ export class RegisterComponent {
       age: this.form.age!,
       password: this.form.password
     }).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading = false;
-        this.successMessage = res.message ?? 'Inscription réussie ! Vérifiez votre boîte mail.';
-        // Reset form
-        this.form = { email: '', firstName: '', lastName: '', age: null, password: '', confirmPassword: '' };
+        this.router.navigate(['/confirm-email'], {
+          state: { email: this.form.email, firstName: this.form.firstName }
+        });
       },
       error: (err) => {
         this.loading = false;
