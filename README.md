@@ -1,112 +1,41 @@
-# 💰 FinCoach Pro
+# FinCoach Pro
 
 Application web de coaching financier personnel automatisé.
-**Stack :** Java 17 + Spring Boot 3 (REST API) · Angular 17 · Docker Compose
+**Stack :** Java 21 + Spring Boot 3.2 · Angular 17 · PostgreSQL · Docker Compose
 
 ---
 
-## 🚀 Démarrage rapide (Docker)
+## Démarrage rapide (Docker)
 
 ### Prérequis
 - Docker Desktop installé et démarré
 - Git (pour cloner le projet)
 
-### 1. Lancer l'application (mode démo sans IA)
+### 1. Configurer l'environnement
 
 ```bash
-# Cloner le projet
-git clone <votre-repo>
-cd fincoach
-
-# Lancer les deux services
-docker-compose up --build
+cp .env.example .env
+# Éditez .env avec vos valeurs (SMTP, OAuth2, etc.)
 ```
 
-Accéder à l'application : **http://localhost:4200**
-
-Le backend API est disponible sur : **http://localhost:8080**
-
----
-
-### 2. Activer l'IA conversationnelle (OpenAI)
-
-Créez un fichier `.env` à la racine :
-
-```env
-OPENAI_API_KEY=sk-votre-cle-openai-ici
-```
-
-Puis relancez :
+### 2. Lancer l'application
 
 ```bash
 docker-compose up --build
 ```
 
-> Sans clé API, l'assistant utilise des réponses prédéfinies intelligentes.
+- Frontend : **http://localhost:4200**
+- Backend API : **http://localhost:8080**
 
 ---
 
-## 🏗️ Structure du projet
-
-```
-fincoach/
-├── backend/                    # Spring Boot REST API
-│   ├── src/main/java/com/fincoach/
-│   │   ├── FinCoachApplication.java
-│   │   ├── config/             # CORS
-│   │   ├── controller/         # REST endpoints
-│   │   ├── model/              # Entités JPA
-│   │   ├── service/            # Logique métier + IA
-│   │   └── dto/                # DTOs
-│   ├── src/main/resources/
-│   │   └── application.properties
-│   └── Dockerfile
-│
-├── frontend/                   # Angular 17 SPA
-│   ├── src/app/
-│   │   ├── app.component.ts    # Shell + navigation
-│   │   ├── app.routes.ts       # Routing
-│   │   ├── models/             # Interfaces TypeScript
-│   │   ├── services/           # ApiService HTTP
-│   │   └── components/
-│   │       ├── dashboard/      # Tableau de bord + profil financier
-│   │       ├── action-plan/    # Gestion des objectifs
-│   │       └── chat/           # Assistant IA conversationnel
-│   ├── src/styles.scss         # Thème global (dark luxury)
-│   ├── nginx.conf
-│   └── Dockerfile
-│
-└── docker-compose.yml
-```
-
----
-
-## 🔌 API REST – Endpoints
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/dashboard/{userId}` | Tableau de bord complet |
-| GET | `/api/profile/{userId}` | Profil financier |
-| POST | `/api/profile` | Créer/mettre à jour le profil |
-| GET | `/api/actions/{userId}` | Liste des actions |
-| POST | `/api/actions` | Créer une action |
-| PUT | `/api/actions/{id}/status` | Mettre à jour le statut/progrès |
-| DELETE | `/api/actions/{id}` | Supprimer une action |
-| GET | `/api/chat/{userId}` | Historique du chat |
-| POST | `/api/chat` | Envoyer un message |
-| DELETE | `/api/chat/{userId}` | Effacer l'historique |
-
-**Console H2 (dev)** : http://localhost:8080/h2-console
-
----
-
-## 🛠️ Développement local (sans Docker)
+## Développement local (sans Docker)
 
 ### Backend
 ```bash
 cd backend
+# .env est lu automatiquement au démarrage (DotenvEnvironmentPostProcessor)
 ./mvnw spring-boot:run
-# API disponible sur http://localhost:8080
 ```
 
 ### Frontend
@@ -114,62 +43,130 @@ cd backend
 cd frontend
 npm install --legacy-peer-deps
 npm start
-# App disponible sur http://localhost:4200
+```
+
+> Copiez `src/environments/environment.example.ts` en `environment.ts` et `environment.development.ts` si besoin.
+
+---
+
+## Variables d'environnement
+
+Le fichier `.env` doit être placé dans `backend/` (ou à la racine du projet).
+Il est chargé automatiquement au démarrage Spring Boot — pas besoin d'`export`.
+
+| Variable | Description |
+|----------|-------------|
+| `POSTGRES_DB/USER/PASSWORD` | Credentials PostgreSQL |
+| `JWT_SECRET` | Clé Base64 256-bit pour signer les tokens |
+| `MAIL_HOST/PORT/USERNAME/PASSWORD` | SMTP (Resend, Gmail, SendGrid…) |
+| `OPENAI_API_KEY` | Clé OpenAI (optionnel — démo sans clé) |
+| `GOOGLE_CLIENT_ID/SECRET` | OAuth2 Google |
+| `MICROSOFT_CLIENT_ID/SECRET` | OAuth2 Microsoft |
+| `APPLE_CLIENT_ID/TEAM_ID/KEY_ID/PRIVATE_KEY` | Sign in with Apple |
+| `FRONTEND_URL` | URL de redirection après OAuth2 (défaut : `http://localhost:4200`) |
+| `TWELVEDATA_API_KEY` | Données boursières temps réel |
+
+---
+
+## Structure du projet
+
+```
+fincoach/
+├── backend/                         # Spring Boot REST API
+│   ├── src/main/java/com/fincoach/
+│   │   ├── config/                  # Security, CORS, DotenvLoader
+│   │   ├── controller/              # REST endpoints
+│   │   ├── dto/                     # DTOs (Auth, Profile, Chat…)
+│   │   ├── model/                   # Entités JPA
+│   │   ├── repository/              # Spring Data repositories
+│   │   ├── security/                # JWT, OAuth2, Apple secret
+│   │   └── service/                 # Logique métier + IA
+│   ├── src/main/resources/
+│   │   ├── application.properties
+│   │   ├── db/migration/            # Flyway (V1–V4)
+│   │   └── META-INF/spring/         # EnvironmentPostProcessor registration
+│   └── Dockerfile
+│
+├── frontend/                        # Angular 17 SPA
+│   ├── src/app/
+│   │   ├── components/              # dashboard, chat, action-plan, auth, settings
+│   │   ├── services/                # Auth, Chat, Profile, ActionPlan, TwelveData
+│   │   └── models/                  # Interfaces TypeScript
+│   ├── src/environments/            # environment.ts + environment.development.ts
+│   └── Dockerfile
+│
+├── .env.example                     # Template des variables d'environnement
+└── docker-compose.yml
 ```
 
 ---
 
-## ⚙️ Configuration avancée
+## API REST – Endpoints
 
-### Passer à PostgreSQL (production)
+### Auth
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/auth/register` | Inscription email/password |
+| POST | `/api/auth/login` | Connexion email/password → JWT |
+| GET | `/api/auth/verify-email` | Vérification d'email (lien envoyé par mail) |
+| POST | `/api/auth/resend-verification` | Renvoi du lien de vérification |
+| PUT | `/api/auth/profile` | Mise à jour profil (nom, âge, mot de passe) |
+| GET | `/login/oauth2/code/google` | Callback OAuth2 Google |
+| GET | `/login/oauth2/code/microsoft` | Callback OAuth2 Microsoft |
+| GET | `/login/oauth2/code/apple` | Callback Sign in with Apple |
 
-Remplacez dans `application.properties` :
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/fincoach
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.datasource.username=fincoach
-spring.datasource.password=votre_mot_de_passe
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-```
-
-Et ajoutez dans `pom.xml` :
-```xml
-<dependency>
-  <groupId>org.postgresql</groupId>
-  <artifactId>postgresql</artifactId>
-</dependency>
-```
-
-### Authentification utilisateurs
-
-Pour la production, intégrez **Spring Security + JWT** ou **OAuth2** (Google/GitHub).
-Remplacez `userId = 'user-demo'` dans `ApiService` par l'ID de l'utilisateur connecté.
+### Données
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/dashboard/{userId}` | Tableau de bord / synthèse financière |
+| GET | `/api/profile/{userId}` | Profil financier |
+| POST | `/api/profile` | Créer/mettre à jour le profil |
+| GET | `/api/actions/{userId}` | Liste des plans d'action |
+| POST | `/api/actions` | Créer un plan d'action |
+| PUT | `/api/actions/{id}/status` | Mettre à jour statut/progrès |
+| DELETE | `/api/actions/{id}` | Supprimer un plan d'action |
+| GET | `/api/chat/{userId}` | Historique du chat |
+| POST | `/api/chat` | Envoyer un message à l'IA |
+| DELETE | `/api/chat/{userId}` | Effacer l'historique |
 
 ---
 
-## 📦 Technologies utilisées
+## Technologies
 
 | Composant | Technologie |
 |-----------|-------------|
-| Backend | Java 17, Spring Boot 3.2, Spring Data JPA |
-| Base de données | H2 (dev), PostgreSQL (prod) |
+| Backend | Java 21, Spring Boot 3.2.3, Spring Data JPA, Flyway |
+| Sécurité | Spring Security, JWT (jjwt 0.12.6), OAuth2 (Google, Microsoft, Apple) |
+| Base de données | PostgreSQL |
+| Mail | Spring Mail — SMTP (Resend par défaut) |
 | Frontend | Angular 17, TypeScript 5.4 |
-| UI | SCSS custom, design system dark luxury |
-| IA | OpenAI GPT-4o Mini (optionnel) |
+| UI | SCSS custom, thème dark luxury |
+| IA | OpenAI GPT-4o Mini (optionnel — réponses démo sans clé) |
+| Bourse | TwelveData API (données temps réel) |
 | Containerisation | Docker, Docker Compose, Nginx |
+| CI | GitHub Actions (build + lint backend & frontend) |
 
 ---
 
-## 🔮 Prochaines étapes (Roadmap)
+## Fonctionnalités implémentées
 
-- [ ] Authentification JWT / OAuth2
+- [x] Inscription / connexion email + password
+- [x] Vérification d'email (lien SMTP)
+- [x] OAuth2 : Google, Microsoft, Sign in with Apple
+- [x] JWT stateless (access token)
+- [x] Paramètres de compte (nom, âge, changement de mot de passe)
+- [x] Profil financier & score
+- [x] Plans d'action
+- [x] Chat IA (OpenAI ou réponses démo)
+- [x] Données boursières temps réel (TwelveData)
+- [x] Chargement automatique du `.env` au démarrage (sans Docker ni export)
+- [x] CI GitHub Actions (backend Maven + frontend TypeScript)
+- [x] Code review automatique par Claude sur les PR impactant backend, frontend ou CI (`claude-code-action@v1`)
+
+## Roadmap
+
 - [ ] Graphiques Chart.js (évolution mensuelle)
-- [ ] Notifications email (objectifs atteints)
 - [ ] Export PDF du bilan financier
 - [ ] Module simulateur de crédit / retraite
+- [ ] Notifications email (objectifs atteints)
 - [ ] PWA (Progressive Web App)
-
----
-
-*FinCoach Pro – Business model complet disponible dans le document FinCoachPro_BusinessModel.docx*
