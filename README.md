@@ -160,6 +160,7 @@ fincoach/
 - [x] Données boursières temps réel (TwelveData)
 - [x] Chargement automatique du `.env` au démarrage (sans Docker ni export)
 - [x] CI GitHub Actions (backend Maven + frontend TypeScript)
+- [x] Code review automatique par Claude sur chaque PR (`claude-sonnet-4-6`)
 
 ## Roadmap
 

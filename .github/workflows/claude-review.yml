@@ -1,0 +1,48 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "frontend/**/*.ts"
+      - "frontend/**/*.html"
+      - "frontend/**/*.scss"
+      - "frontend/**/*.css"
+      - "backend/**/*.java"
+      - "backend/**/*.yml"
+      - "backend/**/*.yaml"
+      - ".github/**/*.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  claude-review:
+    name: Claude — Code Review
+    runs-on: ubuntu-latest
+    # Skip draft PRs
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install review dependencies
+        run: npm install --no-save @anthropic-ai/sdk @octokit/rest
+
+      - name: Run Claude review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.repository }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: node .github/scripts/claude-review.js
