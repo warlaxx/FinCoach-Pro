@@ -6,8 +6,10 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
 import { EmailVerifiedComponent } from './components/email-verified/email-verified.component';
+import { EmailConfirmationComponent } from './components/email-confirmation/email-confirmation.component';
 import { LandingComponent } from './components/landing/landing.component';
 import { MarketsComponent } from './components/markets/markets.component';
+import { AccountSettingsComponent } from './components/account-settings/account-settings.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -18,11 +20,13 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'auth/callback', component: AuthCallbackComponent },
   { path: 'verify-email', component: EmailVerifiedComponent },
+  { path: 'confirm-email', component: EmailConfirmationComponent },
 
   // Protected routes — authGuard redirects to /login if no JWT present
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'actions', component: ActionPlanComponent, canActivate: [authGuard] },
   { path: 'chat', component: ChatComponent, canActivate: [authGuard] },
+  { path: 'settings', component: AccountSettingsComponent, canActivate: [authGuard] },
 
   { path: '**', redirectTo: '' }
 ];

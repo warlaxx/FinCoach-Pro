@@ -3,6 +3,7 @@ package com.fincoach.controller;
 import com.fincoach.dto.AuthResponse;
 import com.fincoach.dto.LoginRequest;
 import com.fincoach.dto.RegisterRequest;
+import com.fincoach.dto.UpdateProfileRequest;
 import com.fincoach.service.UserService;
 import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
@@ -21,10 +22,12 @@ import java.util.Map;
 /**
  * Authentication endpoints:
  *
- *  GET  /api/auth/me            — current user info from JWT (used by Angular on startup)
- *  POST /api/auth/register      — email/password registration
- *  POST /api/auth/login         — email/password login
- *  GET  /api/auth/verify-email  — email verification via token link
+ *  GET  /api/auth/me                  — current user info from JWT
+ *  POST /api/auth/register            — email/password registration
+ *  POST /api/auth/login               — email/password login
+ *  GET  /api/auth/verify-email        — email verification via token link
+ *  PUT  /api/auth/profile             — update profile info / password
+ *  POST /api/auth/resend-verification — resend verification email
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -53,17 +56,21 @@ public class AuthController {
         String role      = claims.get("role",      String.class);
         String firstName = claims.get("firstName", String.class);
         String lastName  = claims.get("lastName",  String.class);
+        Integer age      = claims.get("age",       Integer.class);
+        Boolean emailVerified = claims.get("emailVerified", Boolean.class);
 
         log.debug("GET /api/auth/me - userId={}, email={}", userId, email);
 
         Map<String, Object> user = new LinkedHashMap<>();
-        user.put("id",        userId);
-        user.put("email",     email);
-        user.put("name",      name);
-        user.put("picture",   picture   != null ? picture   : "");
-        user.put("role",      role      != null ? role      : "USER");
-        user.put("firstName", firstName != null ? firstName : "");
-        user.put("lastName",  lastName  != null ? lastName  : "");
+        user.put("id",            userId);
+        user.put("email",         email);
+        user.put("name",          name);
+        user.put("picture",       picture       != null ? picture       : "");
+        user.put("role",          role          != null ? role          : "USER");
+        user.put("firstName",     firstName     != null ? firstName     : "");
+        user.put("lastName",      lastName      != null ? lastName      : "");
+        user.put("age",           age);
+        user.put("emailVerified", emailVerified != null ? emailVerified : false);
 
         return ResponseEntity.ok(user);
     }
@@ -109,6 +116,46 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             log.warn("Email verification failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ─── PUT /api/auth/profile ───────────────────────────────────────────────
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(
+            @Valid @RequestBody UpdateProfileRequest request,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String userId = authentication.getName();
+        try {
+            AuthResponse response = userService.updateProfile(userId, request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Profile update failed for userId={}: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ─── POST /api/auth/resend-verification ──────────────────────────────────
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "L'adresse e-mail est requise."));
+        }
+
+        try {
+            userService.resendVerificationEmail(email);
+            return ResponseEntity.ok(Map.of("message", "E-mail de vérification renvoyé."));
+        } catch (IllegalArgumentException e) {
+            log.warn("Resend verification failed for {}: {}", email, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }

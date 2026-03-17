@@ -49,14 +49,10 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway — versioned database migrations -->
+        <!-- Flyway Migration (Spring Boot 3.2.3 utilise Flyway 9.x) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <!-- Spring Mail — for email verification -->
