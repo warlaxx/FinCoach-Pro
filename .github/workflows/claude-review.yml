@@ -1,4 +1,4 @@
-name: Claude Code Review
+name: Claude BugBot
 
 on:
   pull_request:
@@ -19,30 +19,18 @@ permissions:
   issues: write
 
 jobs:
-  claude-review:
-    name: Claude — Code Review
+  claude-bugbot:
+    name: Claude — BugBot Review
     runs-on: ubuntu-latest
-    # Skip draft PRs and runs without API key configured
-    if: github.event.pull_request.draft == false && secrets.ANTHROPIC_API_KEY != ''
+    if: github.event.pull_request.draft == false
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
+      - name: Claude BugBot
+        uses: rekpero/claude-bugbot-github-action@v1.0.9
         with:
-          node-version: "20"
-
-      - name: Install review dependencies
-        run: npm install --no-save @anthropic-ai/sdk @octokit/rest
-
-      - name: Run Claude review
-        env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO_NAME: ${{ github.repository }}
-          GITHUB_BASE_REF: ${{ github.base_ref }}
-        run: node .github/scripts/claude-review.js
