@@ -56,6 +56,10 @@ public class User {
 
     private String emailVerificationToken;
 
+    // Password reset
+    private String passwordResetToken;
+    private LocalDateTime passwordResetTokenExpiry;
+
     // Timestamps
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -120,6 +124,12 @@ public class User {
     public void setEmailVerificationToken(String emailVerificationToken) {
         this.emailVerificationToken = emailVerificationToken;
     }
+
+    public String getPasswordResetToken() { return passwordResetToken; }
+    public void setPasswordResetToken(String passwordResetToken) { this.passwordResetToken = passwordResetToken; }
+
+    public LocalDateTime getPasswordResetTokenExpiry() { return passwordResetTokenExpiry; }
+    public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) { this.passwordResetTokenExpiry = passwordResetTokenExpiry; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

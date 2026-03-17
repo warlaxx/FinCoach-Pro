@@ -187,6 +187,85 @@ public class EmailService {
             + "</html>";
     }
 
+    public void sendPasswordResetEmail(String toEmail, String firstName, String token) {
+        String resetUrl = frontendUrl + "/reset-password?token=" + token;
+        String subject = "FinCoach Pro \u2014 R\u00e9initialisation de votre mot de passe";
+        String html = buildPasswordResetHtml(firstName, resetUrl);
+
+        if (mailSender == null) {
+            log.warn("JavaMailSender not configured \u2014 printing password reset email to logs instead.");
+            log.info("=== PASSWORD RESET EMAIL ===");
+            log.info("To      : {}", toEmail);
+            log.info("Subject : {}", subject);
+            log.info("Link    : {}", resetUrl);
+            log.info("============================");
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress, "FinCoach Pro");
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("Password reset email sent to {}", toEmail);
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+            log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    private String buildPasswordResetHtml(String firstName, String resetUrl) {
+        return "<!DOCTYPE html>\n"
+            + "<html lang=\"fr\">\n"
+            + "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"></head>\n"
+            + "<body style=\"margin:0;padding:0;background-color:#0f1117;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;\">\n"
+            + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#0f1117;padding:40px 20px;\"><tr><td align=\"center\">\n"
+            + "<table role=\"presentation\" width=\"560\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;width:100%;\">\n"
+            + "  <tr><td align=\"center\" style=\"padding-bottom:32px;\">\n"
+            + "    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\"><tr>\n"
+            + "      <td style=\"font-size:32px;line-height:1;vertical-align:middle;padding-right:12px;\">\uD83D\uDCB0</td>\n"
+            + "      <td style=\"vertical-align:middle;\">\n"
+            + "        <div style=\"font-size:22px;font-weight:800;color:#c9a84c;letter-spacing:-0.5px;line-height:1.2;\">FinCoach</div>\n"
+            + "        <div style=\"font-size:10px;letter-spacing:3px;color:#6b7280;text-transform:uppercase;\">PRO</div>\n"
+            + "      </td>\n"
+            + "    </tr></table>\n"
+            + "  </td></tr>\n"
+            + "  <tr><td style=\"background-color:#1a1d2e;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:48px 40px;\">\n"
+            + "    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr><td align=\"center\" style=\"padding-bottom:24px;\">\n"
+            + "      <div style=\"width:72px;height:72px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);display:inline-block;line-height:72px;text-align:center;\">\n"
+            + "        <span style=\"font-size:32px;line-height:72px;\">\uD83D\uDD12</span>\n"
+            + "      </div>\n"
+            + "    </td></tr></table>\n"
+            + "    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n"
+            + "      <tr><td align=\"center\" style=\"padding-bottom:8px;\"><h1 style=\"margin:0;font-size:24px;font-weight:700;color:#f1f5f9;\">R\u00e9initialisation du mot de passe</h1></td></tr>\n"
+            + "      <tr><td align=\"center\" style=\"padding-bottom:32px;\"><p style=\"margin:0;font-size:15px;color:#94a3b8;line-height:1.7;max-width:420px;\">\n"
+            + "        Bonjour <strong style=\"color:#f1f5f9;\">" + escapeHtml(firstName) + "</strong>,<br>\n"
+            + "        Vous avez demand\u00e9 la r\u00e9initialisation de votre mot de passe sur <strong style=\"color:#c9a84c;\">FinCoach Pro</strong>.\n"
+            + "        Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.\n"
+            + "      </p></td></tr>\n"
+            + "    </table>\n"
+            + "    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr><td align=\"center\" style=\"padding-bottom:32px;\">\n"
+            + "      <a href=\"" + resetUrl + "\" target=\"_blank\" style=\"display:inline-block;padding:14px 40px;background-color:#c9a84c;color:#0f1117;font-size:16px;font-weight:700;text-decoration:none;border-radius:12px;letter-spacing:0.3px;\">R\u00e9initialiser mon mot de passe</a>\n"
+            + "    </td></tr></table>\n"
+            + "    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr><td align=\"center\" style=\"padding-bottom:24px;\">\n"
+            + "      <p style=\"margin:0;font-size:13px;color:#6b7280;line-height:1.6;\">Si le bouton ne fonctionne pas, copiez-collez ce lien&nbsp;:</p>\n"
+            + "      <p style=\"margin:8px 0 0;font-size:12px;color:#c9a84c;word-break:break-all;line-height:1.5;\">" + resetUrl + "</p>\n"
+            + "    </td></tr></table>\n"
+            + "    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr><td style=\"border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;\">\n"
+            + "      <p style=\"margin:0;font-size:13px;color:#6b7280;line-height:1.6;text-align:center;\">Ce lien est valable <strong style=\"color:#94a3b8;\">1 heure</strong>. Si vous n'avez pas demand\u00e9 cette r\u00e9initialisation, ignorez simplement ce message.</p>\n"
+            + "    </td></tr></table>\n"
+            + "  </td></tr>\n"
+            + "  <tr><td align=\"center\" style=\"padding-top:32px;\">\n"
+            + "    <p style=\"margin:0 0 8px;font-size:13px;color:#6b7280;\">L'\u00e9quipe <strong style=\"color:#c9a84c;\">FinCoach Pro</strong></p>\n"
+            + "    <p style=\"margin:0;font-size:11px;color:#4b5563;line-height:1.6;\">Cet e-mail a \u00e9t\u00e9 envoy\u00e9 automatiquement. Merci de ne pas y r\u00e9pondre.<br>\u00a9 2025 FinCoach Pro \u2014 Votre coach financier intelligent.</p>\n"
+            + "  </td></tr>\n"
+            + "</table>\n"
+            + "</td></tr></table>\n"
+            + "</body></html>";
+    }
+
     private static String escapeHtml(String input) {
         if (input == null) return "";
         return input.replace("&", "&amp;")

@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -154,6 +155,43 @@ public class UserService {
 
         emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), user.getEmailVerificationToken());
         log.info("Verification email resent to {}", email);
+    }
+
+    @Transactional
+    public void requestPasswordReset(String email) {
+        User user = userRepo.findByEmail(email.toLowerCase().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Aucun compte trouv\u00e9 avec cette adresse e-mail."));
+
+        if (!"LOCAL".equals(user.getProvider())) {
+            throw new IllegalArgumentException(
+                    "Ce compte utilise la connexion via " + user.getProvider() +
+                    ". La r\u00e9initialisation du mot de passe n'est pas disponible.");
+        }
+
+        String token = UUID.randomUUID().toString();
+        user.setPasswordResetToken(token);
+        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(1));
+        userRepo.save(user);
+
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), token);
+        log.info("Password reset requested for userId={}", user.getId());
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepo.findByPasswordResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Lien de r\u00e9initialisation invalide ou expir\u00e9."));
+
+        if (user.getPasswordResetTokenExpiry() == null || user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Ce lien de r\u00e9initialisation a expir\u00e9. Veuillez en demander un nouveau.");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
+        userRepo.save(user);
+
+        log.info("Password reset completed for userId={}", user.getId());
     }
 
     private AuthResponse buildAuthResponse(User user, String token) {

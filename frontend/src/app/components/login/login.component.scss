@@ -250,6 +250,20 @@
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
+.forgot-password-link {
+  font-size: 13px;
+  text-align: right;
+  margin: 0;
+
+  a {
+    color: var(--text-muted, #6b7280);
+    text-decoration: none;
+    font-weight: 400;
+    transition: color 0.2s;
+    &:hover { color: var(--gold, #c9a84c); text-decoration: underline; }
+  }
+}
+
 .register-link {
   font-size: 13px;
   color: var(--text-muted, #6b7280);
