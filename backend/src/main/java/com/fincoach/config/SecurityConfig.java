@@ -75,6 +75,9 @@ public class SecurityConfig {
                 .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
                 // Auth endpoints — registration, login, email verification, and current user
                 .requestMatchers("/api/auth/**").permitAll()
+                // Spring Boot error endpoint — must be public so error responses
+                // are not masked by a 401 when exceptions occur in public endpoints
+                .requestMatchers("/error").permitAll()
                 // Everything else requires a valid JWT
                 .anyRequest().authenticated()
             )
