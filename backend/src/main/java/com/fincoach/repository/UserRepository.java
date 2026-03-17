@@ -15,4 +15,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     // Used to verify email address via the token sent in the verification email
     Optional<User> findByEmailVerificationToken(String token);
+
+    // Used to reset password via the token sent in the password reset email
+    Optional<User> findByPasswordResetToken(String token);
 }

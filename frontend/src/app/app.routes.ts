@@ -10,6 +10,8 @@ import { EmailConfirmationComponent } from './components/email-confirmation/emai
 import { LandingComponent } from './components/landing/landing.component';
 import { MarketsComponent } from './components/markets/markets.component';
 import { AccountSettingsComponent } from './components/account-settings/account-settings.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -21,6 +23,8 @@ export const routes: Routes = [
   { path: 'auth/callback', component: AuthCallbackComponent },
   { path: 'verify-email', component: EmailVerifiedComponent },
   { path: 'confirm-email', component: EmailConfirmationComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
 
   // Protected routes — authGuard redirects to /login if no JWT present
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },

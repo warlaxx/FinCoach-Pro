@@ -142,6 +142,52 @@ public class AuthController {
         }
     }
 
+    // ─── POST /api/auth/forgot-password ───────────────────────────────────────
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "L'adresse e-mail est requise."));
+        }
+
+        try {
+            userService.requestPasswordReset(email);
+            return ResponseEntity.ok(Map.of("message",
+                "Si un compte existe avec cette adresse, un e-mail de r\u00e9initialisation a \u00e9t\u00e9 envoy\u00e9."));
+        } catch (IllegalArgumentException e) {
+            // Return success even on error to prevent email enumeration
+            log.warn("Forgot password failed for {}: {}", email, e.getMessage());
+            return ResponseEntity.ok(Map.of("message",
+                "Si un compte existe avec cette adresse, un e-mail de r\u00e9initialisation a \u00e9t\u00e9 envoy\u00e9."));
+        }
+    }
+
+    // ─── POST /api/auth/reset-password ─────────────────────────────────────────
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+
+        if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Le token et le nouveau mot de passe sont requis."));
+        }
+
+        if (newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Le mot de passe doit contenir au moins 8 caract\u00e8res."));
+        }
+
+        try {
+            userService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Votre mot de passe a \u00e9t\u00e9 r\u00e9initialis\u00e9 avec succ\u00e8s."));
+        } catch (IllegalArgumentException e) {
+            log.warn("Password reset failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ─── POST /api/auth/resend-verification ──────────────────────────────────
 
     @PostMapping("/resend-verification")
