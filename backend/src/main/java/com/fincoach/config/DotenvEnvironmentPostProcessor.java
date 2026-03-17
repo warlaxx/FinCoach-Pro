@@ -18,8 +18,9 @@ import java.util.Map;
  * resolve against .env values when real OS environment variables are absent.
  *
  * Lookup order (first found wins):
- *   1. ./backend/.env   (run from project root)
- *   2. ./.env           (run from backend/)
+ *   1. ./backend/.env   (when running from project root)
+ *   2. ./.env           (when running from backend/ or any working dir with a .env)
+ *   3. ../.env          (when running from backend/, fall back to project root .env)
  *
  * Existing OS environment variables are NOT overridden — .env only fills gaps.
  */
@@ -95,7 +96,7 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor 
                     }
                 }
 
-                // strip inline comment (only outside quotes)
+                // strip inline comment starting with " #" (after quote removal)
                 int hash = value.indexOf(" #");
                 if (hash >= 0) {
                     value = value.substring(0, hash).trim();

@@ -118,6 +118,7 @@ fincoach/
 ### Données
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
+| GET | `/api/dashboard/{userId}` | Tableau de bord / synthèse financière |
 | GET | `/api/profile/{userId}` | Profil financier |
 | POST | `/api/profile` | Créer/mettre à jour le profil |
 | GET | `/api/actions/{userId}` | Liste des plans d'action |
@@ -160,7 +161,7 @@ fincoach/
 - [x] Données boursières temps réel (TwelveData)
 - [x] Chargement automatique du `.env` au démarrage (sans Docker ni export)
 - [x] CI GitHub Actions (backend Maven + frontend TypeScript)
-- [x] Code review automatique par Claude sur chaque PR (`claude-sonnet-4-6`)
+- [x] Code review automatique par Claude sur les PR impactant backend, frontend ou CI (`claude-code-action@v1`)
 
 ## Roadmap
 

@@ -21,10 +21,39 @@ permissions:
   issues: write
 
 jobs:
-  claude-review:
-    name: Claude — Code Review
+  # Automatic review on PR open/update
+  claude-auto-review:
+    name: Claude — Auto Review
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Action Official
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            Tu es un expert en code review pour un projet Angular TypeScript + Spring Boot Java.
+            Analyse les changements de cette PR et fournis une review structurée avec :
+            1. **Résumé** — ce que fait la PR en 2-3 phrases
+            2. **Problèmes critiques** — bugs, failles de sécurité, données sensibles
+            3. **Avertissements** — mauvaises pratiques, performance
+            4. **Suggestions** — lisibilité, tests manquants
+            5. **Points positifs** — ce qui est bien fait
+            Sois concis. Si une section est vide, écris "Rien à signaler".
+
+  # Responds to @claude mentions in PR comments
+  claude-on-demand:
+    name: Claude — On Demand (@claude)
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '@claude')
 
     steps:
       - uses: actions/checkout@v4

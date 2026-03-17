@@ -2,6 +2,7 @@ package com.fincoach.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class UpdateProfileRequest {
@@ -12,8 +13,9 @@ public class UpdateProfileRequest {
     @NotBlank(message = "Le nom est requis.")
     private String lastName;
 
+    @NotNull(message = "L'âge est requis.")
     @Min(value = 0, message = "L'âge doit être positif.")
-    private int age;
+    private Integer age;
 
     private String currentPassword;
 
@@ -26,8 +28,8 @@ public class UpdateProfileRequest {
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public int getAge() { return age; }
-    public void setAge(int age) { this.age = age; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
 
     public String getCurrentPassword() { return currentPassword; }
     public void setCurrentPassword(String currentPassword) { this.currentPassword = currentPassword; }
