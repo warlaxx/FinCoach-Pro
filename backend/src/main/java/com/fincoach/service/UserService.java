@@ -47,6 +47,8 @@ public class UserService {
         user.setRole(Role.USER);
         user.setEmailVerified(false);
         user.setEmailVerificationToken(UUID.randomUUID().toString());
+        // Verification links expire after 24 hours
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
         user.setName(req.getFirstName() + " " + req.getLastName());
 
         userRepo.save(user);
@@ -93,8 +95,15 @@ public class UserService {
             throw new IllegalArgumentException("Ce compte est déjà activé.");
         }
 
+        // Reject expired tokens (24-hour window)
+        if (user.getEmailVerificationTokenExpiry() != null
+                && user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Ce lien de vérification a expiré. Veuillez en demander un nouveau.");
+        }
+
         user.setEmailVerified(true);
         user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
         userRepo.save(user);
 
         log.info("Email verified for userId={}", user.getId());
@@ -149,8 +158,9 @@ public class UserService {
             throw new IllegalArgumentException("Ce compte est déjà activé. Vous pouvez vous connecter.");
         }
 
-        // Generate new token
+        // Generate new token with a fresh 24-hour expiry
         user.setEmailVerificationToken(UUID.randomUUID().toString());
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
         userRepo.save(user);
 
         emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), user.getEmailVerificationToken());

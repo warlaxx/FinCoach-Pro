@@ -1,18 +1,18 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { ActionPlanComponent } from './components/action-plan/action-plan.component';
-import { ChatComponent } from './components/chat/chat.component';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
-import { EmailVerifiedComponent } from './components/email-verified/email-verified.component';
-import { EmailConfirmationComponent } from './components/email-confirmation/email-confirmation.component';
-import { LandingComponent } from './components/landing/landing.component';
-import { MarketsComponent } from './components/markets/markets.component';
-import { AccountSettingsComponent } from './components/account-settings/account-settings.component';
-import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
-import { authGuard } from './guards/auth.guard';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { ActionPlanComponent } from './features/action-plan/action-plan.component';
+import { ChatComponent } from './features/chat/chat.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { AuthCallbackComponent } from './features/auth/auth-callback/auth-callback.component';
+import { EmailVerifiedComponent } from './features/auth/email-verified/email-verified.component';
+import { EmailConfirmationComponent } from './features/auth/email-confirmation/email-confirmation.component';
+import { LandingComponent } from './features/markets/landing/landing.component';
+import { MarketsComponent } from './features/markets/markets.component';
+import { AccountSettingsComponent } from './features/settings/account-settings.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Public routes — no JWT required

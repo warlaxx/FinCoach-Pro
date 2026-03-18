@@ -37,11 +37,23 @@ public class ChatController {
         return ResponseEntity.ok(messages);
     }
 
+    /** Maximum allowed length for a single user message (characters). */
+    private static final int MAX_MESSAGE_LENGTH = 2_000;
+
     @PostMapping
-    public ResponseEntity<Map<String, Object>> chat(@RequestBody ChatRequest request) {
+    public ResponseEntity<?> chat(@RequestBody ChatRequest request) {
         String userId = request.getUserId();
         String message = request.getMessage();
         log.info("POST /chat - userId={} ({} chars)", userId, message != null ? message.length() : 0);
+
+        // Reject oversized messages to prevent prompt-injection and abuse
+        if (message == null || message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Le message ne peut pas être vide."));
+        }
+        if (message.length() > MAX_MESSAGE_LENGTH) {
+            return ResponseEntity.badRequest().body(Map.of("error",
+                    "Le message est trop long. Maximum " + MAX_MESSAGE_LENGTH + " caractères."));
+        }
 
         chatRepo.save(new ChatMessage(null, userId, "user", message, null));
 

@@ -16,21 +16,42 @@ import java.util.List;
  * 1. Spring Security level (corsConfigurationSource bean):
  *    Used in SecurityConfig via .cors(cors -> cors.configurationSource(...))
  *    This runs BEFORE any controller and is required for preflight OPTIONS
- *    requests to work when Spring Security is active. Without this, the browser
- *    gets blocked before reaching the MVC layer.
+ *    requests to work when Spring Security is active.
  *
  * 2. Spring MVC level (WebMvcConfigurer):
  *    Handles CORS for endpoints that bypass the security filter chain.
+ *
+ * Security note: allowedHeaders is an explicit allowlist instead of "*".
+ * Wildcards accept any request header, which can enable cache-poisoning and
+ * other header-injection attacks. We only allow what Angular actually sends.
  */
 @Configuration
 public class CorsConfig {
 
+    /** Request headers that Angular is allowed to send to the backend. */
+    private static final List<String> ALLOWED_HEADERS = List.of(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With"
+    );
+
+    private static final List<String> ALLOWED_ORIGINS = List.of(
+            "http://localhost:4200",
+            "http://frontend:4200"
+    );
+
+    private static final List<String> ALLOWED_METHODS = List.of(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS"
+    );
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200", "http://frontend:4200"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*")); // "*" includes the Authorization header for JWT
+        config.setAllowedOrigins(ALLOWED_ORIGINS);
+        config.setAllowedMethods(ALLOWED_METHODS);
+        config.setAllowedHeaders(ALLOWED_HEADERS);
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -44,9 +65,9 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200", "http://frontend:4200")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
+                        .allowedOrigins(ALLOWED_ORIGINS.toArray(String[]::new))
+                        .allowedMethods(ALLOWED_METHODS.toArray(String[]::new))
+                        .allowedHeaders(ALLOWED_HEADERS.toArray(String[]::new))
                         .allowCredentials(true);
             }
         };
