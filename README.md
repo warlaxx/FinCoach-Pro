@@ -26,7 +26,7 @@ A personal finance coaching web application that helps users track their budget,
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/FinCoach-Pro.git
+git clone https://github.com/warlaxx/FinCoach-Pro.git
 cd FinCoach-Pro
 ```
 
@@ -68,6 +68,8 @@ MAIL_HOST=smtp.example.com
 MAIL_PORT=587
 MAIL_USERNAME=noreply@example.com
 MAIL_PASSWORD=
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS=true
 
 # URLs
 FRONTEND_URL=http://localhost:4200
@@ -97,7 +99,7 @@ npm start   # hot-reload on http://localhost:4200, proxies /api/* to localhost:8
 
 ## Folder structure
 
-```
+```text
 FinCoach-Pro/
 ├── backend/                           # Spring Boot 3.2 (Java 21) REST API
 │   └── src/main/java/com/fincoach/
@@ -164,6 +166,8 @@ FinCoach-Pro/
 | `MAIL_PORT` | No | SMTP port (default: 587) |
 | `MAIL_USERNAME` | No | SMTP login |
 | `MAIL_PASSWORD` | No | SMTP password |
+| `MAIL_SMTP_AUTH` | No | Enable SMTP authentication (default: `true`) |
+| `MAIL_SMTP_STARTTLS` | No | Enable STARTTLS encryption (default: `true`) |
 | `FRONTEND_URL` | No | Base URL for verification/reset email links (default: `http://localhost:4200`) |
 
 ---

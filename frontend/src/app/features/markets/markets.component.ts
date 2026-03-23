@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { TwelveDataService, StockQuote } from './twelve-data.service';
+import { FAVORITES_STORAGE_KEY } from '../../shared/config/app.config';
 
 Chart.register(...registerables);
 
@@ -39,7 +40,7 @@ export class MarketsComponent implements OnInit, OnDestroy {
   @ViewChild('detailCanvas') detailCanvas?: ElementRef<HTMLCanvasElement>;
 
   private priceRefreshInterval?: ReturnType<typeof setInterval>;
-  private readonly FAVORITES_KEY = 'fincoach_favorite_stocks';
+  private readonly FAVORITES_KEY = FAVORITES_STORAGE_KEY;
 
   searchQuery         = '';
   activeCategory      = 'Tous';

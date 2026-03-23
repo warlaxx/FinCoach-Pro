@@ -95,9 +95,10 @@ public class UserService {
             throw new IllegalArgumentException("Ce compte est déjà activé.");
         }
 
-        // Reject expired tokens (24-hour window)
-        if (user.getEmailVerificationTokenExpiry() != null
-                && user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
+        // Reject expired tokens (24-hour window). Treat null expiry as expired
+        // to invalidate any pre-migration tokens that lack a timestamp.
+        if (user.getEmailVerificationTokenExpiry() == null
+                || user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Ce lien de vérification a expiré. Veuillez en demander un nouveau.");
         }
 
