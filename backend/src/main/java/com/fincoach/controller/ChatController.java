@@ -7,6 +7,7 @@ import com.fincoach.service.AiChatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -28,20 +29,33 @@ public class ChatController {
         this.aiChatService = aiChatService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<Map<String, Object>>> getChatHistory(@PathVariable String userId) {
-        log.info("GET /chat/{}", userId);
+    @GetMapping("/history")
+    public ResponseEntity<List<Map<String, Object>>> getChatHistory(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        log.info("GET /chat/history - userId={}", userId);
         var messages = chatRepo.findByUserIdOrderByCreatedAtAsc(userId).stream()
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(messages);
     }
 
+    /** Maximum allowed length for a single user message (characters). */
+    private static final int MAX_MESSAGE_LENGTH = 2_000;
+
     @PostMapping
-    public ResponseEntity<Map<String, Object>> chat(@RequestBody ChatRequest request) {
-        String userId = request.getUserId();
+    public ResponseEntity<?> chat(@RequestBody ChatRequest request, Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
         String message = request.getMessage();
         log.info("POST /chat - userId={} ({} chars)", userId, message != null ? message.length() : 0);
+
+        // Reject oversized messages to prevent prompt-injection and abuse
+        if (message == null || message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Le message ne peut pas être vide."));
+        }
+        if (message.length() > MAX_MESSAGE_LENGTH) {
+            return ResponseEntity.badRequest().body(Map.of("error",
+                    "Le message est trop long. Maximum " + MAX_MESSAGE_LENGTH + " caractères."));
+        }
 
         chatRepo.save(new ChatMessage(null, userId, "user", message, null));
 
@@ -55,9 +69,10 @@ public class ChatController {
         return ResponseEntity.ok(toResponse(assistantMsg));
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> clearChat(@PathVariable String userId) {
-        log.info("DELETE /chat/{}", userId);
+    @DeleteMapping
+    public ResponseEntity<Void> clearChat(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        log.info("DELETE /chat - userId={}", userId);
         List<ChatMessage> all = chatRepo.findByUserIdOrderByCreatedAtAsc(userId);
         chatRepo.deleteAll(all);
         log.info("Cleared {} message(s) for userId={}", all.size(), userId);

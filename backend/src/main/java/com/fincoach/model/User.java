@@ -55,6 +55,7 @@ public class User {
     private boolean emailVerified = false;
 
     private String emailVerificationToken;
+    private LocalDateTime emailVerificationTokenExpiry;
 
     // Password reset
     private String passwordResetToken;
@@ -123,6 +124,11 @@ public class User {
     public String getEmailVerificationToken() { return emailVerificationToken; }
     public void setEmailVerificationToken(String emailVerificationToken) {
         this.emailVerificationToken = emailVerificationToken;
+    }
+
+    public LocalDateTime getEmailVerificationTokenExpiry() { return emailVerificationTokenExpiry; }
+    public void setEmailVerificationTokenExpiry(LocalDateTime emailVerificationTokenExpiry) {
+        this.emailVerificationTokenExpiry = emailVerificationTokenExpiry;
     }
 
     public String getPasswordResetToken() { return passwordResetToken; }

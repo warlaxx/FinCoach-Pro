@@ -1,172 +1,209 @@
 # FinCoach Pro
 
-Application web de coaching financier personnel automatisé.
-**Stack :** Java 21 + Spring Boot 3.2 · Angular 17 · PostgreSQL · Docker Compose
+A personal finance coaching web application that helps users track their budget, manage debt, build savings, and get AI-powered financial advice — built with Angular 17 (frontend) and Spring Boot 3.2 (backend).
 
 ---
 
-## Démarrage rapide (Docker)
+## What the app does
 
-### Prérequis
-- Docker Desktop installé et démarré
-- Git (pour cloner le projet)
+| Feature | Description |
+|---|---|
+| **Financial Profile** | Enter monthly income, fixed/variable expenses, savings, and debt to receive a scored financial health report (A–F) |
+| **Action Plans** | Automatically-generated smart goals (emergency fund, debt reduction, savings rate) based on your profile |
+| **AI Chat** | Real-time chat with a French-language financial coach powered by OpenAI GPT-4o Mini (or built-in demo responses when no API key is configured) |
+| **Market Data** | Live prices and 30-day charts for 34 instruments — indices, stocks, crypto, commodities, and forex via TwelveData |
+| **Authentication** | Email/password with verification, plus OAuth2 sign-in via Google, Microsoft, and Apple |
 
-### 1. Configurer l'environnement
+---
+
+## How to run locally
+
+### Prerequisites
+
+- Docker and Docker Compose
+- (Optional) API keys for OpenAI and TwelveData
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/warlaxx/FinCoach-Pro.git
+cd FinCoach-Pro
+```
+
+### 2. Configure environment variables
 
 ```bash
 cp .env.example .env
-# Éditez .env avec vos valeurs (SMTP, OAuth2, etc.)
 ```
 
-### 2. Lancer l'application
+Edit `.env` and fill in the values you need:
+
+```dotenv
+# Database (required)
+POSTGRES_DB=fincoach
+POSTGRES_USER=fincoach
+POSTGRES_PASSWORD=changeme
+
+# Security (required)
+JWT_SECRET=your-256-bit-base64-secret
+
+# AI Chat (optional — app works without it using built-in demo responses)
+OPENAI_API_KEY=sk-...
+
+# Market data (optional — only needed for live prices on the Markets page)
+TWELVEDATA_API_KEY=your-key
+
+# OAuth2 providers (optional — email/password auth works without these)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+APPLE_CLIENT_ID=
+APPLE_TEAM_ID=
+APPLE_KEY_ID=
+APPLE_PRIVATE_KEY=
+
+# Email (optional — verification emails are printed to the console if not set)
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=noreply@example.com
+MAIL_PASSWORD=
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS=true
+
+# URLs
+FRONTEND_URL=http://localhost:4200
+```
+
+### 3. Start the full stack
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-- Frontend : **http://localhost:4200**
-- Backend API : **http://localhost:8080**
+| Service | URL |
+|---|---|
+| Angular frontend | http://localhost:4200 |
+| Spring Boot API | http://localhost:8080 |
+| PostgreSQL | localhost:5432 |
 
----
+### 4. Run the frontend in development mode (optional)
 
-## Développement local (sans Docker)
-
-### Backend
-```bash
-cd backend
-# .env est lu automatiquement au démarrage (DotenvEnvironmentPostProcessor)
-./mvnw spring-boot:run
-```
-
-### Frontend
 ```bash
 cd frontend
-npm install --legacy-peer-deps
-npm start
+npm install
+npm start   # hot-reload on http://localhost:4200, proxies /api/* to localhost:8080
 ```
-
-> Copiez `src/environments/environment.example.ts` en `environment.ts` et `environment.development.ts` si besoin.
 
 ---
 
-## Variables d'environnement
+## Folder structure
 
-Le fichier `.env` doit être placé dans `backend/` (ou à la racine du projet).
-Il est chargé automatiquement au démarrage Spring Boot — pas besoin d'`export`.
-
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_DB/USER/PASSWORD` | Credentials PostgreSQL |
-| `JWT_SECRET` | Clé Base64 256-bit pour signer les tokens |
-| `MAIL_HOST/PORT/USERNAME/PASSWORD` | SMTP (Resend, Gmail, SendGrid…) |
-| `OPENAI_API_KEY` | Clé OpenAI (optionnel — démo sans clé) |
-| `GOOGLE_CLIENT_ID/SECRET` | OAuth2 Google |
-| `MICROSOFT_CLIENT_ID/SECRET` | OAuth2 Microsoft |
-| `APPLE_CLIENT_ID/TEAM_ID/KEY_ID/PRIVATE_KEY` | Sign in with Apple |
-| `FRONTEND_URL` | URL de redirection après OAuth2 (défaut : `http://localhost:4200`) |
-| `TWELVEDATA_API_KEY` | Données boursières temps réel |
-
----
-
-## Structure du projet
-
-```
-fincoach/
-├── backend/                         # Spring Boot REST API
-│   ├── src/main/java/com/fincoach/
-│   │   ├── config/                  # Security, CORS, DotenvLoader
-│   │   ├── controller/              # REST endpoints
-│   │   ├── dto/                     # DTOs (Auth, Profile, Chat…)
-│   │   ├── model/                   # Entités JPA
-│   │   ├── repository/              # Spring Data repositories
-│   │   ├── security/                # JWT, OAuth2, Apple secret
-│   │   └── service/                 # Logique métier + IA
-│   ├── src/main/resources/
-│   │   ├── application.properties
-│   │   ├── db/migration/            # Flyway (V1–V4)
-│   │   └── META-INF/spring/         # EnvironmentPostProcessor registration
-│   └── Dockerfile
+```text
+FinCoach-Pro/
+├── backend/                           # Spring Boot 3.2 (Java 21) REST API
+│   └── src/main/java/com/fincoach/
+│       ├── config/                    # Security, CORS, AppConstants
+│       ├── controller/                # REST endpoints
+│       ├── dto/                       # Request / response objects
+│       ├── model/                     # JPA entities
+│       ├── repository/                # Spring Data repositories
+│       ├── security/                  # JWT filter, OAuth2 handlers
+│       ├── service/                   # Business logic
+│       └── util/                      # Shared utilities
 │
-├── frontend/                        # Angular 17 SPA
-│   ├── src/app/
-│   │   ├── components/              # dashboard, chat, action-plan, auth, settings
-│   │   ├── services/                # Auth, Chat, Profile, ActionPlan, TwelveData
-│   │   └── models/                  # Interfaces TypeScript
-│   ├── src/environments/            # environment.ts + environment.development.ts
-│   └── Dockerfile
+├── frontend/                          # Angular 17 SPA
+│   └── src/app/
+│       ├── core/
+│       │   ├── guards/                # authGuard (route protection)
+│       │   └── interceptors/          # JWT HTTP interceptor
+│       ├── shared/
+│       │   ├── config/                # app.config.ts — all UI constants
+│       │   └── models/                # TypeScript interfaces
+│       └── features/                  # Feature-based modules
+│           ├── auth/                  # Auth service + all auth pages
+│           │   ├── auth.service.ts
+│           │   ├── login/
+│           │   ├── register/
+│           │   ├── auth-callback/
+│           │   ├── email-confirmation/
+│           │   ├── email-verified/
+│           │   ├── forgot-password/
+│           │   └── reset-password/
+│           ├── dashboard/             # Dashboard component + service
+│           ├── action-plan/           # Action plan component + service
+│           ├── chat/                  # AI chat component + service
+│           ├── markets/               # Markets + Landing page + TwelveData service
+│           │   └── landing/
+│           └── settings/              # Account settings + profile service
 │
-├── .env.example                     # Template des variables d'environnement
-└── docker-compose.yml
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## API REST – Endpoints
+## Environment variables reference
 
-### Auth
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/api/auth/register` | Inscription email/password |
-| POST | `/api/auth/login` | Connexion email/password → JWT |
-| GET | `/api/auth/verify-email` | Vérification d'email (lien envoyé par mail) |
-| POST | `/api/auth/resend-verification` | Renvoi du lien de vérification |
-| PUT | `/api/auth/profile` | Mise à jour profil (nom, âge, mot de passe) |
-| GET | `/login/oauth2/code/google` | Callback OAuth2 Google |
-| GET | `/login/oauth2/code/microsoft` | Callback OAuth2 Microsoft |
-| GET | `/login/oauth2/code/apple` | Callback Sign in with Apple |
-
-### Données
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/dashboard/{userId}` | Tableau de bord / synthèse financière |
-| GET | `/api/profile/{userId}` | Profil financier |
-| POST | `/api/profile` | Créer/mettre à jour le profil |
-| GET | `/api/actions/{userId}` | Liste des plans d'action |
-| POST | `/api/actions` | Créer un plan d'action |
-| PUT | `/api/actions/{id}/status` | Mettre à jour statut/progrès |
-| DELETE | `/api/actions/{id}` | Supprimer un plan d'action |
-| GET | `/api/chat/{userId}` | Historique du chat |
-| POST | `/api/chat` | Envoyer un message à l'IA |
-| DELETE | `/api/chat/{userId}` | Effacer l'historique |
+| Variable | Required | Description |
+|---|---|---|
+| `POSTGRES_DB` | Yes | PostgreSQL database name |
+| `POSTGRES_USER` | Yes | PostgreSQL username |
+| `POSTGRES_PASSWORD` | Yes | PostgreSQL password |
+| `JWT_SECRET` | Yes | Base64-encoded 256-bit HMAC secret for JWT signing |
+| `OPENAI_API_KEY` | No | OpenAI API key. Leave blank to run in demo mode |
+| `TWELVEDATA_API_KEY` | No | TwelveData API key for live market data |
+| `GOOGLE_CLIENT_ID` | No | Google OAuth2 client ID |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth2 client secret |
+| `MICROSOFT_CLIENT_ID` | No | Microsoft OAuth2 client ID |
+| `MICROSOFT_CLIENT_SECRET` | No | Microsoft OAuth2 client secret |
+| `APPLE_CLIENT_ID` | No | Apple Sign In service ID |
+| `APPLE_TEAM_ID` | No | Apple developer team ID |
+| `APPLE_KEY_ID` | No | Apple Sign In key ID |
+| `APPLE_PRIVATE_KEY` | No | Apple Sign In private key (PEM, newlines as `\n`) |
+| `MAIL_HOST` | No | SMTP host. Omit to print emails to the console instead |
+| `MAIL_PORT` | No | SMTP port (default: 587) |
+| `MAIL_USERNAME` | No | SMTP login |
+| `MAIL_PASSWORD` | No | SMTP password |
+| `MAIL_SMTP_AUTH` | No | Enable SMTP authentication (default: `true`) |
+| `MAIL_SMTP_STARTTLS` | No | Enable STARTTLS encryption (default: `true`) |
+| `FRONTEND_URL` | No | Base URL for verification/reset email links (default: `http://localhost:4200`) |
 
 ---
 
-## Technologies
+## API overview
 
-| Composant | Technologie |
-|-----------|-------------|
-| Backend | Java 21, Spring Boot 3.2.3, Spring Data JPA, Flyway |
-| Sécurité | Spring Security, JWT (jjwt 0.12.6), OAuth2 (Google, Microsoft, Apple) |
-| Base de données | PostgreSQL |
-| Mail | Spring Mail — SMTP (Resend par défaut) |
-| Frontend | Angular 17, TypeScript 5.4 |
-| UI | SCSS custom, thème dark luxury |
-| IA | OpenAI GPT-4o Mini (optionnel — réponses démo sans clé) |
-| Bourse | TwelveData API (données temps réel) |
-| Containerisation | Docker, Docker Compose, Nginx |
-| CI | GitHub Actions (build + lint backend & frontend) |
+| Method | Endpoint | Auth | Purpose |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | — | Email/password signup |
+| `POST` | `/api/auth/login` | — | Email/password login |
+| `GET` | `/api/auth/verify-email?token=` | — | Verify email address |
+| `GET` | `/api/auth/me` | JWT | Current user info |
+| `PUT` | `/api/auth/profile` | JWT | Update name / change password |
+| `POST` | `/api/auth/forgot-password` | — | Request password reset email |
+| `POST` | `/api/auth/reset-password` | — | Reset password with token |
+| `GET` | `/api/dashboard/{userId}` | JWT | Financial profile + action plans + stats |
+| `POST` | `/api/profile` | JWT | Save financial profile (triggers score + action generation) |
+| `GET` | `/api/actions/{userId}` | JWT | List action plans |
+| `POST` | `/api/actions` | JWT | Create action plan |
+| `PUT` | `/api/actions/{id}/status` | JWT | Update progress / status |
+| `DELETE` | `/api/actions/{id}` | JWT | Delete action plan |
+| `GET` | `/api/chat/{userId}` | JWT | Chat history |
+| `POST` | `/api/chat` | JWT | Send message and receive AI reply |
+| `DELETE` | `/api/chat/{userId}` | JWT | Clear chat history |
 
 ---
 
-## Fonctionnalités implémentées
+## Tech stack
 
-- [x] Inscription / connexion email + password
-- [x] Vérification d'email (lien SMTP)
-- [x] OAuth2 : Google, Microsoft, Sign in with Apple
-- [x] JWT stateless (access token)
-- [x] Paramètres de compte (nom, âge, changement de mot de passe)
-- [x] Profil financier & score
-- [x] Plans d'action
-- [x] Chat IA (OpenAI ou réponses démo)
-- [x] Données boursières temps réel (TwelveData)
-- [x] Chargement automatique du `.env` au démarrage (sans Docker ni export)
-- [x] CI GitHub Actions (backend Maven + frontend TypeScript)
-- [x] Code review automatique par Claude sur les PR impactant backend, frontend ou CI (`claude-code-action@v1`)
-
-## Roadmap
-
-- [ ] Graphiques Chart.js (évolution mensuelle)
-- [ ] Export PDF du bilan financier
-- [ ] Module simulateur de crédit / retraite
-- [ ] Notifications email (objectifs atteints)
-- [ ] PWA (Progressive Web App)
+| Layer | Technology |
+|---|---|
+| Frontend | Angular 17, TypeScript 5.9, Chart.js 4, RxJS 7 |
+| Backend | Java 21, Spring Boot 3.2, Spring Security, Spring Data JPA |
+| Database | PostgreSQL 16 (schema managed by Flyway) |
+| Auth | JWT (HMAC-SHA256) + OAuth2 OIDC (Google, Microsoft, Apple) |
+| AI | OpenAI GPT-4o Mini (built-in demo mode requires no API key) |
+| Market data | TwelveData REST API (free tier: 8 requests/min) |
+| Containerisation | Docker, Docker Compose |
+| CI | GitHub Actions (`.github/workflows/ci.yml`) |
