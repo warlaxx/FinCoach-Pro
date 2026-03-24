@@ -8,6 +8,7 @@ import {
   QueryList,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LogoComponent } from '../../shared/components/logo/logo.component';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
@@ -31,7 +32,7 @@ interface StockItem {
 @Component({
   selector: 'app-markets',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, LogoComponent],
   templateUrl: './markets.component.html',
   styleUrls: ['./markets.component.scss'],
 })

@@ -8,6 +8,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { forkJoin } from 'rxjs';
@@ -30,7 +31,7 @@ interface StockData {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, LogoComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
 })

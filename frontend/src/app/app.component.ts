@@ -2,11 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, AuthUser } from './features/auth/auth.service';
+import { GalaxyBgComponent } from './shared/components/galaxy-bg/galaxy-bg.component';
+import { PageTransitionComponent } from './shared/components/page-transition/page-transition.component';
+import { LogoComponent } from './shared/components/logo/logo.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule,
+            GalaxyBgComponent, PageTransitionComponent, LogoComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -20,7 +24,8 @@ export class AppComponent implements OnInit {
    */
   get showSidebar(): boolean {
     const url = this.router.url;
-    const hiddenRoutes = ['/', '/login', '/register', '/auth/callback', '/markets', '/confirm-email', '/verify-email'];
+    const hiddenRoutes = ['/', '/login', '/register', '/auth/callback', '/markets',
+                          '/confirm-email', '/verify-email', '/forgot-password', '/reset-password'];
     return !hiddenRoutes.some(r => url === r || (r !== '/' && url.startsWith(r)));
   }
 
