@@ -57,12 +57,12 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   stocks: StockData[] = [
-    { symbol: 'CAC 40',    name: 'Bourse de Paris',     price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-cac',  color: '#C9A84C' },
-    { symbol: 'S&P 500',   name: 'Bourse USA',          price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-sp',   color: '#3B82F6' },
-    { symbol: 'BTC/EUR',   name: 'Bitcoin',             price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-btc',  color: '#F97316' },
+    { symbol: 'CAC 40',    name: 'Bourse de Paris',     price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-cac',  color: '#22C55E' },
+    { symbol: 'S&P 500',   name: 'Bourse USA',          price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-sp',   color: '#22C55E' },
+    { symbol: 'BTC/EUR',   name: 'Bitcoin',             price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-btc',  color: '#22C55E' },
     { symbol: 'LVMH',      name: 'LVMH Moet Hennessy', price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-lvmh', color: '#22C55E' },
-    { symbol: 'ETH/EUR',   name: 'Ethereum',            price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-eth',  color: '#8B5CF6' },
-    { symbol: 'MSCI World',name: 'Indice Mondial',      price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-msci', color: '#A78BFA' },
+    { symbol: 'ETH/EUR',   name: 'Ethereum',            price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-eth',  color: '#22C55E' },
+    { symbol: 'MSCI World',name: 'Indice Mondial',      price: 0, change: 0, changePercent: 0, history: [], canvasId: 'chart-msci', color: '#22C55E' },
   ];
 
   tickerStocks: { symbol: string; apiSymbol: string; price: number; change: number }[] = [
