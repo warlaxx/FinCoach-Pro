@@ -50,6 +50,7 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: brightness(0.85);
   }
   .logo-sub {
     font-size: 10px;
@@ -94,11 +95,11 @@
 
   &.active {
     background: linear-gradient(135deg,
-      rgba(201, 168, 76, 0.1),
-      rgba(201, 168, 76, 0.06));
+      rgba(20, 184, 166, 0.1),
+      rgba(20, 184, 166, 0.06));
     color: var(--gold);
-    border-color: rgba(201, 168, 76, 0.25);
-    box-shadow: 0 0 16px rgba(201, 168, 76, 0.08) inset;
+    border-color: rgba(20, 184, 166, 0.25);
+    box-shadow: 0 0 16px rgba(20, 184, 166, 0.08) inset;
 
     svg { color: var(--gold); }
 

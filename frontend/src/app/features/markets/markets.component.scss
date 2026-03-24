@@ -157,7 +157,7 @@
 
     &:focus {
       border-color: var(--gold-dim);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.1);
     }
     &::placeholder { color: var(--text-muted); }
   }
@@ -229,7 +229,7 @@
   }
 
   &.active {
-    background: rgba(201,168,76,0.1);
+    background: rgba(20,184,166,0.1);
     border-color: var(--gold-dim);
     color: var(--gold);
   }
