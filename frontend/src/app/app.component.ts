@@ -3,14 +3,13 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { CommonModule } from '@angular/common';
 import { AuthService, AuthUser } from './features/auth/auth.service';
 import { GalaxyBgComponent } from './shared/components/galaxy-bg/galaxy-bg.component';
-import { PageTransitionComponent } from './shared/components/page-transition/page-transition.component';
 import { LogoComponent } from './shared/components/logo/logo.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule,
-            GalaxyBgComponent, PageTransitionComponent, LogoComponent],
+            GalaxyBgComponent, LogoComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
