@@ -34,7 +34,7 @@
   width: 100%;
   max-width: 420px;
   margin: 24px 16px;
-  background: rgba(9, 7, 26, 0.72);
+  background: rgba(3, 1, 14, 0.90);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   border-radius: 22px;
@@ -53,7 +53,7 @@
     background: linear-gradient(135deg,
       rgba(139,92,246,0.45),
       rgba(6,182,212,0.25),
-      rgba(20,184,166,0.15),
+      rgba(91,33,182,0.15),
       rgba(139,92,246,0.2));
     z-index: -1;
   }
@@ -73,7 +73,7 @@
   .logo-name {
     font-size: 22px;
     font-weight: 800;
-    background: linear-gradient(135deg, #5EEAD4, #14B8A6);
+    background: linear-gradient(135deg, #A78BFA, #5B21B6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -160,8 +160,8 @@
 .btn-email {
   background: rgba(14,11,36,0.75);
   color: var(--text-primary);
-  border: 1px solid rgba(20,184,166,0.3) !important;
-  &:hover:not(:disabled) { background: rgba(20,184,166,0.08); border-color: rgba(20,184,166,0.5) !important; box-shadow: 0 0 16px rgba(20,184,166,0.12); }
+  border: 1px solid rgba(91,33,182,0.3) !important;
+  &:hover:not(:disabled) { background: rgba(91,33,182,0.08); border-color: rgba(91,33,182,0.5) !important; box-shadow: 0 0 16px rgba(91,33,182,0.12); }
 }
 
 // ── Divider ──────────────────────────────────────────────────
@@ -212,11 +212,11 @@
 .btn-email-submit {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #0F766E, #14B8A6, #5EEAD4);
-  color: #04181A; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #2E1065, #5B21B6, #A78BFA);
+  color: #F5F3FF; border: none; border-radius: 12px;
   font-size: 14.5px; font-weight: 700; cursor: pointer;
   transition: all 0.22s;
-  &:hover:not(:disabled) { box-shadow: 0 0 24px rgba(20,184,166,0.4); transform: translateY(-1px); }
+  &:hover:not(:disabled) { box-shadow: 0 0 24px rgba(91,33,182,0.4); transform: translateY(-1px); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 

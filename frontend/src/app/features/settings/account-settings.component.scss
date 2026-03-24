@@ -49,8 +49,8 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(20, 184, 166, 0.1);
-  border: 1px solid rgba(20, 184, 166, 0.2);
+  background: rgba(91, 33, 182, 0.1);
+  border: 1px solid rgba(91, 33, 182, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,7 +190,7 @@
 
   &:hover:not(:disabled) {
     background: #d4aa5a;
-    box-shadow: 0 4px 16px rgba(20, 184, 166, 0.3);
+    box-shadow: 0 4px 16px rgba(91, 33, 182, 0.3);
   }
 
   &:disabled {
