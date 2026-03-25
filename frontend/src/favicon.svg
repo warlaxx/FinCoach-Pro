@@ -1,10 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1a1d2e"/>
-      <stop offset="100%" stop-color="#0f1117"/>
+    <linearGradient id="fT" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#CCCCCC"/>
     </linearGradient>
+    <linearGradient id="fR" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#888888"/>
+      <stop offset="100%" stop-color="#555555"/>
+    </linearGradient>
+    <linearGradient id="fL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#333333"/>
+      <stop offset="100%" stop-color="#1A1A1A"/>
+    </linearGradient>
+    <filter id="gw">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.0" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-  <text x="32" y="46" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="36" font-weight="800" fill="#c9a84c">$</text>
+  <!-- Background: near-black rounded square -->
+  <rect width="64" height="64" rx="14" fill="#0A0A0A"/>
+  <rect width="64" height="64" rx="14" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <!-- 3D gem monochrome -->
+  <polygon points="32,16 17,30 17,44 32,44" fill="url(#fL)"/>
+  <polygon points="32,16 47,30 47,44 32,44" fill="url(#fR)"/>
+  <polygon points="32,16 47,30 32,38 17,30" fill="url(#fT)"/>
+  <!-- Edge lines -->
+  <line x1="32" y1="16" x2="47" y2="30" stroke="rgba(255,255,255,0.35)" stroke-width="0.7"/>
+  <line x1="32" y1="16" x2="17" y2="30" stroke="rgba(255,255,255,0.20)" stroke-width="0.7"/>
+  <line x1="17" y1="30" x2="17" y2="44" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+  <line x1="47" y1="30" x2="47" y2="44" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+  <line x1="17" y1="44" x2="47" y2="44" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+  <!-- $ symbol in black on white face -->
+  <text x="32" y="36" text-anchor="middle" dominant-baseline="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="10" font-weight="900" fill="#000000" filter="url(#gw)">$</text>
+  <!-- Apex dot -->
+  <circle cx="32" cy="16" r="1.2" fill="white" opacity="0.9" filter="url(#gw)"/>
 </svg>

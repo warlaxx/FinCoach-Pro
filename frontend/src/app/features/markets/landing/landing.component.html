@@ -1,18 +1,121 @@
 <!-- ========== NAVBAR ========== -->
 <nav class="navbar">
-  <div class="nav-logo">
-    <span class="logo-icon">💰</span>
+  <a class="nav-logo" routerLink="/" aria-label="FinCoach Pro — accueil">
+    <app-logo [size]="30" />
     <div>
       <span class="logo-name">FinCoach</span>
       <span class="logo-pro">PRO</span>
     </div>
-  </div>
+  </a>
   <div class="nav-links">
     <a href="#features">Fonctionnalités</a>
+    <a href="#showcase">Démo</a>
     <a routerLink="/markets">Marchés</a>
   </div>
-  <button class="btn-gold" (click)="goToLogin()">Commencer gratuitement →</button>
+  <div class="nav-actions">
+    <button class="nav-btn-ghost" (click)="goToLogin()">Connexion</button>
+    <button class="btn-gold" (click)="goToLogin()">Démarrer →</button>
+  </div>
 </nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-inner">
+    <!-- Left: Text -->
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span class="live-dot"></span>
+        IA Financière · Marchés en temps réel
+      </div>
+      <h1 class="hero-title">
+        Maîtrisez vos<br />
+        <span class="tg">finances.</span><br />
+        Investissez avec<br />
+        <span class="tg">confiance.</span>
+      </h1>
+      <p class="hero-sub">
+        FinCoach Pro analyse votre situation, génère votre score financier
+        et vous guide vers la liberté financière — avec un coach IA 24h/24.
+      </p>
+      <div class="hero-cta">
+        <button class="btn-hero" (click)="goToLogin()">
+          Créer mon tableau de bord <span class="btn-arr">→</span>
+        </button>
+        <button class="btn-ghost-hero" (click)="goToLogin()">Voir une démo</button>
+      </div>
+      <div class="hero-trust">
+        <span>✓ Gratuit</span>
+        <span>✓ Sans carte bancaire</span>
+        <span>✓ Données sécurisées</span>
+      </div>
+    </div>
+
+    <!-- Right: Dashboard mock -->
+    <div class="hero-mock-wrap">
+      <div class="hero-mock">
+        <div class="mock-bar">
+          <span class="mock-dot r"></span>
+          <span class="mock-dot y"></span>
+          <span class="mock-dot g"></span>
+          <span class="mock-title">FinCoach Pro — Dashboard</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-score-row">
+            <div class="mock-score-block">
+              <div class="ms-label">Score financier</div>
+              <div class="ms-value">B<sup>+</sup></div>
+              <div class="ms-bar"><div class="ms-fill"></div></div>
+            </div>
+            <div class="mock-mini-stats">
+              <div class="mms">
+                <div class="mms-val">+14%</div>
+                <div class="mms-lbl">Épargne</div>
+              </div>
+              <div class="mms">
+                <div class="mms-val">€2.8k</div>
+                <div class="mms-lbl">Objectif</div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-sparkline">
+            <svg viewBox="0 0 220 44" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22C55E" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#22C55E" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,34 C20,30 35,24 55,20 C75,16 85,22 105,17 C125,12 140,8 160,5 C178,3 190,10 220,7"
+                    fill="none" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M0,34 C20,30 35,24 55,20 C75,16 85,22 105,17 C125,12 140,8 160,5 C178,3 190,10 220,7 L220,44 L0,44 Z"
+                    fill="url(#sg)"/>
+            </svg>
+          </div>
+          <div class="mock-ai-row">
+            <span class="ai-icon">✨</span>
+            <span class="ai-text">Réduire vos abonnements pourrait vous économiser <strong>87€/mois.</strong></span>
+          </div>
+          <div class="mock-tasks">
+            <div class="mt-item done">✓ Livret A ouvert</div>
+            <div class="mt-item active">→ Investir 200€/mois</div>
+            <div class="mt-item">○ Rembourser crédit</div>
+          </div>
+        </div>
+      </div>
+      <div class="mock-badge mock-badge-1">
+        <span>📈</span> +12.4% ce mois
+      </div>
+      <div class="mock-badge mock-badge-2">
+        <span>🤖</span> IA active
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ========== LIVE TICKER ========== -->
 <div class="ticker-bar">
@@ -24,7 +127,6 @@
         {{ t.change >= 0 ? '+' : '' }}{{ t.change | number:'1.2-2' }}%
       </span>
     </span>
-    <!-- duplicate for seamless loop -->
     <span class="ticker-item" *ngFor="let t of tickerStocks">
       <span class="ticker-symbol">{{ t.symbol }}</span>
       <span class="ticker-price">{{ formatPrice(t.price) }}</span>
@@ -35,60 +137,185 @@
   </div>
 </div>
 
-<!-- ========== HERO ========== -->
-<section class="hero">
-  <div class="hero-badge">
-    <span class="live-dot"></span>
-    Marchés en temps réel · IA Financière · Coaching Personnalisé
+<!-- ========== STATS ========== -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-card zi delay-0">
+      <div class="counter-val" data-stat-index="0">{{ formatStatValue(0) }}+</div>
+      <div class="stat-lbl">Utilisateurs actifs</div>
+    </div>
+    <div class="stat-card zi delay-1">
+      <div class="counter-val" data-stat-index="1">{{ formatStatValue(1) }}%</div>
+      <div class="stat-lbl">Taux de satisfaction</div>
+    </div>
+    <div class="stat-card zi delay-2">
+      <div class="counter-val" data-stat-index="2">{{ formatStatValue(2) }}/5</div>
+      <div class="stat-lbl">Note moyenne</div>
+    </div>
+    <div class="stat-card zi delay-3">
+      <div class="counter-val" data-stat-index="3">{{ formatStatValue(3) }}h/7</div>
+      <div class="stat-lbl">IA disponible</div>
+    </div>
   </div>
-  <h1 class="hero-title">
-    Maîtrisez vos finances.<br />
-    <span class="text-gradient">Investissez avec confiance.</span>
-  </h1>
-  <p class="hero-subtitle">
-    FinCoach Pro analyse votre situation financière, génère votre score de santé,
-    et vous guide pas à pas vers la liberté financière — avec un assistant IA disponible 24h/24.
-  </p>
-  <div class="hero-cta">
-    <button class="btn-gold btn-lg" (click)="goToLogin()">
-      Créer mon tableau de bord gratuit
-    </button>
-    <button class="btn-ghost btn-lg" (click)="goToLogin()">
-      Voir une démo →
-    </button>
+</section>
+
+<!-- ========== APPLE-STYLE STICKY SHOWCASE ========== -->
+<section class="showcase-wrapper" id="showcase">
+  <div class="showcase-sticky">
+    <div class="showcase-inner">
+
+      <!-- Left: rotating text steps -->
+      <div class="showcase-text-col">
+        <div class="section-sublabel">Fonctionnalités clés</div>
+
+        <div class="showcase-steps-wrap">
+          <div class="showcase-step" [class.active]="showcaseStep === 0" [attr.aria-hidden]="showcaseStep !== 0 ? 'true' : 'false'">
+            <div class="showcase-step-num">{{ showcaseItems[0].num }}</div>
+            <div class="showcase-step-icon">{{ showcaseItems[0].icon }}</div>
+            <h3>{{ showcaseItems[0].title }}</h3>
+            <p>{{ showcaseItems[0].desc }}</p>
+          </div>
+          <div class="showcase-step" [class.active]="showcaseStep === 1" [attr.aria-hidden]="showcaseStep !== 1 ? 'true' : 'false'">
+            <div class="showcase-step-num">{{ showcaseItems[1].num }}</div>
+            <div class="showcase-step-icon">{{ showcaseItems[1].icon }}</div>
+            <h3>{{ showcaseItems[1].title }}</h3>
+            <p>{{ showcaseItems[1].desc }}</p>
+          </div>
+          <div class="showcase-step" [class.active]="showcaseStep === 2" [attr.aria-hidden]="showcaseStep !== 2 ? 'true' : 'false'">
+            <div class="showcase-step-num">{{ showcaseItems[2].num }}</div>
+            <div class="showcase-step-icon">{{ showcaseItems[2].icon }}</div>
+            <h3>{{ showcaseItems[2].title }}</h3>
+            <p>{{ showcaseItems[2].desc }}</p>
+          </div>
+        </div>
+
+        <div class="sc-progress">
+          <div class="sc-progress-fill"
+               [style.width.%]="(showcaseStep + 1) / showcaseItems.length * 100"></div>
+        </div>
+        <div class="sc-dots">
+          <div class="scd" [class.active]="showcaseStep >= 0"></div>
+          <div class="scd" [class.active]="showcaseStep >= 1"></div>
+          <div class="scd" [class.active]="showcaseStep >= 2"></div>
+        </div>
+      </div>
+
+      <!-- Right: visual mock cards -->
+      <div class="showcase-visual-col">
+
+        <!-- Card 1: Score -->
+        <div class="sv-card" [class.active]="showcaseStep === 0">
+          <div class="sv-hd">Score de Santé Financière</div>
+          <div class="sv-score-large">B<sup>+</sup></div>
+          <div class="sv-grades">
+            <span class="sg active">A</span>
+            <span class="sg active">B</span>
+            <span class="sg">C</span>
+            <span class="sg">D</span>
+            <span class="sg">F</span>
+          </div>
+          <div class="sv-details">
+            <div class="sv-row"><span>Revenus / Dépenses</span><span class="good">Équilibré</span></div>
+            <div class="sv-row"><span>Épargne</span><span class="good">Excellent</span></div>
+            <div class="sv-row"><span>Dettes</span><span class="warn">À optimiser</span></div>
+            <div class="sv-row"><span>Investissements</span><span class="muted">Non renseigné</span></div>
+          </div>
+        </div>
+
+        <!-- Card 2: IA Chat -->
+        <div class="sv-card" [class.active]="showcaseStep === 1">
+          <div class="sv-hd">Coach IA Personnalisé</div>
+          <div class="sv-chat">
+            <div class="svc-msg user">Comment puis-je épargner plus ?</div>
+            <div class="svc-msg ai">
+              <span class="svc-ai-icon">✨</span>
+              En analysant vos dépenses, j'identifie 3 postes optimisables ce mois...
+            </div>
+            <div class="svc-msg ai">
+              <span class="svc-ai-icon">✨</span>
+              Vos abonnements représentent <strong>214€/mois</strong>. Je vous propose une liste à revoir.
+            </div>
+            <div class="svc-typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Plan d'actions -->
+        <div class="sv-card" [class.active]="showcaseStep === 2">
+          <div class="sv-hd">Plan d'Actions</div>
+          <div class="sv-plan-progress">
+            <span>3 / 5 objectifs</span>
+            <div class="svp-bar"><div class="svp-fill" style="width: 60%"></div></div>
+          </div>
+          <div class="sv-tasks">
+            <div class="svt done">
+              <span class="svt-icon">✓</span>
+              <span>Ouvrir un Livret A</span>
+              <span class="svt-badge done">Fait</span>
+            </div>
+            <div class="svt done">
+              <span class="svt-icon">✓</span>
+              <span>Réduire les abonnements</span>
+              <span class="svt-badge done">Fait</span>
+            </div>
+            <div class="svt current">
+              <span class="svt-icon">→</span>
+              <span>Investir 200€/mois</span>
+              <span class="svt-badge current">En cours</span>
+            </div>
+            <div class="svt">
+              <span class="svt-icon">○</span>
+              <span>Rembourser crédit conso</span>
+            </div>
+            <div class="svt">
+              <span class="svt-icon">○</span>
+              <span>Épargne de précaution 6 mois</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- ========== LIVE MARKETS ========== -->
 <section class="markets" id="markets">
   <div class="section-header">
-    <div class="section-label">
+    <div class="section-label sr">
       <span class="live-dot"></span>
       Marchés financiers en direct
     </div>
-    <h2>Suivez les marchés mondiaux</h2>
-    <p>Cours mis à jour en temps réel. Restez informé pour prendre les meilleures décisions.</p>
+    <h2 class="sr delay-1">Suivez les marchés mondiaux</h2>
+    <p class="sr delay-2">Cours mis à jour en temps réel pour prendre les meilleures décisions.</p>
   </div>
-
   <div class="markets-grid">
-    <div class="market-card card" *ngFor="let stock of stocks; let i = index">
+    <div class="market-card card zi"
+         [ngClass]="'delay-' + (i % 3)"
+         *ngFor="let stock of stocks; let i = index">
       <div class="market-card-top">
         <div>
           <div class="market-symbol">{{ stock.symbol }}</div>
           <div class="market-name">{{ stock.name }}</div>
         </div>
-        <div class="market-badge" [class.positive]="stock.changePercent >= 0" [class.negative]="stock.changePercent < 0">
+        <div class="market-badge"
+             [class.positive]="stock.changePercent >= 0"
+             [class.negative]="stock.changePercent < 0">
           {{ stock.changePercent >= 0 ? '▲' : '▼' }}
           {{ stock.changePercent >= 0 ? '+' : '' }}{{ stock.changePercent | number:'1.2-2' }}%
         </div>
       </div>
-      <div class="market-price">{{ formatPrice(stock.price) }}
+      <div class="market-price">
+        {{ formatPrice(stock.price) }}
         <span class="market-currency" *ngIf="stock.symbol !== 'EUR/USD'">€</span>
       </div>
       <div class="market-chart-wrap">
         <canvas #stockCanvas [id]="stock.canvasId"></canvas>
       </div>
-      <div class="market-change" [class.up]="stock.change >= 0" [class.down]="stock.change < 0">
+      <div class="market-change"
+           [class.up]="stock.change >= 0"
+           [class.down]="stock.change < 0">
         {{ stock.change >= 0 ? '+' : '' }}{{ stock.change | number:'1.2-2' }} sur 30 points
       </div>
     </div>
@@ -98,13 +325,14 @@
 <!-- ========== FEATURES ========== -->
 <section class="features" id="features">
   <div class="section-header">
-    <div class="section-label">Tout ce dont vous avez besoin</div>
-    <h2>Votre coach financier personnel</h2>
-    <p>Des outils puissants pour analyser, optimiser et faire croître votre patrimoine.</p>
+    <div class="section-label sr">Tout ce dont vous avez besoin</div>
+    <h2 class="sr delay-1">Votre coach financier personnel</h2>
+    <p class="sr delay-2">Des outils puissants pour analyser, optimiser et faire croître votre patrimoine.</p>
   </div>
-
   <div class="features-grid">
-    <div class="feature-card card" *ngFor="let f of features">
+    <div class="feature-card card zi"
+         [ngClass]="'delay-' + (i % 3)"
+         *ngFor="let f of features; let i = index">
       <div class="feature-icon">{{ f.icon }}</div>
       <h3>{{ f.title }}</h3>
       <p>{{ f.desc }}</p>
@@ -113,25 +341,25 @@
 </section>
 
 <!-- ========== HOW IT WORKS ========== -->
-<section class="how-it-works">
+<section class="how-it-works" id="how-it-works">
   <div class="section-header">
-    <div class="section-label">Simple &amp; Rapide</div>
-    <h2>Démarrez en 3 étapes</h2>
+    <div class="section-label sr">Simple &amp; Rapide</div>
+    <h2 class="sr delay-1">Démarrez en 3 étapes</h2>
   </div>
   <div class="steps">
-    <div class="step">
+    <div class="step sl delay-0">
       <div class="step-num">01</div>
       <h3>Connectez-vous</h3>
       <p>Créez votre compte en un clic via Google, Microsoft ou Apple. Aucune carte bancaire requise.</p>
     </div>
-    <div class="step-arrow">→</div>
-    <div class="step">
+    <div class="step-arrow sr delay-1">→</div>
+    <div class="step sr delay-1">
       <div class="step-num">02</div>
       <h3>Renseignez votre profil</h3>
-      <p>Saisissez vos revenus, dépenses et épargne. Notre IA calcule votre score financier instantanément.</p>
+      <p>Saisissez revenus, dépenses et épargne. Notre IA calcule votre score financier instantanément.</p>
     </div>
-    <div class="step-arrow">→</div>
-    <div class="step">
+    <div class="step-arrow sr delay-2">→</div>
+    <div class="step sl delay-2">
       <div class="step-num">03</div>
       <h3>Suivez votre plan</h3>
       <p>Recevez un plan d'actions personnalisé et chattez avec votre coach IA pour progresser chaque mois.</p>
@@ -139,27 +367,29 @@
   </div>
 </section>
 
-<!-- ========== CTA SECTION ========== -->
+<!-- ========== CTA ========== -->
 <section class="cta-section">
   <div class="cta-glow"></div>
-  <h2>Pret a reprendre le controle de vos finances ?</h2>
-  <p>Transformez votre rapport a l'argent avec un coach IA personnalise.</p>
-  <button class="btn-gold btn-lg" (click)="goToLogin()">
-    Commencer gratuitement
-  </button>
-  <div class="cta-note">Connexion securisee &middot; Aucune carte bancaire &middot; Donnees privees</div>
+  <div class="cta-grid"></div>
+  <div class="cta-inner sr">
+    <div class="cta-badge">🚀 Rejoignez 12 500+ utilisateurs</div>
+    <h2>Prêt à reprendre le contrôle<br />de vos finances ?</h2>
+    <p>Transformez votre rapport à l'argent avec un coach IA personnalisé.</p>
+    <button class="btn-cta" (click)="goToLogin()">Commencer gratuitement →</button>
+    <div class="cta-note">Connexion sécurisée · Aucune carte bancaire · Données privées</div>
+  </div>
 </section>
 
 <!-- ========== FOOTER ========== -->
 <footer class="landing-footer">
-  <div class="footer-logo">
-    <span>💰</span>
-    <span class="logo-name">FinCoach</span>
-    <span class="logo-pro">PRO</span>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <app-logo [size]="24" />
+      <span class="logo-name">FinCoach</span>
+      <span class="logo-pro">PRO</span>
+    </div>
+    <p class="footer-tagline">Votre santé financière, notre priorité.</p>
+    <div class="footer-note">Les données de marché sont affichées à titre indicatif.</div>
+    <div class="footer-copy">© 2026 FinCoach Pro · Tous droits réservés</div>
   </div>
-  <p class="footer-tagline">Votre santé financière, notre priorité.</p>
-  <div class="footer-note">
-    Les données de marché affichées sont simulées à des fins de démonstration.
-  </div>
-  <div class="footer-copy">© 2026 FinCoach Pro · Tous droits réservés</div>
 </footer>

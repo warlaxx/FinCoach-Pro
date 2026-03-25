@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-email-verified',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, LogoComponent, RouterLink],
   templateUrl: './email-verified.component.html',
   styleUrls: ['./email-verified.component.scss']
 })

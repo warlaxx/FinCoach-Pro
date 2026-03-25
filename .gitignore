@@ -19,4 +19,5 @@ frontend/src/environments/environment.development.ts
 # IDE & data files
 .idea/
 data/
-FinCoach/
+FinCoach/frontend/dist/
+frontend/dist/
