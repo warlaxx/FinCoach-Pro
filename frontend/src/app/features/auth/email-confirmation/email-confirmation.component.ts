@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-email-confirmation',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, LogoComponent, RouterLink],
   templateUrl: './email-confirmation.component.html',
   styleUrls: ['./email-confirmation.component.scss']
 })
