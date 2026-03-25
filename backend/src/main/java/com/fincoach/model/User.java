@@ -50,6 +50,11 @@ public class User {
     @Column(nullable = false)
     private Role role = Role.USER;
 
+    // Subscription plan
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Plan plan = Plan.FREEMIUM;
+
     // Email verification
     @Column(nullable = false)
     private boolean emailVerified = false;
@@ -117,6 +122,9 @@ public class User {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public Plan getPlan() { return plan; }
+    public void setPlan(Plan plan) { this.plan = plan; }
 
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }

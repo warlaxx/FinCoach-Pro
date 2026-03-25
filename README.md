@@ -195,6 +195,101 @@ FinCoach-Pro/
 
 ---
 
+## Database schema (ERD)
+
+```text
+┌──────────────────────────┐
+│         users            │
+├──────────────────────────┤
+│ id           VARCHAR(36) │ PK
+│ email        VARCHAR     │ UNIQUE
+│ first_name   VARCHAR     │
+│ last_name    VARCHAR     │
+│ age          INTEGER     │
+│ password_hash VARCHAR    │
+│ name         VARCHAR     │
+│ picture_url  VARCHAR     │
+│ provider     VARCHAR     │ GOOGLE | MICROSOFT | APPLE | LOCAL
+│ provider_id  VARCHAR     │
+│ role         VARCHAR     │ USER | PREMIUM | ADMIN
+│ plan         VARCHAR     │ FREEMIUM | PRO | PREMIUM
+│ email_verified BOOLEAN   │
+│ created_at   TIMESTAMP   │
+│ updated_at   TIMESTAMP   │
+└──────────┬───────────────┘
+           │ 1
+           │
+     ┌─────┼──────────┬──────────────┬──────────────┐
+     │     │          │              │              │
+     ▼ N   ▼ N       ▼ N            ▼ N            ▼ N
+┌─────────────┐ ┌──────────┐ ┌──────────────┐ ┌────────────┐ ┌──────────────────┐
+│ financial_  │ │ chat_    │ │ action_      │ │ financial_ │ │ notifications    │
+│ profiles    │ │ messages │ │ plans        │ │ history    │ │                  │
+├─────────────┤ ├──────────┤ ├──────────────┤ ├────────────┤ ├──────────────────┤
+│ id BIGSERIAL│ │ id       │ │ id           │ │ id         │ │ id               │
+│ user_id  FK │ │ user_id  │ │ user_id   FK │ │ user_id FK │ │ user_id       FK │
+│ monthly_    │ │ role     │ │ title        │ │ month      │ │ title            │
+│  income     │ │ content  │ │ description  │ │ income     │ │ message          │
+│ other_income│ │ created_ │ │ category     │ │ expenses   │ │ type (INFO/      │
+│ rent        │ │  at      │ │ priority     │ │ savings    │ │  SUCCESS/WARNING/│
+│ utilities   │ └──────────┘ │ status       │ │ debt       │ │  ALERT)          │
+│ insurance   │              │ target_amount│ │ score      │ │ read             │
+│ loans       │              │ current_     │ │ created_at │ │ created_at       │
+│ subscriptions│             │  amount      │ └────────────┘ └──────────────────┘
+│ food        │              │ deadline     │
+│ transport   │              │ created_at   │
+│ leisure     │              │ updated_at   │
+│ clothing    │              └──────────────┘
+│ health      │
+│ current_    │
+│  savings    │
+│ total_debt  │
+│ monthly_    │
+│  savings_   │
+│  goal       │
+│ financial_  │
+│  score      │
+│ savings_rate│
+│ debt_ratio  │
+│ created_at  │
+│ updated_at  │
+└─────────────┘
+```
+
+All child tables use `ON DELETE CASCADE` on `user_id`.
+
+---
+
+## Flyway migrations
+
+| Version | File | Description |
+|---|---|---|
+| V1 | `V1__create_users_table.sql` | Create `users` table with auth fields |
+| V2 | `V2__create_financial_profiles_table.sql` | Create `financial_profiles` table |
+| V3 | `V3__create_chat_messages_table.sql` | Create `chat_messages` table |
+| V4 | `V4__create_action_plans_table.sql` | Create `action_plans` table |
+| V5 | `V5__add_password_reset_token.sql` | Add password reset token columns to `users` |
+| V6 | `V6__add_email_verification_expiry.sql` | Add email verification expiry to `users` |
+| V7 | `V7__add_financial_history.sql` | Create `financial_history` table (monthly snapshots) |
+| V8 | `V8__add_notifications.sql` | Create `notifications` table |
+| V9 | `V9__add_user_plan.sql` | Add `plan` column to `users` (FREEMIUM/PRO/PREMIUM) |
+| V10 | `V10__add_indexes.sql` | Add `created_at` indexes on all tables |
+
+### Flyway conventions
+
+- **Never modify** an already-applied migration (V1–V10). Always create a new version.
+- Naming: `V{N}__{description_snake_case}.sql` (two underscores after the version number)
+- Location: `backend/src/main/resources/db/migration/`
+- Always test on both an empty DB and an existing DB before merging.
+
+### Dev seed data
+
+Activate with `SPRING_PROFILES_ACTIVE=dev`. Creates:
+- Test user: `test@fincoach.dev` / `Test1234!`
+- Complete financial profile, 5 action plans, 10 chat messages, 6 months of history
+
+---
+
 ## Tech stack
 
 | Layer | Technology |
