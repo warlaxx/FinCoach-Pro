@@ -214,6 +214,7 @@
   border: 1px solid var(--border); border-radius: 12px; cursor: pointer;
   transition: all 0.2s;
   &:hover { border-color: var(--border-glow); color: #FFFFFF; background: rgba(255,255,255,0.03); }
+  &:focus-visible { outline: 2px solid var(--border-glow, rgba(255,255,255,0.3)); outline-offset: 2px; color: #FFFFFF; }
 }
 
 .hero-trust {
@@ -648,6 +649,7 @@
   border: none; border-radius: 14px; cursor: pointer;
   transition: background 0.2s, transform 0.2s;
   &:hover { background: #E8E8E8; transform: translateY(-3px); }
+  &:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255,255,255,0.2); }
 }
 
 .cta-note { margin-top: 18px; font-size: 12px; color: var(--text-muted); }
@@ -710,4 +712,14 @@
   .step-arrow { display: none; }
   .cta-section { padding: 80px 20px; }
   .landing-footer { padding: 40px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr, .zi, .sl, .sr-right {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .showcase-step, .sv-card, .btn-hero, .btn-ghost-hero, .btn-cta, .market-card, .feature-card { transition: none; }
+  .ticker-track, .live-dot { animation: none; }
 }
