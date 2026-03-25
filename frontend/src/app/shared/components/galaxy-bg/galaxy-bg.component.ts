@@ -23,6 +23,8 @@ export class GalaxyBgComponent implements OnInit, OnDestroy {
   private camera: any;
   private animId = 0;
   private starPoints: any;
+  private galaxyPoints: any;
+  private nebulaPoints: any;
   private resizeHandler = () => this.onResize();
 
   constructor(
@@ -126,9 +128,15 @@ export class GalaxyBgComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     cancelAnimationFrame(this.animId);
     window.removeEventListener('resize', this.resizeHandler);
+    [this.galaxyPoints, this.nebulaPoints].forEach((points: any) => {
+      points?.geometry?.dispose?.();
+      const material = points?.material;
+      const materials = Array.isArray(material) ? material : [material];
+      materials.forEach((mat: any) => { mat?.map?.dispose?.(); mat?.dispose?.(); });
+    });
     this.renderer?.dispose();
-    this.starPoints?.geometry?.dispose();
   }
 }

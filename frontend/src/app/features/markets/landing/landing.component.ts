@@ -28,6 +28,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private priceRefreshInterval?: ReturnType<typeof setInterval>;
   private scrollObserver?: IntersectionObserver;
   private counterObserver?: IntersectionObserver;
+  private _destroyed = false;
+  private _chartTimers: ReturnType<typeof setTimeout>[] = [];
 
   showcaseStep = 0;
 
@@ -84,7 +86,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     { icon: '📊', title: 'Score de santé financière', desc: "Note de A à F basée sur votre situation réelle : revenus, dépenses, épargne, dettes." },
     { icon: '🤖', title: 'Coach IA personnalisé',      desc: "Posez vos questions financières à notre IA et recevez des conseils sur mesure 24h/24." },
     { icon: '🎯', title: "Plan d'actions concret",     desc: "Objectifs structurés : réduire les dettes, épargner, investir — étape par étape." },
-    { icon: '💰', title: 'Suivi budgétaire',           desc: "Visualisez la répartition de vos dépenses et identifiez les postes à optimiser." },
+    { icon: '📋', title: 'Suivi budgétaire',           desc: "Visualisez la répartition de vos dépenses et identifiez les postes à optimiser." },
     { icon: '📈', title: "Objectifs d'investissement", desc: "Définissez vos cibles et suivez votre progression mois après mois." },
     { icon: '🔒', title: 'Données sécurisées',         desc: "Connexion via Google, Microsoft ou Apple. Données privées et chiffrées." },
   ];
@@ -105,6 +107,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this._destroyed = true;
+    this._chartTimers.forEach(clearTimeout);
     if (this.priceRefreshInterval) clearInterval(this.priceRefreshInterval);
     this.stocks.forEach(s => s.chart?.destroy());
     this.scrollObserver?.disconnect();
@@ -202,7 +206,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadTimeSeries(): void {
     let delay = 0;
     this.stocks.forEach(stock => {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
+        if (this._destroyed) return;
         this.twelveData.getTimeSeries(stock.symbol, '1day', 30).subscribe(series => {
           if (series.length > 0) {
             stock.history = series.map(p => p.close);
@@ -211,6 +216,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
       }, delay);
+      this._chartTimers.push(timerId);
       delay += 8_000;
     });
   }
@@ -260,6 +266,15 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateChart(stock: StockData): void {
     if (!stock.chart) return;
     const col = stock.changePercent >= 0 ? stock.color : '#EF4444';
+    const ref = this.stockCanvases.find((_, i) => this.stocks[i]?.symbol === stock.symbol);
+    if (ref?.nativeElement) {
+      const ctx = ref.nativeElement.getContext('2d');
+      if (ctx) {
+        const grad = ctx.createLinearGradient(0, 0, 0, ref.nativeElement.height);
+        grad.addColorStop(0, col + '33'); grad.addColorStop(1, col + '00');
+        stock.chart.data.datasets[0].backgroundColor = grad;
+      }
+    }
     stock.chart.data.labels = stock.history.map((_, i) => `${i}`);
     stock.chart.data.datasets[0].data = stock.history;
     stock.chart.data.datasets[0].borderColor = col;

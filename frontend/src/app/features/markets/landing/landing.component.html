@@ -1,12 +1,12 @@
 <!-- ========== NAVBAR ========== -->
 <nav class="navbar">
-  <div class="nav-logo" routerLink="/">
+  <a class="nav-logo" routerLink="/" aria-label="FinCoach Pro — accueil">
     <app-logo [size]="30" />
     <div>
       <span class="logo-name">FinCoach</span>
       <span class="logo-pro">PRO</span>
     </div>
-  </div>
+  </a>
   <div class="nav-links">
     <a href="#features">Fonctionnalités</a>
     <a href="#showcase">Démo</a>
@@ -169,19 +169,19 @@
         <div class="section-sublabel">Fonctionnalités clés</div>
 
         <div class="showcase-steps-wrap">
-          <div class="showcase-step" [class.active]="showcaseStep === 0">
+          <div class="showcase-step" [class.active]="showcaseStep === 0" [attr.aria-hidden]="showcaseStep !== 0 ? 'true' : 'false'">
             <div class="showcase-step-num">{{ showcaseItems[0].num }}</div>
             <div class="showcase-step-icon">{{ showcaseItems[0].icon }}</div>
             <h3>{{ showcaseItems[0].title }}</h3>
             <p>{{ showcaseItems[0].desc }}</p>
           </div>
-          <div class="showcase-step" [class.active]="showcaseStep === 1">
+          <div class="showcase-step" [class.active]="showcaseStep === 1" [attr.aria-hidden]="showcaseStep !== 1 ? 'true' : 'false'">
             <div class="showcase-step-num">{{ showcaseItems[1].num }}</div>
             <div class="showcase-step-icon">{{ showcaseItems[1].icon }}</div>
             <h3>{{ showcaseItems[1].title }}</h3>
             <p>{{ showcaseItems[1].desc }}</p>
           </div>
-          <div class="showcase-step" [class.active]="showcaseStep === 2">
+          <div class="showcase-step" [class.active]="showcaseStep === 2" [attr.aria-hidden]="showcaseStep !== 2 ? 'true' : 'false'">
             <div class="showcase-step-num">{{ showcaseItems[2].num }}</div>
             <div class="showcase-step-icon">{{ showcaseItems[2].icon }}</div>
             <h3>{{ showcaseItems[2].title }}</h3>

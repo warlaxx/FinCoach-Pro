@@ -7,11 +7,18 @@ import { filter } from 'rxjs/operators';
 export class TransitionService {
   private _active = new BehaviorSubject<boolean>(false);
   active$ = this._active.asObservable();
+  private _timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private router: Router) {
     this.router.events.pipe(
       filter(e => e instanceof NavigationStart)
-    ).subscribe(() => this._active.next(true));
+    ).subscribe(() => {
+      if (this._timeoutId !== null) {
+        clearTimeout(this._timeoutId);
+        this._timeoutId = null;
+      }
+      this._active.next(true);
+    });
 
     this.router.events.pipe(
       filter(e =>
@@ -20,7 +27,10 @@ export class TransitionService {
         e instanceof NavigationError
       )
     ).subscribe(() => {
-      setTimeout(() => this._active.next(false), 350);
+      this._timeoutId = setTimeout(() => {
+        this._active.next(false);
+        this._timeoutId = null;
+      }, 350);
     });
   }
 }
