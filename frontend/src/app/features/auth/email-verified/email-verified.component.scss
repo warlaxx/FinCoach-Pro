@@ -10,6 +10,7 @@
   background: #080808; border: 1px solid #1C1C1C;
   border-radius: 22px; padding: 44px 36px;
   display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;
+
   box-shadow: 0 24px 80px rgba(0,0,0,0.8);
   &::before { content: ''; position: absolute; inset: -1px; border-radius: 23px; background: rgba(255,255,255,0.03); z-index: -1; }
 }
@@ -33,5 +34,6 @@
   border-radius: 12px; color: var(--text-secondary); font-size: 14px; font-weight: 500;
   cursor: pointer; transition: all 0.2s; text-decoration: none;
   &:hover { border-color: #333; color: #FFFFFF; }
+  &:focus-visible { outline: none; border-color: rgba(139,92,246,0.5); color: var(--text-primary); box-shadow: 0 0 0 2px rgba(139,92,246,0.3); }
 }
 @media (max-width: 480px) { .verify-card { padding: 32px 20px; } }

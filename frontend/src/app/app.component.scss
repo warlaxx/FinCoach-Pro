@@ -93,6 +93,13 @@
     border-color: rgba(139, 92, 246, 0.15);
   }
 
+  &:focus-visible {
+    outline: none;
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+  }
+
   &.active {
     background: linear-gradient(135deg,
       rgba(91, 33, 182, 0.1),
@@ -200,6 +207,13 @@
   &:hover {
     color: #f87171;
     background: rgba(239, 68, 68, 0.12);
+  }
+
+  &:focus-visible {
+    outline: none;
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.12);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
   }
 }
 

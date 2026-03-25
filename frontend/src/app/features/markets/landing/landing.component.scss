@@ -58,7 +58,7 @@
   border-bottom: 1px solid var(--border);
 
   .nav-logo {
-    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none;
     .logo-name { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: #FFFFFF; }
     .logo-pro  { font-size: 9px; color: var(--text-muted); letter-spacing: 2.5px; text-transform: uppercase; margin-left: 3px; }
   }
@@ -185,8 +185,9 @@
 }
 
 // Pas de gradient coloré — texte blanc pur
-.tg { color: #FFFFFF; }
-.text-gradient { color: #FFFFFF; }
+%tg { color: #FFFFFF; }
+.tg { @extend %tg; }
+.text-gradient { @extend %tg; }
 
 .hero-sub {
   font-size: 17px; color: var(--text-secondary); line-height: 1.75;
@@ -204,6 +205,7 @@
   transition: background 0.2s, transform 0.2s;
   .btn-arr { font-size: 16px; }
   &:hover { background: #E8E8E8; transform: translateY(-2px); }
+  &:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255,255,255,0.2); }
 }
 
 .btn-ghost-hero {
