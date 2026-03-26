@@ -124,9 +124,9 @@ class ScoringServiceTest {
         // income=2500, expenses=1875 (75%) → savingsRate=25% → 100pts
         // totalDebt=90000 / (2500*12)=30000 → 300% → 0pts
         // expenseRatio=1875/2500=75% → 0pts
-        // emergencyRatio=1406/(1875*3)=0.25 → 50pts
+        // emergencyRatio=1500/(1875*3)=0.267 → 50pts  (was 1406 → 0.2497 < 0.25, wrong band)
         // weighted: 0.30*100 + 0.25*0 + 0.25*0 + 0.20*50 = 30+0+0+10 = 40 → D
-        FinancialProfile p = profile(2500, 1875, 90000, 1406);
+        FinancialProfile p = profile(2500, 1875, 90000, 1500);
         ScoreResult result = service.calculateScore(p);
 
         assertEquals("D", result.getGrade());
