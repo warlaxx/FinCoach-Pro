@@ -26,7 +26,12 @@ public class ScoreResult {
 
     /** Factory for incomplete / unevaluable profiles. */
     public static ScoreResult incomplete(String reason) {
-        return new ScoreResult("N/A", 0, new LinkedHashMap<>(), reason);
+        Map<String, Integer> breakdown = new LinkedHashMap<>();
+        breakdown.put("savingsRate", 0);
+        breakdown.put("debtRatio", 0);
+        breakdown.put("expenseRatio", 0);
+        breakdown.put("emergencyFund", 0);
+        return new ScoreResult("N/A", 0, breakdown, reason);
     }
 
     public String getGrade() { return grade; }

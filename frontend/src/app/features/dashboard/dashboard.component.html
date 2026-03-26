@@ -282,12 +282,12 @@
       <div class="score-breakdown-header">
         <div>
           <h3 class="card-title">Détail du score financier</h3>
-          <p class="score-message" [style.color]="getScoreColor(p.financialScore)">
+          <p class="score-message" [style.color]="getScoreColor(p.scoreBreakdown.grade)">
             {{ getScoreMessage(p) }}
           </p>
         </div>
         <div class="score-total-badge">
-          <span class="score-total-value" [style.color]="getScoreColor(p.financialScore)">
+          <span class="score-total-value" [style.color]="getScoreColor(p.scoreBreakdown.grade)">
             {{ p.scoreBreakdown.totalScore }}
           </span>
           <span class="score-total-label">/ 100</span>

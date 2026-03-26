@@ -169,14 +169,16 @@ public class ProfileController {
                         + orZero(p.getSubscriptions()) + orZero(p.getClothing()) + orZero(p.getHealth())));
         m.put("updatedAt", p.getUpdatedAt());
 
-        // Score breakdown (calculé à la volée — non persisté)
+        // Score breakdown (calculé à la volée — non persisté, omis si profil incomplet)
         ScoreResult scoreResult = scoringService.calculateScore(p);
-        m.put("scoreBreakdown", Map.of(
-                "grade", scoreResult.getGrade(),
-                "totalScore", scoreResult.getTotalScore(),
-                "breakdown", scoreResult.getBreakdown(),
-                "message", scoreResult.getMessage()
-        ));
+        if (!"N/A".equals(scoreResult.getGrade())) {
+            m.put("scoreBreakdown", Map.of(
+                    "grade", scoreResult.getGrade(),
+                    "totalScore", scoreResult.getTotalScore(),
+                    "breakdown", scoreResult.getBreakdown(),
+                    "message", scoreResult.getMessage()
+            ));
+        }
 
         // Champs bruts pour pré-remplissage du formulaire
         m.put("raw", Map.ofEntries(

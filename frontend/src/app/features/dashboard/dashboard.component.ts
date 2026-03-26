@@ -166,10 +166,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const b = p.scoreBreakdown?.breakdown;
     if (!b) return [];
     return [
-      { label: "Taux d'épargne",    icon: '💰', weight: '30%', score: b.savingsRate,   ...this.criteriaStyle(b.savingsRate) },
-      { label: 'Ratio dettes',       icon: '📋', weight: '25%', score: b.debtRatio,     ...this.criteriaStyle(b.debtRatio) },
-      { label: 'Ratio charges',      icon: '🏠', weight: '25%', score: b.expenseRatio,  ...this.criteriaStyle(b.expenseRatio) },
-      { label: 'Épargne urgence',    icon: '🛡️', weight: '20%', score: b.emergencyFund, ...this.criteriaStyle(b.emergencyFund) },
+      { label: "Taux d'épargne",    icon: '💰', weight: '30%', score: b.savingsRate   ?? 0, ...this.criteriaStyle(b.savingsRate   ?? 0) },
+      { label: 'Ratio dettes',       icon: '📋', weight: '25%', score: b.debtRatio     ?? 0, ...this.criteriaStyle(b.debtRatio     ?? 0) },
+      { label: 'Ratio charges',      icon: '🏠', weight: '25%', score: b.expenseRatio  ?? 0, ...this.criteriaStyle(b.expenseRatio  ?? 0) },
+      { label: 'Épargne urgence',    icon: '🛡️', weight: '20%', score: b.emergencyFund ?? 0, ...this.criteriaStyle(b.emergencyFund ?? 0) },
     ];
   }
 

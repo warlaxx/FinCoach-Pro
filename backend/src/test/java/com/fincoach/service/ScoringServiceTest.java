@@ -81,14 +81,14 @@ class ScoringServiceTest {
     // ── Grade B ───────────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("Grade B: good savings, moderate debt, reasonable expenses")
+    @DisplayName("Grade B: good savings, moderate debt, moderate expenses, partial emergency fund")
     void gradeB() {
-        // income=4000, expenses=1800 (45%) → savingsRate=55% → 100pts
-        // totalDebt=60000 / (4000*12)=48000 → 125% → 0pts
-        // expenseRatio=1800/4000=45% → 75pts
-        // emergencyRatio=20000/(1800*3)=3.7 → 100pts
-        // weighted: 0.30*100 + 0.25*0 + 0.25*75 + 0.20*100 = 30+0+18.75+20 = 68.75 → 69 → B
-        FinancialProfile p = profile(4000, 1800, 60000, 20000);
+        // income=3000, expenses=1350 (45%) → savingsRate=55% → 100pts
+        // totalDebt=7200 / (3000*12)=36000 → 20% → 75pts
+        // expenseRatio=1350/3000=45% → 75pts
+        // emergencyRatio=1500/(1350*3)=0.37 → 50pts
+        // weighted: 0.30*100 + 0.25*75 + 0.25*75 + 0.20*50 = 30+18.75+18.75+10 = 77.5 → 78 → B
+        FinancialProfile p = profile(3000, 1350, 7200, 1500);
         ScoreResult result = service.calculateScore(p);
 
         assertEquals("B", result.getGrade());
@@ -198,22 +198,18 @@ class ScoringServiceTest {
     }
 
     @Test
-    @DisplayName("Profile with zero expenses and zero debt earns grade A")
+    @DisplayName("Profile with zero expenses and zero debt earns grade B (emergencyFund=0 due to zero expenses)")
     void perfectProfileNoExpenses() {
         // income=3000, expenses=0 → savingsRate=100% → 100
-        // debt=0 / (3000*12) → 0% → 100
-        // expenseRatio=0% → 100
-        // emergencyRatio=0/(0*3) — zero expenses edge case handled: 0 → 0pts
-        // weighted: 0.30*100 + 0.25*100 + 0.25*100 + 0.20*0 = 80 → B (edge)
-        // Adjust: give savings enough to cover 3 months of... 0 expenses → emergencyRatio undefined.
-        // With totalExpenses=0 emergencyScore=0 (ratio=0).
-        // 0.30*100+0.25*100+0.25*100+0.20*0 = 80 → B
+        // totalDebt=0 / (3000*12) → 0% → 100
+        // expenseRatio=0/3000=0% → 100
+        // emergencyRatio: totalExpenses=0 → ratio=0 → 0pts (edge case)
+        // weighted: 0.30*100 + 0.25*100 + 0.25*100 + 0.20*0 = 80 → B
         FinancialProfile p = profile(3000, 0, 0, 9000);
         ScoreResult result = service.calculateScore(p);
 
-        assertNotNull(result.getGrade());
-        assertTrue(result.getTotalScore() >= 0 && result.getTotalScore() <= 100);
-        // All four keys present
+        assertEquals("B", result.getGrade());
+        assertEquals(80, result.getTotalScore());
         assertBreakdownComplete(result);
     }
 
