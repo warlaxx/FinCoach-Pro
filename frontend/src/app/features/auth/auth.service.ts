@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, catchError, tap, filter, first, switchMap, map } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError, catchError, tap, filter, first, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JWT_STORAGE_KEY } from '../../shared/config/app.config';
 
@@ -78,11 +78,18 @@ export class AuthService {
 
   handleCallback(token: string): Observable<AuthUser> {
     localStorage.setItem(this.TOKEN_KEY, token);
-    return this.loadCurrentUser().pipe(
-      switchMap(() => this.currentUser$.pipe(
-        filter((user): user is AuthUser => user !== null),
-        first()
-      ))
+    return this.http.get<AuthUser>(`${this.API}/api/auth/me`).pipe(
+      tap(user => {
+        this.currentUserSubject.next(user);
+        this.authReadySubject.next(true);
+      }),
+      catchError(err => {
+        if (err.status === 401 || err.status === 403) {
+          this.logout();
+        }
+        this.authReadySubject.next(true);
+        return throwError(() => err);
+      })
     );
   }
 
