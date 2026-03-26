@@ -19,8 +19,12 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const token = auth.getToken();
 
-  // Guard: only attach JWT for requests to our own backend, not to third-party APIs
-  const isBackendRequest = environment.apiBaseUrl && req.url.startsWith(environment.apiBaseUrl);
+  // Attach JWT for requests to our own backend, not to third-party APIs.
+  // When apiBaseUrl is set (e.g. http://localhost:8080), match on that prefix.
+  // When apiBaseUrl is empty (production with relative URLs), match on /api/.
+  const isBackendRequest = environment.apiBaseUrl
+    ? req.url.startsWith(environment.apiBaseUrl)
+    : req.url.startsWith('/api/') || req.url.startsWith('api/');
 
   if (token && isBackendRequest) {
     const authReq = req.clone({
