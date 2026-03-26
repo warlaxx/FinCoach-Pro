@@ -3,9 +3,9 @@ export interface ActionPlan {
   userId: string;
   title: string;
   description: string;
-  category: "EPARGNE" | "DETTE" | "BUDGET" | "INVESTISSEMENT";
+  category: "EPARGNE" | "DETTE" | "BUDGET" | "INVESTISSEMENT" | "AUTRE";
   priority: "HAUTE" | "MOYENNE" | "FAIBLE";
-  status?: "EN_COURS" | "TERMINE" | "REPORTE";
+  status?: "A_FAIRE" | "EN_COURS" | "TERMINE" | "ABANDONNE";
   targetAmount?: number;
   currentAmount?: number;
   progressPercent?: number;

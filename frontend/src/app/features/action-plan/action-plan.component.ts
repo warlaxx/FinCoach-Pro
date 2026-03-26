@@ -17,8 +17,10 @@ export class ActionPlanComponent implements OnInit {
   loading = true;
   showNew = false;
   filter = "all";
+  categoryFilter = "all";
   editingId: number | null = null;
   editAmount: number = 0;
+  showConfetti = false;
 
   newAction: Partial<ActionPlan> = {
     title: "",
@@ -50,10 +52,29 @@ export class ActionPlanComponent implements OnInit {
   }
 
   applyFilter() {
-    if (this.filter === "all") this.filtered = this.actions;
-    else if (["EN_COURS", "TERMINE", "REPORTE"].includes(this.filter))
-      this.filtered = this.actions.filter((a) => a.status === this.filter);
-    else this.filtered = this.actions.filter((a) => a.category === this.filter);
+    let result = this.actions;
+
+    // Status filter
+    if (this.filter !== "all") {
+      result = result.filter((a) => a.status === this.filter);
+    }
+
+    // Category filter
+    if (this.categoryFilter !== "all") {
+      result = result.filter((a) => a.category === this.categoryFilter);
+    }
+
+    this.filtered = result;
+  }
+
+  setStatusFilter(f: string) {
+    this.filter = f;
+    this.applyFilter();
+  }
+
+  setCategoryFilter(f: string) {
+    this.categoryFilter = f;
+    this.applyFilter();
   }
 
   createAction() {
@@ -75,12 +96,21 @@ export class ActionPlanComponent implements OnInit {
   markDone(a: ActionPlan) {
     this.actionService
       .updateActionStatus(a.id!, "TERMINE", a.targetAmount || undefined)
-      .subscribe(() => this.load());
+      .subscribe(() => {
+        this.triggerConfetti();
+        this.load();
+      });
   }
 
   reopen(a: ActionPlan) {
     this.actionService
       .updateActionStatus(a.id!, "EN_COURS")
+      .subscribe(() => this.load());
+  }
+
+  abandon(a: ActionPlan) {
+    this.actionService
+      .updateActionStatus(a.id!, "ABANDONNE")
       .subscribe(() => this.load());
   }
 
@@ -90,10 +120,14 @@ export class ActionPlanComponent implements OnInit {
   }
 
   updateProgress(a: ActionPlan) {
+    const wasNotDone = a.status !== "TERMINE";
     this.actionService
       .updateActionStatus(a.id!, a.status!, this.editAmount)
-      .subscribe(() => {
+      .subscribe((updated) => {
         this.editingId = null;
+        if (wasNotDone && updated.status === "TERMINE") {
+          this.triggerConfetti();
+        }
         this.load();
       });
   }
@@ -123,18 +157,66 @@ export class ActionPlanComponent implements OnInit {
     return this.actions.reduce((sum, a) => sum + (a.currentAmount || 0), 0);
   }
 
+  /** Parse YYYY-MM-DD as local date (not UTC) to avoid timezone off-by-one */
+  private parseLocalDate(dateStr: string): Date {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  private startOfToday(): Date {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
   isOverdue(a: ActionPlan): boolean {
     return (
       !!a.deadline &&
-      new Date(a.deadline) < new Date() &&
+      this.parseLocalDate(a.deadline) < this.startOfToday() &&
       a.status !== "TERMINE"
     );
   }
 
+  daysRemaining(a: ActionPlan): number | null {
+    if (!a.deadline) return null;
+    const deadline = this.parseLocalDate(a.deadline);
+    const today = this.startOfToday();
+    const diff = deadline.getTime() - today.getTime();
+    return Math.round(diff / (1000 * 60 * 60 * 24));
+  }
+
+  getDeadlineLabel(a: ActionPlan): string {
+    const days = this.daysRemaining(a);
+    if (days === null) return "";
+    if (a.status === "TERMINE") return "";
+    if (days < 0) return `En retard de ${Math.abs(days)} jour${Math.abs(days) > 1 ? "s" : ""}`;
+    if (days === 0) return "Aujourd'hui !";
+    if (days === 1) return "Demain";
+    return `${days} jours restants`;
+  }
+
   getCategoryIcon(cat: string): string {
     return (
-      { EPARGNE: "💰", DETTE: "📉", BUDGET: "📊", INVESTISSEMENT: "📈" }[cat] ||
+      { EPARGNE: "\u{1F4B0}", DETTE: "\u{1F4C9}", BUDGET: "\u{1F4CA}", INVESTISSEMENT: "\u{1F4C8}", AUTRE: "\u{1F3AF}" }[cat] ||
       ""
     );
+  }
+
+  getStatusIcon(status: string): string {
+    return (
+      { A_FAIRE: "\u{25CB}", EN_COURS: "\u{25B6}", TERMINE: "\u2713", ABANDONNE: "\u{2715}" }[status] ||
+      "\u{25B6}"
+    );
+  }
+
+  getStatusLabel(status: string): string {
+    return (
+      { A_FAIRE: "\u00C0 faire", EN_COURS: "En cours", TERMINE: "Termin\u00E9", ABANDONNE: "Abandonn\u00E9" }[status] ||
+      status
+    );
+  }
+
+  triggerConfetti() {
+    this.showConfetti = true;
+    setTimeout(() => (this.showConfetti = false), 3000);
   }
 }

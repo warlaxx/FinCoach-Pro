@@ -16,9 +16,17 @@ public class ActionPlan {
 
     @Column(length = 1000)
     private String description;
-    private String category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private ActionCategorie category;
+
     private String priority;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ActionStatut status;
+
     private Double targetAmount;
     private Double currentAmount;
     private LocalDate deadline;
@@ -30,8 +38,8 @@ public class ActionPlan {
     public ActionPlan() {
     }
 
-    public ActionPlan(Long id, String userId, String title, String description, String category,
-            String priority, String status, Double targetAmount, Double currentAmount,
+    public ActionPlan(Long id, String userId, String title, String description, ActionCategorie category,
+            String priority, ActionStatut status, Double targetAmount, Double currentAmount,
             LocalDate deadline, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.userId = userId;
@@ -52,7 +60,7 @@ public class ActionPlan {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null)
-            status = "EN_COURS";
+            status = ActionStatut.EN_COURS;
     }
 
     @PreUpdate
@@ -92,11 +100,11 @@ public class ActionPlan {
         this.description = description;
     }
 
-    public String getCategory() {
+    public ActionCategorie getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(ActionCategorie category) {
         this.category = category;
     }
 
@@ -108,11 +116,11 @@ public class ActionPlan {
         this.priority = priority;
     }
 
-    public String getStatus() {
+    public ActionStatut getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ActionStatut status) {
         this.status = status;
     }
 
