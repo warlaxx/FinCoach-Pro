@@ -27,6 +27,8 @@ export const PRICE_REFRESH_INTERVAL_MS = 60_000;
 export const RESEND_EMAIL_COOLDOWN_S = 60;
 /** Dashboard API timeout (ms) — fail fast rather than hang forever */
 export const DASHBOARD_REQUEST_TIMEOUT_MS = 10_000;
+/** Auth /api/auth/me timeout (ms) — prevents authReady$ from hanging forever */
+export const AUTH_REQUEST_TIMEOUT_MS = 8_000;
 
 // ─── Brand Colors ──────────────────────────────────────────────────────────
 export const COLOR_BRAND_GOLD   = '#C9A84C';
