@@ -180,19 +180,32 @@
     </div>
   </div>
 
+  <!-- Error state -->
+  <div class="empty-state card animate-in" *ngIf="!loading && loadError && !showForm">
+    <div class="empty-icon">⚠️</div>
+    <h2>Impossible de charger le tableau de bord</h2>
+    <p>
+      Le serveur est temporairement indisponible. Vérifiez votre connexion et réessayez.
+    </p>
+    <button class="btn-gold" (click)="loadDashboard()">
+      Réessayer
+    </button>
+  </div>
+
   <!-- No profile state -->
   <div
     class="empty-state card animate-in"
-    *ngIf="!loading && !data?.profile && !showForm"
+    *ngIf="!loading && !loadError && !data?.profile && !showForm"
   >
     <div class="empty-icon">📊</div>
-    <h2>Commencez votre bilan financier</h2>
+    <h2>Aucune donnée financière</h2>
     <p>
-      Renseignez votre profil pour obtenir votre score de santé financière et un
-      plan d'action personnalisé.
+      Pour utiliser FinCoach Pro, vous devez d'abord renseigner votre profil financier.
+      Cela ne prend que 2 minutes et nous permettra de calculer votre score de santé financière,
+      de vous proposer un plan d'action personnalisé et des recommandations adaptées à votre situation.
     </p>
     <button class="btn-gold" (click)="showForm = true">
-      Créer mon profil →
+      Remplir mon profil financier →
     </button>
   </div>
 
