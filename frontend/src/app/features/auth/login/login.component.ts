@@ -52,10 +52,19 @@ export class LoginComponent implements OnInit {
 
     this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).subscribe({
       next: (res) => {
-        this.emailLoading = false;
         if (res.token) {
-          this.auth.handleCallback(res.token);
-          this.router.navigate(['/dashboard']);
+          this.auth.handleCallback(res.token).subscribe({
+            next: () => {
+              this.emailLoading = false;
+              this.router.navigate(['/dashboard']);
+            },
+            error: () => {
+              this.emailLoading = false;
+              this.emailError = 'Erreur lors du chargement du profil.';
+            }
+          });
+        } else {
+          this.emailLoading = false;
         }
       },
       error: (err) => {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, first, filter, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JWT_STORAGE_KEY } from '../../shared/config/app.config';
 
@@ -70,9 +70,14 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  handleCallback(token: string): void {
+  handleCallback(token: string): Observable<AuthUser> {
     localStorage.setItem(this.TOKEN_KEY, token);
     this.loadCurrentUser();
+    // Returns an observable that emits once the user is loaded
+    return this.currentUser$.pipe(
+      filter((user): user is AuthUser => user !== null),
+      first()
+    );
   }
 
   loadCurrentUser(): void {
