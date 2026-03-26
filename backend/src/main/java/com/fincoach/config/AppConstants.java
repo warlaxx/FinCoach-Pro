@@ -57,11 +57,13 @@ public final class AppConstants {
     public static final double EMERGENCY_FUND_DECENT  = 3.0;
     public static final double EMERGENCY_FUND_MINIMAL = 1.0;
 
-    // ─── Score Grade Boundaries (points out of 100) ──────────────────────────
-    public static final int GRADE_A = 80;
-    public static final int GRADE_B = 60;
-    public static final int GRADE_C = 40;
-    public static final int GRADE_D = 20;
+    // ─── Score Grade Boundaries (weighted score 0–100) ───────────────────────
+    // Algorithm: 30% savings rate + 25% debt ratio + 25% expense ratio + 20% emergency fund
+    public static final int GRADE_A = 85;
+    public static final int GRADE_B = 70;
+    public static final int GRADE_C = 55;
+    public static final int GRADE_D = 40;
+    public static final int GRADE_E = 25;
 
     // ─── Action Plan Auto-Generation Triggers ────────────────────────────────
     /** Auto-generate a savings action when savings rate is below this value (%). */

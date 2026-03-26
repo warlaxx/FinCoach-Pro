@@ -1,6 +1,7 @@
 package com.fincoach.controller;
 
 import com.fincoach.dto.FinancialProfileRequest;
+import com.fincoach.dto.ScoreResult;
 import com.fincoach.model.FinancialProfile;
 import com.fincoach.repository.FinancialProfileRepository;
 import com.fincoach.service.ActionPlanService;
@@ -167,6 +168,17 @@ public class ProfileController {
                 "other", orZero(p.getUtilities()) + orZero(p.getInsurance())
                         + orZero(p.getSubscriptions()) + orZero(p.getClothing()) + orZero(p.getHealth())));
         m.put("updatedAt", p.getUpdatedAt());
+
+        // Score breakdown (calculé à la volée — non persisté, omis si profil incomplet)
+        ScoreResult scoreResult = scoringService.calculateScore(p);
+        if (!"N/A".equals(scoreResult.getGrade())) {
+            m.put("scoreBreakdown", Map.of(
+                    "grade", scoreResult.getGrade(),
+                    "totalScore", scoreResult.getTotalScore(),
+                    "breakdown", scoreResult.getBreakdown(),
+                    "message", scoreResult.getMessage()
+            ));
+        }
 
         // Champs bruts pour pré-remplissage du formulaire
         m.put("raw", Map.ofEntries(

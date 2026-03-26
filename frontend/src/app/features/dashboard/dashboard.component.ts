@@ -10,7 +10,7 @@ import { AuthService } from "../auth/auth.service";
 import { FinancialProfile } from "../../shared/models/financial-profile.model";
 import { DashboardData } from "../../shared/models/dashboard-data.model";
 import { FinancialSummary } from "../../shared/models/financial-summary.model";
-import { SCORE_LABELS, COLOR_BLUE, COLOR_POSITIVE, COLOR_ORANGE, COLOR_PURPLE, COLOR_NEGATIVE, COLOR_BRAND_GOLD, DASHBOARD_REQUEST_TIMEOUT_MS } from "../../shared/config/app.config";
+import { SCORE_LABELS, SCORE_COLORS, COLOR_BLUE, COLOR_POSITIVE, COLOR_ORANGE, COLOR_PURPLE, COLOR_NEGATIVE, COLOR_BRAND_GOLD, COLOR_YELLOW, DASHBOARD_REQUEST_TIMEOUT_MS } from "../../shared/config/app.config";
 
 interface BreakdownItem {
   label: string;
@@ -18,6 +18,15 @@ interface BreakdownItem {
   amount: number;
   color: string;
   percent: number;
+}
+
+interface ScoreCriteriaItem {
+  label: string;
+  icon: string;
+  weight: string;
+  score: number;
+  interpretation: string;
+  color: string;
 }
 
 @Component({
@@ -143,6 +152,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getScoreLabel(score: string): string {
     return SCORE_LABELS[score] ?? '';
+  }
+
+  getScoreColor(grade: string): string {
+    return SCORE_COLORS[grade] ?? '#8892A4';
+  }
+
+  getScoreMessage(p: FinancialSummary): string {
+    return p.scoreBreakdown?.message ?? '';
+  }
+
+  getScoreCriteriaItems(p: FinancialSummary): ScoreCriteriaItem[] {
+    const b = p.scoreBreakdown?.breakdown;
+    if (!b) return [];
+    return [
+      { label: "Taux d'épargne",    icon: '💰', weight: '30%', score: b.savingsRate   ?? 0, ...this.criteriaStyle(b.savingsRate   ?? 0) },
+      { label: 'Ratio dettes',       icon: '📋', weight: '25%', score: b.debtRatio     ?? 0, ...this.criteriaStyle(b.debtRatio     ?? 0) },
+      { label: 'Ratio charges',      icon: '🏠', weight: '25%', score: b.expenseRatio  ?? 0, ...this.criteriaStyle(b.expenseRatio  ?? 0) },
+      { label: 'Épargne urgence',    icon: '🛡️', weight: '20%', score: b.emergencyFund ?? 0, ...this.criteriaStyle(b.emergencyFund ?? 0) },
+    ];
+  }
+
+  private criteriaStyle(score: number): { color: string; interpretation: string } {
+    if (score >= 75) return { color: COLOR_POSITIVE, interpretation: 'Bon' };
+    if (score >= 50) return { color: COLOR_YELLOW,   interpretation: 'Moyen' };
+    if (score >= 25) return { color: COLOR_ORANGE,   interpretation: 'Fragile' };
+    return { color: COLOR_NEGATIVE, interpretation: 'Critique' };
   }
 
   getBreakdownItems(financialSummary: FinancialSummary): BreakdownItem[] {

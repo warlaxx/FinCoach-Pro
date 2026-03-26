@@ -141,6 +141,118 @@
   color: var(--gold) !important;
 }
 
+// ── Score breakdown card ──────────────────────────────────────────────────────
+
+.score-breakdown-card {
+  .score-breakdown-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+
+  .score-message {
+    font-size: 13px;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .score-total-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .score-total-value {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-total-label {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+}
+
+.criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.criteria-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+
+  .criteria-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .criteria-icon {
+    font-size: 16px;
+  }
+
+  .criteria-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+
+  .criteria-weight {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .criteria-score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .criteria-bar-wrap {
+    flex: 1;
+  }
+
+  .criteria-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .criteria-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .criteria-value {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .criteria-interp {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+}
+
 .mid-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

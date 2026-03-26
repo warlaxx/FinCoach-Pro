@@ -51,5 +51,16 @@ export const SCORE_LABELS: Record<string, string> = {
   B: 'Bon',
   C: 'Moyen',
   D: 'Fragile',
+  E: 'Préoccupant',
   F: 'Critique',
+};
+
+// ─── Financial Score Colors (A → F) ────────────────────────────────────────
+export const SCORE_COLORS: Record<string, string> = {
+  A: '#22C55E',
+  B: '#84CC16',
+  C: '#EAB308',
+  D: '#F97316',
+  E: '#EF4444',
+  F: '#DC2626',
 };
