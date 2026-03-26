@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError, catchError, tap, filter, first, switchMap, map } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, throwError, catchError, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JWT_STORAGE_KEY } from '../../shared/config/app.config';
 
@@ -78,7 +78,9 @@ export class AuthService {
 
   handleCallback(token: string): Observable<AuthUser> {
     localStorage.setItem(this.TOKEN_KEY, token);
-    return this.http.get<AuthUser>(`${this.API}/api/auth/me`).pipe(
+    // Explicitly send the token — don't rely on the interceptor for this critical call
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return this.http.get<AuthUser>(`${this.API}/api/auth/me`, { headers }).pipe(
       tap(user => {
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
@@ -94,15 +96,19 @@ export class AuthService {
   }
 
   loadCurrentUser(): Observable<AuthUser | null> {
-    return this.http.get<AuthUser>(`${this.API}/api/auth/me`).pipe(
+    // Explicitly send the token — don't rely on the interceptor for this critical call
+    const token = this.getToken();
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
+    return this.http.get<AuthUser>(`${this.API}/api/auth/me`, { headers }).pipe(
       tap(user => {
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
       }),
       catchError(err => {
         // Only clear the session when the token is truly invalid (401/403).
-        // Network errors, timeouts, 500s etc. should NOT wipe the token —
-        // the user might just have a temporary connectivity issue.
+        // Network errors, timeouts, 500s etc. should NOT wipe the token.
         if (err.status === 401 || err.status === 403) {
           this.logout();
         }
