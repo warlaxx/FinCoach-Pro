@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ApiService } from "../api.service";
+import { ProfileService } from "../settings/profile.service";
 import { FinancialProfile } from "../../shared/models/financial-profile.model";
 import { DashboardData } from "../../shared/models/dashboard-data.model";
 import { FinancialSummary } from "../../shared/models/financial-summary.model";
@@ -30,8 +31,11 @@ export class DashboardComponent implements OnInit {
   showForm = false;
   saving = false;
 
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  private toastTimer: any = null;
+
   profile: FinancialProfile = {
-    userId: "user-demo",
     monthlyIncome: 0,
     otherIncome: 0,
     rent: 0,
@@ -47,12 +51,33 @@ export class DashboardComponent implements OnInit {
     currentSavings: 0,
     totalDebt: 0,
     monthlySavingsGoal: 0,
+    typeHabitation: '',
+    situationFamiliale: '',
+    nombrePersonnes: 0,
   };
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private profileService: ProfileService) {}
 
   ngOnInit(): void {
     this.loadDashboard();
+    this.loadProfileForm();
+  }
+
+  loadProfileForm(): void {
+    this.profileService.getProfile().subscribe({
+      next: (data) => {
+        if (data?.raw) {
+          this.profile = {
+            ...this.profile,
+            ...data.raw,
+            typeHabitation: data.typeHabitation ?? '',
+            situationFamiliale: data.situationFamiliale ?? '',
+            nombrePersonnes: data.nombrePersonnes ?? 0,
+          };
+        }
+      },
+      error: () => { /* pas de profil existant — on garde les valeurs à 0 */ }
+    });
   }
 
   loadDashboard(): void {
@@ -70,16 +95,28 @@ export class DashboardComponent implements OnInit {
 
   saveProfile(): void {
     this.saving = true;
-    this.api.profile.saveProfile(this.profile).subscribe({
+    this.profileService.saveProfile(this.profile).subscribe({
       next: () => {
         this.saving = false;
         this.showForm = false;
+        this.showToast('Profil sauvegardé avec succès', 'success');
         this.loadDashboard();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
+        const msg = err?.error?.errors
+          ? Object.values(err.error.errors).join(' • ')
+          : 'Erreur lors de la sauvegarde';
+        this.showToast(msg, 'error');
       },
     });
+  }
+
+  private showToast(message: string, type: 'success' | 'error'): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastMessage = message;
+    this.toastType = type;
+    this.toastTimer = setTimeout(() => { this.toastMessage = ''; }, 4000);
   }
 
   getScoreLabel(score: string): string {

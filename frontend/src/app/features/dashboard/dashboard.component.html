@@ -1,3 +1,9 @@
+<div class="toast-container" *ngIf="toastMessage">
+  <div class="toast" [class.toast-success]="toastType === 'success'" [class.toast-error]="toastType === 'error'">
+    {{ toastMessage }}
+  </div>
+</div>
+
 <div class="dashboard">
   <header class="page-header">
     <div>
@@ -133,6 +139,34 @@
             type="number"
             [(ngModel)]="profile.monthlySavingsGoal"
             placeholder="200"
+          />
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>👤 Situation personnelle</h3>
+        <label>Type d'habitation
+          <select [(ngModel)]="profile.typeHabitation">
+            <option value="">-- Choisir --</option>
+            <option value="locataire">Locataire</option>
+            <option value="propriétaire">Propriétaire</option>
+            <option value="autre">Autre</option>
+          </select>
+        </label>
+        <label>Situation familiale
+          <select [(ngModel)]="profile.situationFamiliale">
+            <option value="">-- Choisir --</option>
+            <option value="célibataire">Célibataire</option>
+            <option value="couple">Couple</option>
+            <option value="famille">Famille</option>
+          </select>
+        </label>
+        <label>Personnes à charge
+          <input
+            type="number"
+            [(ngModel)]="profile.nombrePersonnes"
+            placeholder="0"
+            min="0"
           />
         </label>
       </div>

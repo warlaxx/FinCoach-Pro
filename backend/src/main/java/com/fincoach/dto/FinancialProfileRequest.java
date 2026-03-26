@@ -1,141 +1,122 @@
 package com.fincoach.dto;
 
-import java.time.LocalDate;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 public class FinancialProfileRequest {
-    private String userId;
-    private Double monthlyIncome, otherIncome, rent, utilities, insurance;
-    private Double loans, subscriptions, food, transport, leisure;
-    private Double clothing, health, currentSavings, totalDebt, monthlySavingsGoal;
 
-    public FinancialProfileRequest() {
-    }
+    @NotNull(message = "Le revenu mensuel est requis")
+    @DecimalMin(value = "0.01", message = "Le revenu mensuel doit être supérieur à 0")
+    private Double monthlyIncome;
 
-    public String getUserId() {
-        return userId;
-    }
+    @DecimalMin(value = "0.0", message = "Les autres revenus doivent être ≥ 0")
+    private Double otherIncome;
 
-    public void setUserId(String v) {
-        userId = v;
-    }
+    @NotNull(message = "Le loyer est requis")
+    @DecimalMin(value = "0.0", message = "Le loyer doit être ≥ 0")
+    private Double rent;
 
-    public Double getMonthlyIncome() {
-        return monthlyIncome;
-    }
+    @DecimalMin(value = "0.0", message = "Les charges doivent être ≥ 0")
+    private Double utilities;
 
-    public void setMonthlyIncome(Double v) {
-        monthlyIncome = v;
-    }
+    @DecimalMin(value = "0.0", message = "Les assurances doivent être ≥ 0")
+    private Double insurance;
 
-    public Double getOtherIncome() {
-        return otherIncome;
-    }
+    @NotNull(message = "Les crédits sont requis")
+    @DecimalMin(value = "0.0", message = "Les crédits doivent être ≥ 0")
+    private Double loans;
 
-    public void setOtherIncome(Double v) {
-        otherIncome = v;
-    }
+    @DecimalMin(value = "0.0", message = "Les abonnements doivent être ≥ 0")
+    private Double subscriptions;
 
-    public Double getRent() {
-        return rent;
-    }
+    @NotNull(message = "L'alimentation est requise")
+    @DecimalMin(value = "0.0", message = "L'alimentation doit être ≥ 0")
+    private Double food;
 
-    public void setRent(Double v) {
-        rent = v;
-    }
+    @DecimalMin(value = "0.0", message = "Le transport doit être ≥ 0")
+    private Double transport;
 
-    public Double getUtilities() {
-        return utilities;
-    }
+    @DecimalMin(value = "0.0", message = "Les loisirs doivent être ≥ 0")
+    private Double leisure;
 
-    public void setUtilities(Double v) {
-        utilities = v;
-    }
+    @DecimalMin(value = "0.0", message = "Les vêtements doivent être ≥ 0")
+    private Double clothing;
 
-    public Double getInsurance() {
-        return insurance;
-    }
+    @DecimalMin(value = "0.0", message = "La santé doit être ≥ 0")
+    private Double health;
 
-    public void setInsurance(Double v) {
-        insurance = v;
-    }
+    @NotNull(message = "L'épargne actuelle est requise")
+    @DecimalMin(value = "0.0", message = "L'épargne actuelle doit être ≥ 0")
+    private Double currentSavings;
 
-    public Double getLoans() {
-        return loans;
-    }
+    @NotNull(message = "Le total des dettes est requis")
+    @DecimalMin(value = "0.0", message = "Les dettes doivent être ≥ 0")
+    private Double totalDebt;
 
-    public void setLoans(Double v) {
-        loans = v;
-    }
+    @DecimalMin(value = "0.0", message = "L'objectif d'épargne doit être ≥ 0")
+    private Double monthlySavingsGoal;
 
-    public Double getSubscriptions() {
-        return subscriptions;
-    }
+    private String typeHabitation;
 
-    public void setSubscriptions(Double v) {
-        subscriptions = v;
-    }
+    private String situationFamiliale;
 
-    public Double getFood() {
-        return food;
-    }
+    @Min(value = 0, message = "Le nombre de personnes à charge doit être ≥ 0")
+    private Integer nombrePersonnes;
 
-    public void setFood(Double v) {
-        food = v;
-    }
+    public FinancialProfileRequest() {}
 
-    public Double getTransport() {
-        return transport;
-    }
+    public Double getMonthlyIncome() { return monthlyIncome; }
+    public void setMonthlyIncome(Double v) { monthlyIncome = v; }
 
-    public void setTransport(Double v) {
-        transport = v;
-    }
+    public Double getOtherIncome() { return otherIncome; }
+    public void setOtherIncome(Double v) { otherIncome = v; }
 
-    public Double getLeisure() {
-        return leisure;
-    }
+    public Double getRent() { return rent; }
+    public void setRent(Double v) { rent = v; }
 
-    public void setLeisure(Double v) {
-        leisure = v;
-    }
+    public Double getUtilities() { return utilities; }
+    public void setUtilities(Double v) { utilities = v; }
 
-    public Double getClothing() {
-        return clothing;
-    }
+    public Double getInsurance() { return insurance; }
+    public void setInsurance(Double v) { insurance = v; }
 
-    public void setClothing(Double v) {
-        clothing = v;
-    }
+    public Double getLoans() { return loans; }
+    public void setLoans(Double v) { loans = v; }
 
-    public Double getHealth() {
-        return health;
-    }
+    public Double getSubscriptions() { return subscriptions; }
+    public void setSubscriptions(Double v) { subscriptions = v; }
 
-    public void setHealth(Double v) {
-        health = v;
-    }
+    public Double getFood() { return food; }
+    public void setFood(Double v) { food = v; }
 
-    public Double getCurrentSavings() {
-        return currentSavings;
-    }
+    public Double getTransport() { return transport; }
+    public void setTransport(Double v) { transport = v; }
 
-    public void setCurrentSavings(Double v) {
-        currentSavings = v;
-    }
+    public Double getLeisure() { return leisure; }
+    public void setLeisure(Double v) { leisure = v; }
 
-    public Double getTotalDebt() {
-        return totalDebt;
-    }
+    public Double getClothing() { return clothing; }
+    public void setClothing(Double v) { clothing = v; }
 
-    public void setTotalDebt(Double v) {
-        totalDebt = v;
-    }
+    public Double getHealth() { return health; }
+    public void setHealth(Double v) { health = v; }
 
-    public Double getMonthlySavingsGoal() {
-        return monthlySavingsGoal;
-    }
+    public Double getCurrentSavings() { return currentSavings; }
+    public void setCurrentSavings(Double v) { currentSavings = v; }
 
-    public void setMonthlySavingsGoal(Double v) {
-        monthlySavingsGoal = v;
-    }
+    public Double getTotalDebt() { return totalDebt; }
+    public void setTotalDebt(Double v) { totalDebt = v; }
+
+    public Double getMonthlySavingsGoal() { return monthlySavingsGoal; }
+    public void setMonthlySavingsGoal(Double v) { monthlySavingsGoal = v; }
+
+    public String getTypeHabitation() { return typeHabitation; }
+    public void setTypeHabitation(String v) { typeHabitation = v; }
+
+    public String getSituationFamiliale() { return situationFamiliale; }
+    public void setSituationFamiliale(String v) { situationFamiliale = v; }
+
+    public Integer getNombrePersonnes() { return nombrePersonnes; }
+    public void setNombrePersonnes(Integer v) { nombrePersonnes = v; }
 }
