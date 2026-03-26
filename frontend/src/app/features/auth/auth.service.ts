@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, first, filter, map } from 'rxjs';
+import { BehaviorSubject, Observable, of, catchError, tap, filter, first, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JWT_STORAGE_KEY } from '../../shared/config/app.config';
 
@@ -60,9 +60,15 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   currentUser$: Observable<AuthUser | null> = this.currentUserSubject.asObservable();
 
+  /** Emits true once the initial auth check (GET /api/auth/me) has completed or was skipped. */
+  private authReadySubject = new BehaviorSubject<boolean>(false);
+  authReady$: Observable<boolean> = this.authReadySubject.asObservable();
+
   constructor(private http: HttpClient) {
     if (this.getToken()) {
-      this.loadCurrentUser();
+      this.loadCurrentUser().subscribe();
+    } else {
+      this.authReadySubject.next(true);
     }
   }
 
@@ -72,19 +78,31 @@ export class AuthService {
 
   handleCallback(token: string): Observable<AuthUser> {
     localStorage.setItem(this.TOKEN_KEY, token);
-    this.loadCurrentUser();
-    // Returns an observable that emits once the user is loaded
-    return this.currentUser$.pipe(
-      filter((user): user is AuthUser => user !== null),
-      first()
+    return this.loadCurrentUser().pipe(
+      switchMap(() => this.currentUser$.pipe(
+        filter((user): user is AuthUser => user !== null),
+        first()
+      ))
     );
   }
 
-  loadCurrentUser(): void {
-    this.http.get<AuthUser>(`${this.API}/api/auth/me`).subscribe({
-      next: (user) => this.currentUserSubject.next(user),
-      error: () => this.logout()
-    });
+  loadCurrentUser(): Observable<AuthUser | null> {
+    return this.http.get<AuthUser>(`${this.API}/api/auth/me`).pipe(
+      tap(user => {
+        this.currentUserSubject.next(user);
+        this.authReadySubject.next(true);
+      }),
+      catchError(err => {
+        // Only clear the session when the token is truly invalid (401/403).
+        // Network errors, timeouts, 500s etc. should NOT wipe the token —
+        // the user might just have a temporary connectivity issue.
+        if (err.status === 401 || err.status === 403) {
+          this.logout();
+        }
+        this.authReadySubject.next(true);
+        return of(null);
+      })
+    );
   }
 
   isAuthenticated(): boolean {
@@ -142,7 +160,7 @@ export class AuthService {
       tap(res => {
         if (res.token) {
           localStorage.setItem(this.TOKEN_KEY, res.token);
-          this.loadCurrentUser();
+          this.loadCurrentUser().subscribe();
         }
       })
     );
