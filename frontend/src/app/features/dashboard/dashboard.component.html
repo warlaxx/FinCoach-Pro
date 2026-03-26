@@ -277,6 +277,44 @@
       </div>
     </div>
 
+    <!-- Score Breakdown -->
+    <div class="card score-breakdown-card animate-in" *ngIf="p.scoreBreakdown">
+      <div class="score-breakdown-header">
+        <div>
+          <h3 class="card-title">Détail du score financier</h3>
+          <p class="score-message" [style.color]="getScoreColor(p.financialScore)">
+            {{ getScoreMessage(p) }}
+          </p>
+        </div>
+        <div class="score-total-badge">
+          <span class="score-total-value" [style.color]="getScoreColor(p.financialScore)">
+            {{ p.scoreBreakdown.totalScore }}
+          </span>
+          <span class="score-total-label">/ 100</span>
+        </div>
+      </div>
+      <div class="criteria-grid">
+        <div class="criteria-card" *ngFor="let item of getScoreCriteriaItems(p)">
+          <div class="criteria-top">
+            <span class="criteria-icon">{{ item.icon }}</span>
+            <span class="criteria-label">{{ item.label }}</span>
+            <span class="criteria-weight">{{ item.weight }}</span>
+          </div>
+          <div class="criteria-score-row">
+            <div class="criteria-bar-wrap">
+              <div class="criteria-bar">
+                <div class="criteria-fill"
+                     [style.width.%]="item.score"
+                     [style.background]="item.color"></div>
+              </div>
+            </div>
+            <span class="criteria-value" [style.color]="item.color">{{ item.score }}</span>
+          </div>
+          <span class="criteria-interp" [style.color]="item.color">{{ item.interpretation }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Budget breakdown + Insights -->
     <div class="mid-grid animate-in">
       <div class="card breakdown-card">

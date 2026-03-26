@@ -1,5 +1,17 @@
 import { BudgetBreakdown } from "./budget-breakdown.model.js";
 
+export interface ScoreBreakdown {
+  grade: string;
+  totalScore: number;
+  breakdown: {
+    savingsRate: number;
+    debtRatio: number;
+    expenseRatio: number;
+    emergencyFund: number;
+  };
+  message: string;
+}
+
 export interface FinancialSummary {
   id: number;
   userId: string;
@@ -15,5 +27,6 @@ export interface FinancialSummary {
   totalDebt: number;
   insights: string[];
   breakdown: BudgetBreakdown;
+  scoreBreakdown?: ScoreBreakdown;
   updatedAt: string;
 }

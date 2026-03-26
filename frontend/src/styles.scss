@@ -51,9 +51,10 @@
   /* ── Scores ── */
   --score-a: #22C55E;
   --score-b: #84CC16;
-  --score-c: #F97316;
+  --score-c: #EAB308;
   --score-d: #F97316;
-  --score-f: #EF4444;
+  --score-e: #EF4444;
+  --score-f: #DC2626;
 
   /* ── Typography ── */
   --font-display: 'Syne', sans-serif;
@@ -207,9 +208,10 @@ input, textarea, select {
 
   &.score-A { background: rgba(34,197,94,0.12);  color: var(--score-a); border: 2px solid rgba(34,197,94,0.25); }
   &.score-B { background: rgba(132,204,22,0.12); color: var(--score-b); border: 2px solid rgba(132,204,22,0.25); }
-  &.score-C { background: rgba(249,115,22,0.12);  color: var(--score-c); border: 2px solid rgba(249,115,22,0.25); }
-  &.score-D { background: rgba(249,115,22,0.12); color: var(--score-d); border: 2px solid rgba(249,115,22,0.25); }
-  &.score-F { background: rgba(239,68,68,0.12);  color: var(--score-f); border: 2px solid rgba(239,68,68,0.25); }
+  &.score-C { background: rgba(234,179,8,0.12);   color: var(--score-c); border: 2px solid rgba(234,179,8,0.25); }
+  &.score-D { background: rgba(249,115,22,0.12);  color: var(--score-d); border: 2px solid rgba(249,115,22,0.25); }
+  &.score-E { background: rgba(239,68,68,0.12);   color: var(--score-e); border: 2px solid rgba(239,68,68,0.25); }
+  &.score-F { background: rgba(220,38,38,0.12);   color: var(--score-f); border: 2px solid rgba(220,38,38,0.25); }
 }
 
 // Progress bar
