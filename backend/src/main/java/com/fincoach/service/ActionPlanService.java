@@ -35,8 +35,14 @@ public class ActionPlanService {
     }
 
     public ActionPlan save(ActionPlan action) {
-        // Auto-set TERMINE when currentAmount >= targetAmount
-        if (action.getTargetAmount() != null && action.getTargetAmount() > 0
+        return save(action, false);
+    }
+
+    public ActionPlan save(ActionPlan action, boolean explicitStatus) {
+        // Auto-set TERMINE when currentAmount >= targetAmount, but only if
+        // the caller hasn't explicitly set a status (e.g. reopen/abandon)
+        if (!explicitStatus
+                && action.getTargetAmount() != null && action.getTargetAmount() > 0
                 && action.getCurrentAmount() != null
                 && action.getCurrentAmount() >= action.getTargetAmount()) {
             action.setStatus(ActionStatut.TERMINE);
@@ -100,7 +106,7 @@ public class ActionPlanService {
         List<ActionPlan> newActions = new ArrayList<>();
 
         if (orZero(profile.getSavingsRate()) < AppConstants.ACTION_SAVINGS_TRIGGER_RATE && totalIncome > 0
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Atteindre 10% de taux d'épargne", ActionStatut.EN_COURS)) {
+                && !actionRepo.existsByUserIdAndTitle(profile.getUserId(), "Atteindre 10% de taux d'épargne")) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Atteindre 10% de taux d'épargne");
@@ -115,7 +121,7 @@ public class ActionPlanService {
         }
 
         if (orZero(profile.getCurrentSavings()) < totalIncome * AppConstants.ACTION_EMERGENCY_FUND_MONTHS
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Constituer un fonds d'urgence (3 mois)", ActionStatut.EN_COURS)) {
+                && !actionRepo.existsByUserIdAndTitle(profile.getUserId(), "Constituer un fonds d'urgence (3 mois)")) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Constituer un fonds d'urgence (3 mois)");
@@ -129,7 +135,7 @@ public class ActionPlanService {
         }
 
         if (orZero(profile.getDebtRatio()) > AppConstants.ACTION_DEBT_RATIO_TRIGGER
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Réduire le ratio d'endettement", ActionStatut.EN_COURS)) {
+                && !actionRepo.existsByUserIdAndTitle(profile.getUserId(), "Réduire le ratio d'endettement")) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Réduire le ratio d'endettement");
@@ -143,7 +149,7 @@ public class ActionPlanService {
         }
 
         if (orZero(profile.getSubscriptions()) > AppConstants.ACTION_SUBSCRIPTIONS_THRESHOLD
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Auditer vos abonnements", ActionStatut.EN_COURS)) {
+                && !actionRepo.existsByUserIdAndTitle(profile.getUserId(), "Auditer vos abonnements")) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Auditer vos abonnements");

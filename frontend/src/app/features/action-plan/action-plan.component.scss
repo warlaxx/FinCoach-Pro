@@ -1,3 +1,5 @@
+@use "sass:list";
+
 .actions-page {
   padding: 32px;
   max-width: 1200px;
@@ -388,10 +390,8 @@
     &:nth-child(#{$i}) {
       left: ($i * 5%);
       animation-delay: ($i * 0.1s);
-      background: nth(
-        (#f59e0b #ef4444 #22c55e #3b82f6 #a855f7 #ec4899 #14b8a6 #f97316),
-        (($i - 1) % 8 + 1)
-      );
+      $colors: #f59e0b #ef4444 #22c55e #3b82f6 #a855f7 #ec4899 #14b8a6 #f97316;
+      background: list.nth($colors, ($i - 1) % 8 + 1);
       border-radius: #{if($i % 3 == 0, 50%, if($i % 3 == 1, 0%, 2px))};
       width: (6px + ($i % 4) * 3px);
       height: (6px + ($i % 3) * 3px);
@@ -413,5 +413,18 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line {
+    animation: none;
+  }
+  .confetti-piece {
+    animation: none;
+    display: none;
+  }
+  .animate-in {
+    animation: none !important;
   }
 }

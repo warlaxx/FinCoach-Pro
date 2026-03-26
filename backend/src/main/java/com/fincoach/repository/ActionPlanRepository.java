@@ -13,4 +13,6 @@ public interface ActionPlanRepository extends JpaRepository<ActionPlan, Long> {
     List<ActionPlan> findByUserIdAndStatusOrderByCreatedAtDesc(String userId, ActionStatut status);
 
     boolean existsByUserIdAndTitleAndStatus(String userId, String title, ActionStatut status);
+
+    boolean existsByUserIdAndTitle(String userId, String title);
 }

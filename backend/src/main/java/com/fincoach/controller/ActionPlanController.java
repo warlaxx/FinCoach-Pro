@@ -5,6 +5,7 @@ import com.fincoach.model.ActionCategorie;
 import com.fincoach.model.ActionPlan;
 import com.fincoach.model.ActionStatut;
 import com.fincoach.service.ActionPlanService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/actions")
@@ -30,9 +32,9 @@ public class ActionPlanController {
     public ResponseEntity<List<Map<String, Object>>> getActions(
             @PathVariable String userId,
             @AuthenticationPrincipal String authenticatedUserId) {
-        log.info("GET /actions/{}", userId);
+        log.info("GET /actions for authenticated user");
         if (!userId.equals(authenticatedUserId)) {
-            log.warn("User {} tried to access actions of user {}", authenticatedUserId, userId);
+            log.warn("Forbidden: authenticated user does not match requested userId");
             return ResponseEntity.status(403).build();
         }
         var actions = actionPlanService.getActionsForUser(userId).stream()
@@ -42,16 +44,20 @@ public class ActionPlanController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createAction(
-            @RequestBody ActionPlanRequest request,
+    public ResponseEntity<?> createAction(
+            @Valid @RequestBody ActionPlanRequest request,
             @AuthenticationPrincipal String authenticatedUserId) {
-        log.info("POST /actions - title='{}', userId={}", request.getTitle(), authenticatedUserId);
+        log.info("POST /actions for authenticated user");
         ActionPlan action = new ActionPlan();
         action.setUserId(authenticatedUserId);
         action.setTitle(request.getTitle());
         action.setDescription(request.getDescription());
         if (request.getCategory() != null) {
-            action.setCategory(ActionCategorie.valueOf(request.getCategory()));
+            try {
+                action.setCategory(ActionCategorie.valueOf(request.getCategory()));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Catégorie invalide : " + request.getCategory()));
+            }
         }
         action.setPriority(request.getPriority());
         action.setTargetAmount(request.getTargetAmount());
@@ -62,28 +68,34 @@ public class ActionPlanController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<Map<String, Object>> updateActionStatus(
+    public ResponseEntity<?> updateActionStatus(
             @PathVariable Long id,
             @RequestBody Map<String, Object> body,
             @AuthenticationPrincipal String authenticatedUserId) {
-        log.info("PUT /actions/{}/status - payload={}", id, body);
-        return actionPlanService.findById(id).map(action -> {
-            if (!action.getUserId().equals(authenticatedUserId)) {
-                log.warn("User {} tried to update action {} owned by {}", authenticatedUserId, id, action.getUserId());
-                return ResponseEntity.<Map<String, Object>>status(403).build();
-            }
-            if (body.get("status") instanceof String status) {
-                action.setStatus(ActionStatut.valueOf(status));
-            }
-            if (body.get("currentAmount") instanceof Number amount) {
-                action.setCurrentAmount(amount.doubleValue());
-            }
-            ActionPlan saved = actionPlanService.save(action);
-            return ResponseEntity.ok(actionPlanService.toResponse(saved));
-        }).orElseGet(() -> {
-            log.warn("Action id={} not found", id);
+        log.info("PUT /actions/{}/status", id);
+        Optional<ActionPlan> opt = actionPlanService.findById(id);
+        if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
-        });
+        }
+        ActionPlan action = opt.get();
+        if (!action.getUserId().equals(authenticatedUserId)) {
+            log.warn("Forbidden: authenticated user does not own action id={}", id);
+            return ResponseEntity.status(403).build();
+        }
+        boolean explicitStatus = false;
+        if (body.get("status") instanceof String status) {
+            try {
+                action.setStatus(ActionStatut.valueOf(status));
+                explicitStatus = true;
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Statut invalide : " + status));
+            }
+        }
+        if (body.get("currentAmount") instanceof Number amount) {
+            action.setCurrentAmount(amount.doubleValue());
+        }
+        ActionPlan saved = actionPlanService.save(action, explicitStatus);
+        return ResponseEntity.ok(actionPlanService.toResponse(saved));
     }
 
     @DeleteMapping("/{id}")
@@ -91,13 +103,16 @@ public class ActionPlanController {
             @PathVariable Long id,
             @AuthenticationPrincipal String authenticatedUserId) {
         log.info("DELETE /actions/{}", id);
-        return actionPlanService.findById(id).map(action -> {
-            if (!action.getUserId().equals(authenticatedUserId)) {
-                log.warn("User {} tried to delete action {} owned by {}", authenticatedUserId, id, action.getUserId());
-                return ResponseEntity.<Void>status(403).build();
-            }
-            actionPlanService.deleteById(id);
-            return ResponseEntity.<Void>noContent().build();
-        }).orElseGet(() -> ResponseEntity.<Void>notFound().build());
+        Optional<ActionPlan> opt = actionPlanService.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        ActionPlan action = opt.get();
+        if (!action.getUserId().equals(authenticatedUserId)) {
+            log.warn("Forbidden: authenticated user does not own action id={}", id);
+            return ResponseEntity.status(403).build();
+        }
+        actionPlanService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

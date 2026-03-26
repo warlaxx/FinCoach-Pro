@@ -157,18 +157,31 @@ export class ActionPlanComponent implements OnInit {
     return this.actions.reduce((sum, a) => sum + (a.currentAmount || 0), 0);
   }
 
+  /** Parse YYYY-MM-DD as local date (not UTC) to avoid timezone off-by-one */
+  private parseLocalDate(dateStr: string): Date {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  private startOfToday(): Date {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
   isOverdue(a: ActionPlan): boolean {
     return (
       !!a.deadline &&
-      new Date(a.deadline) < new Date() &&
+      this.parseLocalDate(a.deadline) < this.startOfToday() &&
       a.status !== "TERMINE"
     );
   }
 
   daysRemaining(a: ActionPlan): number | null {
     if (!a.deadline) return null;
-    const diff = new Date(a.deadline).getTime() - new Date().getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const deadline = this.parseLocalDate(a.deadline);
+    const today = this.startOfToday();
+    const diff = deadline.getTime() - today.getTime();
+    return Math.round(diff / (1000 * 60 * 60 * 24));
   }
 
   getDeadlineLabel(a: ActionPlan): string {
