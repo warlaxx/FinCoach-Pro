@@ -26,6 +26,9 @@ public class FinancialProfile {
     private Double currentSavings;
     private Double totalDebt;
     private Double monthlySavingsGoal;
+    private String typeHabitation;
+    private String situationFamiliale;
+    private Integer nombrePersonnes;
     private String financialScore;
     private Double savingsRate;
     private Double debtRatio;
@@ -212,6 +215,30 @@ public class FinancialProfile {
 
     public void setMonthlySavingsGoal(Double monthlySavingsGoal) {
         this.monthlySavingsGoal = monthlySavingsGoal;
+    }
+
+    public String getTypeHabitation() {
+        return typeHabitation;
+    }
+
+    public void setTypeHabitation(String typeHabitation) {
+        this.typeHabitation = typeHabitation;
+    }
+
+    public String getSituationFamiliale() {
+        return situationFamiliale;
+    }
+
+    public void setSituationFamiliale(String situationFamiliale) {
+        this.situationFamiliale = situationFamiliale;
+    }
+
+    public Integer getNombrePersonnes() {
+        return nombrePersonnes;
+    }
+
+    public void setNombrePersonnes(Integer nombrePersonnes) {
+        this.nombrePersonnes = nombrePersonnes;
     }
 
     public String getFinancialScore() {

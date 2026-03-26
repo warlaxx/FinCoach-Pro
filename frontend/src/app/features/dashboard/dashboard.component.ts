@@ -1,13 +1,16 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { Subscription } from "rxjs";
+import { filter, take, switchMap, timeout, catchError } from "rxjs/operators";
+import { of } from "rxjs";
 import { ApiService } from "../api.service";
+import { ProfileService } from "../settings/profile.service";
+import { AuthService } from "../auth/auth.service";
 import { FinancialProfile } from "../../shared/models/financial-profile.model";
 import { DashboardData } from "../../shared/models/dashboard-data.model";
 import { FinancialSummary } from "../../shared/models/financial-summary.model";
 import { SCORE_LABELS, COLOR_BLUE, COLOR_POSITIVE, COLOR_ORANGE, COLOR_PURPLE, COLOR_NEGATIVE, COLOR_BRAND_GOLD, DASHBOARD_REQUEST_TIMEOUT_MS } from "../../shared/config/app.config";
-import { timeout, catchError } from "rxjs/operators";
-import { of } from "rxjs";
 
 interface BreakdownItem {
   label: string;
@@ -24,14 +27,19 @@ interface BreakdownItem {
   templateUrl: "./dashboard.component.html",
   styleUrls: ["./dashboard.component.scss"],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   data: DashboardData | null = null;
   loading = true;
+  loadError = false;
   showForm = false;
   saving = false;
 
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  private toastTimer: any = null;
+  private sub: Subscription | null = null;
+
   profile: FinancialProfile = {
-    userId: "user-demo",
     monthlyIncome: 0,
     otherIncome: 0,
     rent: 0,
@@ -47,39 +55,90 @@ export class DashboardComponent implements OnInit {
     currentSavings: 0,
     totalDebt: 0,
     monthlySavingsGoal: 0,
+    typeHabitation: '',
+    situationFamiliale: '',
+    nombrePersonnes: 0,
   };
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private profileService: ProfileService,
+    private auth: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.loadDashboard();
+    this.loadProfileForm();
+  }
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+  }
+
+  loadProfileForm(): void {
+    this.profileService.getProfile().subscribe({
+      next: (data) => {
+        if (data?.raw) {
+          this.profile = {
+            ...this.profile,
+            ...data.raw,
+            typeHabitation: data.typeHabitation ?? '',
+            situationFamiliale: data.situationFamiliale ?? '',
+            nombrePersonnes: data.nombrePersonnes ?? 0,
+          };
+        }
+      },
+      error: () => { /* pas de profil existant — on garde les valeurs à 0 */ }
+    });
   }
 
   loadDashboard(): void {
     this.loading = true;
-    this.api.dashboard.getDashboard()
-      .pipe(
+    this.loadError = false;
+
+    // Attend que le user soit chargé depuis /api/auth/me avant de requêter le dashboard
+    this.sub?.unsubscribe();
+    this.sub = this.auth.currentUser$.pipe(
+      filter(user => user !== null),
+      take(1),
+      switchMap(() => this.api.dashboard.getDashboard().pipe(
         timeout(DASHBOARD_REQUEST_TIMEOUT_MS),
-        catchError(() => of(null))
-      )
-      .subscribe((dashboardData) => {
-        this.data = dashboardData;
-        this.loading = false;
-      });
+        catchError(() => {
+          this.loadError = true;
+          return of(null);
+        })
+      ))
+    ).subscribe((dashboardData) => {
+      this.data = dashboardData;
+      this.loading = false;
+    });
   }
 
   saveProfile(): void {
     this.saving = true;
-    this.api.profile.saveProfile(this.profile).subscribe({
+    this.profileService.saveProfile(this.profile).subscribe({
       next: () => {
         this.saving = false;
         this.showForm = false;
+        this.showToast('Profil sauvegardé avec succès', 'success');
         this.loadDashboard();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
+        const msg = err?.error?.errors
+          ? Object.values(err.error.errors).join(' • ')
+          : 'Erreur lors de la sauvegarde';
+        this.showToast(msg, 'error');
       },
     });
+  }
+
+  private showToast(message: string, type: 'success' | 'error'): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastMessage = message;
+    this.toastType = type;
+    this.toastTimer = setTimeout(() => { this.toastMessage = ''; }, 4000);
   }
 
   getScoreLabel(score: string): string {

@@ -1,6 +1,6 @@
 export interface FinancialProfile {
   id?: number;
-  userId: string;
+  userId?: string;
   monthlyIncome: number;
   otherIncome: number;
   rent: number;
@@ -16,4 +16,7 @@ export interface FinancialProfile {
   currentSavings: number;
   totalDebt: number;
   monthlySavingsGoal: number;
+  typeHabitation?: string;
+  situationFamiliale?: string;
+  nombrePersonnes?: number;
 }
