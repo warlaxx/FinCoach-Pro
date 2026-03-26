@@ -26,6 +26,11 @@
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": { "minify": true, "inlineCritical": true },
+                "fonts": false
+              },
               "budgets": [
                 { "type": "initial", "maximumWarning": "2mb", "maximumError": "4mb" },
                 { "type": "anyComponentStyle", "maximumWarning": "32kb", "maximumError": "64kb" }
