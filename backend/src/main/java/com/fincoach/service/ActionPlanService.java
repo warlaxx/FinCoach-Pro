@@ -1,7 +1,9 @@
 package com.fincoach.service;
 
 import com.fincoach.config.AppConstants;
+import com.fincoach.model.ActionCategorie;
 import com.fincoach.model.ActionPlan;
+import com.fincoach.model.ActionStatut;
 import com.fincoach.model.FinancialProfile;
 import com.fincoach.repository.ActionPlanRepository;
 import org.slf4j.Logger;
@@ -29,10 +31,16 @@ public class ActionPlanService {
     }
 
     public List<ActionPlan> getActionsForUser(String userId) {
-        return actionRepo.findByUserIdOrderByPriorityAscCreatedAtDesc(userId);
+        return actionRepo.findByUserIdOrderByDeadlineAscCreatedAtDesc(userId);
     }
 
     public ActionPlan save(ActionPlan action) {
+        // Auto-set TERMINE when currentAmount >= targetAmount
+        if (action.getTargetAmount() != null && action.getTargetAmount() > 0
+                && action.getCurrentAmount() != null
+                && action.getCurrentAmount() >= action.getTargetAmount()) {
+            action.setStatus(ActionStatut.TERMINE);
+        }
         return actionRepo.save(action);
     }
 
@@ -49,10 +57,10 @@ public class ActionPlanService {
     }
 
     public Map<String, Object> buildStats(String userId) {
-        List<ActionPlan> all = actionRepo.findByUserIdOrderByPriorityAscCreatedAtDesc(userId);
+        List<ActionPlan> all = actionRepo.findByUserIdOrderByDeadlineAscCreatedAtDesc(userId);
         long total = all.size();
-        long done = all.stream().filter(a -> "TERMINE".equals(a.getStatus())).count();
-        long inProgress = all.stream().filter(a -> "EN_COURS".equals(a.getStatus())).count();
+        long done = all.stream().filter(a -> ActionStatut.TERMINE == a.getStatus()).count();
+        long inProgress = all.stream().filter(a -> ActionStatut.EN_COURS == a.getStatus()).count();
         log.debug("Stats for userId={} - total={}, done={}, inProgress={}", userId, total, done, inProgress);
 
         Map<String, Object> stats = new LinkedHashMap<>();
@@ -92,13 +100,13 @@ public class ActionPlanService {
         List<ActionPlan> newActions = new ArrayList<>();
 
         if (orZero(profile.getSavingsRate()) < AppConstants.ACTION_SAVINGS_TRIGGER_RATE && totalIncome > 0
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Atteindre 10% de taux d'épargne", "EN_COURS")) {
+                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Atteindre 10% de taux d'épargne", ActionStatut.EN_COURS)) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Atteindre 10% de taux d'épargne");
             action.setDescription("Mettez en place un virement automatique dès réception du salaire. Objectif : épargner "
                     + (int) (totalIncome * 0.10) + " €/mois.");
-            action.setCategory("EPARGNE");
+            action.setCategory(ActionCategorie.EPARGNE);
             action.setPriority("HAUTE");
             action.setTargetAmount(totalIncome * 0.10 * 12);
             action.setCurrentAmount(0.0);
@@ -107,12 +115,12 @@ public class ActionPlanService {
         }
 
         if (orZero(profile.getCurrentSavings()) < totalIncome * AppConstants.ACTION_EMERGENCY_FUND_MONTHS
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Constituer un fonds d'urgence (3 mois)", "EN_COURS")) {
+                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Constituer un fonds d'urgence (3 mois)", ActionStatut.EN_COURS)) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Constituer un fonds d'urgence (3 mois)");
             action.setDescription("Objectif : " + (int) (totalIncome * AppConstants.ACTION_EMERGENCY_FUND_MONTHS) + " € sur Livret A. Ce coussin vous protège des imprévus.");
-            action.setCategory("EPARGNE");
+            action.setCategory(ActionCategorie.EPARGNE);
             action.setPriority("HAUTE");
             action.setTargetAmount(totalIncome * AppConstants.ACTION_EMERGENCY_FUND_MONTHS);
             action.setCurrentAmount(orZero(profile.getCurrentSavings()));
@@ -121,12 +129,12 @@ public class ActionPlanService {
         }
 
         if (orZero(profile.getDebtRatio()) > AppConstants.ACTION_DEBT_RATIO_TRIGGER
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Réduire le ratio d'endettement", "EN_COURS")) {
+                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Réduire le ratio d'endettement", ActionStatut.EN_COURS)) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Réduire le ratio d'endettement");
             action.setDescription("Votre taux d'endettement dépasse 25%. Appliquez la méthode avalanche : remboursez en priorité la dette au taux le plus élevé.");
-            action.setCategory("DETTE");
+            action.setCategory(ActionCategorie.DETTE);
             action.setPriority("HAUTE");
             action.setTargetAmount(orZero(profile.getTotalDebt()) * 0.3);
             action.setCurrentAmount(0.0);
@@ -135,13 +143,13 @@ public class ActionPlanService {
         }
 
         if (orZero(profile.getSubscriptions()) > AppConstants.ACTION_SUBSCRIPTIONS_THRESHOLD
-                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Auditer vos abonnements", "EN_COURS")) {
+                && !actionRepo.existsByUserIdAndTitleAndStatus(profile.getUserId(), "Auditer vos abonnements", ActionStatut.EN_COURS)) {
             ActionPlan action = new ActionPlan();
             action.setUserId(profile.getUserId());
             action.setTitle("Auditer vos abonnements");
             action.setDescription("Listez tous vos abonnements et supprimez ceux que vous utilisez peu. Potentiel d'économie : "
                     + (int) (orZero(profile.getSubscriptions()) * 0.3) + " €/mois.");
-            action.setCategory("BUDGET");
+            action.setCategory(ActionCategorie.BUDGET);
             action.setPriority("MOYENNE");
             action.setTargetAmount(orZero(profile.getSubscriptions()) * 0.3 * 12);
             action.setCurrentAmount(0.0);

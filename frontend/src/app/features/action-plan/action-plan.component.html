@@ -1,4 +1,9 @@
 <div class="actions-page">
+  <!-- Confetti overlay -->
+  <div class="confetti-overlay" *ngIf="showConfetti">
+    <div class="confetti-piece" *ngFor="let c of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
+  </div>
+
   <header class="page-header">
     <div>
       <h1>Plan d'actions</h1>
@@ -27,6 +32,7 @@
           <option value="DETTE">📉 Dette</option>
           <option value="BUDGET">📊 Budget</option>
           <option value="INVESTISSEMENT">📈 Investissement</option>
+          <option value="AUTRE">🎯 Autre</option>
         </select>
       </label>
       <label
@@ -79,49 +85,90 @@
   </div>
 
   <!-- Filters -->
-  <div class="filters">
-    <button
-      class="filter-btn"
-      [class.active]="filter === 'all'"
-      (click)="filter = 'all'; applyFilter()"
-    >
-      Toutes ({{ actions.length }})
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="filter === 'EN_COURS'"
-      (click)="filter = 'EN_COURS'; applyFilter()"
-    >
-      En cours ({{ countByStatus("EN_COURS") }})
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="filter === 'TERMINE'"
-      (click)="filter = 'TERMINE'; applyFilter()"
-    >
-      Terminées ({{ countByStatus("TERMINE") }})
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="filter === 'EPARGNE'"
-      (click)="filter = 'EPARGNE'; applyFilter()"
-    >
-      💰 Épargne
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="filter === 'DETTE'"
-      (click)="filter = 'DETTE'; applyFilter()"
-    >
-      📉 Dettes
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="filter === 'BUDGET'"
-      (click)="filter = 'BUDGET'; applyFilter()"
-    >
-      📊 Budget
-    </button>
+  <div class="filters-section">
+    <div class="filters">
+      <span class="filter-label">Statut</span>
+      <button
+        class="filter-btn"
+        [class.active]="filter === 'all'"
+        (click)="setStatusFilter('all')"
+      >
+        Toutes ({{ actions.length }})
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="filter === 'A_FAIRE'"
+        (click)="setStatusFilter('A_FAIRE')"
+      >
+        À faire ({{ countByStatus("A_FAIRE") }})
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="filter === 'EN_COURS'"
+        (click)="setStatusFilter('EN_COURS')"
+      >
+        En cours ({{ countByStatus("EN_COURS") }})
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="filter === 'TERMINE'"
+        (click)="setStatusFilter('TERMINE')"
+      >
+        Terminées ({{ countByStatus("TERMINE") }})
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="filter === 'ABANDONNE'"
+        (click)="setStatusFilter('ABANDONNE')"
+      >
+        Abandonnées ({{ countByStatus("ABANDONNE") }})
+      </button>
+    </div>
+    <div class="filters">
+      <span class="filter-label">Catégorie</span>
+      <button
+        class="filter-btn"
+        [class.active]="categoryFilter === 'all'"
+        (click)="setCategoryFilter('all')"
+      >
+        Toutes
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="categoryFilter === 'EPARGNE'"
+        (click)="setCategoryFilter('EPARGNE')"
+      >
+        💰 Épargne
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="categoryFilter === 'DETTE'"
+        (click)="setCategoryFilter('DETTE')"
+      >
+        📉 Dettes
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="categoryFilter === 'BUDGET'"
+        (click)="setCategoryFilter('BUDGET')"
+      >
+        📊 Budget
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="categoryFilter === 'INVESTISSEMENT'"
+        (click)="setCategoryFilter('INVESTISSEMENT')"
+      >
+        📈 Investissement
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="categoryFilter === 'AUTRE'"
+        (click)="setCategoryFilter('AUTRE')"
+      >
+        🎯 Autre
+      </button>
+    </div>
   </div>
 
   <!-- Summary bar -->
@@ -146,9 +193,15 @@
     </div>
   </div>
 
-  <!-- Loading -->
-  <div class="loading-state" *ngIf="loading">
-    <div class="loading-spinner"></div>
+  <!-- Skeleton loader -->
+  <div class="skeleton-grid" *ngIf="loading">
+    <div class="skeleton-card card" *ngFor="let s of [1, 2, 3, 4, 5, 6]">
+      <div class="skeleton-line skeleton-badges"></div>
+      <div class="skeleton-line skeleton-title"></div>
+      <div class="skeleton-line skeleton-desc"></div>
+      <div class="skeleton-line skeleton-bar"></div>
+      <div class="skeleton-line skeleton-footer"></div>
+    </div>
   </div>
 
   <!-- Empty -->
@@ -157,13 +210,13 @@
     *ngIf="!loading && filtered.length === 0 && actions.length === 0"
   >
     <div class="empty-icon">🎯</div>
-    <h2>Aucune action pour le moment</h2>
+    <h2>Vous n'avez pas encore d'objectif</h2>
     <p>
       Créez votre premier objectif ou renseignez votre profil financier pour
       obtenir des suggestions automatiques.
     </p>
     <button class="btn-gold" (click)="showNew = true">
-      Créer ma première action →
+      Créer mon premier objectif →
     </button>
   </div>
 
@@ -183,12 +236,13 @@
       *ngFor="let action of filtered; let i = index"
       [style.animation-delay]="i * 0.05 + 's'"
       [class.action-done]="action.status === 'TERMINE'"
+      [class.action-abandoned]="action.status === 'ABANDONNE'"
     >
       <div class="action-header">
         <div class="action-badges">
           <span
             class="badge"
-            [class]="'badge-' + action.category.toLowerCase()"
+            [class]="'badge-' + (action.category || 'autre').toLowerCase()"
           >
             {{ getCategoryIcon(action.category) }} {{ action.category }}
           </span>
@@ -197,6 +251,12 @@
             [class]="'badge-' + action.priority.toLowerCase()"
             >{{ action.priority }}</span
           >
+          <span
+            class="badge badge-complete"
+            *ngIf="(action.progressPercent || 0) >= 100"
+          >
+            Terminé 🎉
+          </span>
         </div>
         <div class="action-menu">
           <button
@@ -228,15 +288,22 @@
         <div class="progress-bar">
           <div
             class="progress-fill"
+            [class.progress-complete]="(action.progressPercent || 0) >= 100"
             [style.width.%]="action.progressPercent || 0"
           ></div>
         </div>
       </div>
 
       <!-- Deadline -->
-      <div class="action-deadline" *ngIf="action.deadline">
+      <div
+        class="action-deadline"
+        *ngIf="action.deadline"
+        [class.overdue-label]="isOverdue(action)"
+      >
         📅 Échéance : {{ action.deadline | date : "dd/MM/yyyy" }}
-        <span class="overdue" *ngIf="isOverdue(action)"> — En retard</span>
+        <span class="deadline-indicator" *ngIf="getDeadlineLabel(action)">
+          — {{ getDeadlineLabel(action) }}
+        </span>
       </div>
 
       <!-- Update progress inline -->
@@ -260,36 +327,37 @@
         <div class="status-select">
           <span
             class="badge"
-            [class]="'badge-' + (action.status || 'en_cours').toLowerCase()"
+            [class]="'badge-status-' + (action.status || 'en_cours').toLowerCase()"
           >
-            {{
-              action.status === "TERMINE"
-                ? "✓"
-                : action.status === "REPORTE"
-                ? "⏸"
-                : "▶"
-            }}
-            {{ action.status || "EN_COURS" }}
+            {{ getStatusIcon(action.status || 'EN_COURS') }}
+            {{ getStatusLabel(action.status || 'EN_COURS') }}
           </span>
         </div>
         <div class="action-btns">
           <button
             class="btn-ghost btn-sm"
-            *ngIf="action.targetAmount && action.status !== 'TERMINE'"
+            *ngIf="action.targetAmount && action.status !== 'TERMINE' && action.status !== 'ABANDONNE'"
             (click)="startEdit(action)"
           >
             Mettre à jour
           </button>
           <button
             class="btn-gold btn-sm"
-            *ngIf="action.status !== 'TERMINE'"
+            *ngIf="action.status !== 'TERMINE' && action.status !== 'ABANDONNE'"
             (click)="markDone(action)"
           >
             ✓ Terminer
           </button>
           <button
+            class="btn-ghost btn-sm text-muted"
+            *ngIf="action.status !== 'TERMINE' && action.status !== 'ABANDONNE'"
+            (click)="abandon(action)"
+          >
+            Abandonner
+          </button>
+          <button
             class="btn-ghost btn-sm text-gold"
-            *ngIf="action.status === 'TERMINE'"
+            *ngIf="action.status === 'TERMINE' || action.status === 'ABANDONNE'"
             (click)="reopen(action)"
           >
             ↩ Réouvrir

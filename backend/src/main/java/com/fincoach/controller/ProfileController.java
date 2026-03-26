@@ -124,7 +124,7 @@ public class ProfileController {
         dashboard.put("profile", profileOpt.map(this::toResponse).orElse(null));
 
         var activeActions = actionPlanService.getActionsForUser(userId).stream()
-                .filter(a -> "EN_COURS".equals(a.getStatus()))
+                .filter(a -> com.fincoach.model.ActionStatut.EN_COURS == a.getStatus())
                 .limit(4)
                 .map(actionPlanService::toResponse)
                 .toList();

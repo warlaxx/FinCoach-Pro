@@ -1,21 +1,25 @@
 package com.fincoach.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 public class ActionPlanRequest {
-    private String userId, title, description, category, priority;
-    private Double targetAmount, currentAmount;
+
+    @NotBlank(message = "Le titre est obligatoire")
+    @Size(max = 255, message = "Le titre ne doit pas dépasser 255 caractères")
+    private String title;
+
+    @Size(max = 1000, message = "La description ne doit pas dépasser 1000 caractères")
+    private String description;
+
+    private String category;
+    private String priority;
+    private Double targetAmount;
+    private Double currentAmount;
     private LocalDate deadline;
 
     public ActionPlanRequest() {
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String v) {
-        userId = v;
     }
 
     public String getTitle() {
