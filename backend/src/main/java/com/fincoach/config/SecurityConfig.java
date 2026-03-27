@@ -75,6 +75,8 @@ public class SecurityConfig {
                 .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
                 // Auth endpoints — registration, login, email verification, and current user
                 .requestMatchers("/api/auth/**").permitAll()
+                // Health-check endpoint — used by Docker/load-balancers (no JWT needed)
+                .requestMatchers("/api/health").permitAll()
                 // Everything else requires a valid JWT
                 .anyRequest().authenticated()
             )
