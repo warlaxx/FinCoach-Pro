@@ -115,9 +115,9 @@ public class ProfileController {
         return ResponseEntity.ok(toResponse(saved));
     }
 
-    @GetMapping("/dashboard/{userId}")
-    public ResponseEntity<Map<String, Object>> getDashboard(@PathVariable String userId) {
-        log.info("GET /dashboard/{}", userId);
+    @GetMapping("/dashboard")
+    public ResponseEntity<Map<String, Object>> getDashboard(@AuthenticationPrincipal String userId) {
+        log.info("GET /dashboard for userId={}", userId);
         Map<String, Object> dashboard = new LinkedHashMap<>();
 
         Optional<FinancialProfile> profileOpt = profileRepo.findTopByUserIdOrderByUpdatedAtDesc(userId);
