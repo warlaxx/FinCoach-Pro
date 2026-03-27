@@ -64,7 +64,7 @@ public class UserService {
 
     public AuthResponse login(LoginRequest req) {
         User user = userRepo.findByEmail(req.getEmail().toLowerCase().trim())
-                .orElseThrow(() -> new IllegalArgumentException("E-mail ou mot de passe incorrect."));
+                .orElseThrow(() -> new IllegalArgumentException("Aucun compte trouvé avec cette adresse e-mail."));
 
         if (!"LOCAL".equals(user.getProvider())) {
             throw new IllegalArgumentException(
@@ -73,7 +73,7 @@ public class UserService {
         }
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("E-mail ou mot de passe incorrect.");
+            throw new IllegalArgumentException("Mot de passe incorrect.");
         }
 
         if (!user.isEmailVerified()) {

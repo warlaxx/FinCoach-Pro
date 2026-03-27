@@ -41,6 +41,11 @@
   border: 1px solid rgba(239,68,68,0.25); border-radius: 10px;
   color: #f87171; font-size: 13px;
   svg { flex-shrink: 0; margin-top: 1px; }
+  .error-register-link {
+    display: inline-block; margin-left: 4px;
+    color: #FFFFFF; font-weight: 600; text-decoration: underline;
+    &:hover { color: #e0e0e0; }
+  }
 }
 
 // ── Provider buttons ─────────────────────────────────────────

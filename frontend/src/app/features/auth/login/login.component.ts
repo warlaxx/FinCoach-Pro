@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
   emailForm = { email: '', password: '' };
   emailLoading = false;
   emailError: string | null = null;
+  isAccountNotFound = false;
   showPassword = false;
 
   // Toggle between email/password and OAuth2 sections
@@ -49,6 +50,7 @@ export class LoginComponent implements OnInit {
   onEmailLogin(): void {
     this.emailLoading = true;
     this.emailError = null;
+    this.isAccountNotFound = false;
 
     this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).subscribe({
       next: (res) => {
@@ -69,7 +71,9 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.emailLoading = false;
-        this.emailError = err.error?.error ?? 'Identifiants incorrects.';
+        const msg = err.error?.error ?? 'Identifiants incorrects.';
+        this.emailError = msg;
+        this.isAccountNotFound = msg.includes('Aucun compte');
       }
     });
   }
