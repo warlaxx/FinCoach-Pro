@@ -2,25 +2,6 @@ version: '3.9'
 
 services:
 
-  # ─── PostgreSQL ───────────────────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    container_name: fincoach-postgres
-    environment:
-      POSTGRES_DB:       ${POSTGRES_DB:-fincoach}
-      POSTGRES_USER:     ${POSTGRES_USER:-fincoach}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fincoach}
-    volumes:
-      - fincoach-pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fincoach} -d ${POSTGRES_DB:-fincoach}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - fincoach-net
-
   # ─── Backend (Spring Boot) ────────────────────────────────────────────────
   backend:
     env_file:
@@ -31,14 +12,13 @@ services:
     container_name: fincoach-backend
     ports:
       - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       # Database
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB:-fincoach}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-fincoach}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-fincoach}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       # App secrets
       - OPENAI_API_KEY=${OPENAI_API_KEY:-demo}
       - JWT_SECRET=${JWT_SECRET:-ZmluY29hY2gtcHJvLWp3dC1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudA==}
@@ -81,9 +61,6 @@ services:
     restart: unless-stopped
     networks:
       - fincoach-net
-
-volumes:
-  fincoach-pgdata:   # PostgreSQL data
 
 networks:
   fincoach-net:
