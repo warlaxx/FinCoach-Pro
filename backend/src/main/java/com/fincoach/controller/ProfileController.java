@@ -39,13 +39,14 @@ public class ProfileController {
         this.actionPlanService = actionPlanService;
     }
 
-    /** GET /api/profile — retourne le profil de l'utilisateur connecté. */
+    /** GET /api/profile — retourne le profil de l'utilisateur connecté (null si aucun profil). */
     @GetMapping("/profile")
     public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal String userId) {
         log.info("GET /profile for userId={}", userId);
         Optional<FinancialProfile> profileOpt = profileRepo.findTopByUserIdOrderByUpdatedAtDesc(userId);
         if (profileOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            log.info("No financial profile found for userId={}", userId);
+            return ResponseEntity.ok(null);
         }
         return ResponseEntity.ok(toResponse(profileOpt.get()));
     }
