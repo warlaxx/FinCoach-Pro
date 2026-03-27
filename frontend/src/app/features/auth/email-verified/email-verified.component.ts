@@ -37,8 +37,14 @@ export class EmailVerifiedComponent implements OnInit {
         this.message = res.message ?? 'Votre e-mail a été vérifié avec succès !';
         // Store JWT and update user state, then redirect to dashboard
         if (res.token) {
-          this.auth.handleCallback(res.token);
-          setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+          this.auth.handleCallback(res.token).subscribe({
+            next: () => {
+              setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+            },
+            error: () => {
+              this.message = 'Votre e-mail a été vérifié, mais la connexion automatique a échoué. Veuillez vous reconnecter.';
+            }
+          });
         }
       },
       error: (err) => {

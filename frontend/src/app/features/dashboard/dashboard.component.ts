@@ -111,13 +111,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.sub = this.auth.currentUser$.pipe(
       filter(user => user !== null),
       take(1),
+      timeout(DASHBOARD_REQUEST_TIMEOUT_MS),
       switchMap(() => this.api.dashboard.getDashboard().pipe(
         timeout(DASHBOARD_REQUEST_TIMEOUT_MS),
-        catchError(() => {
-          this.loadError = true;
-          return of(null);
-        })
-      ))
+      )),
+      catchError(() => {
+        this.loadError = true;
+        return of(null);
+      })
     ).subscribe((dashboardData) => {
       this.data = dashboardData;
       this.loading = false;

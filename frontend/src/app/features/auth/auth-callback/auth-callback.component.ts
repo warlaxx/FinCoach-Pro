@@ -69,9 +69,11 @@ export class AuthCallbackComponent implements OnInit {
       const token = params['token'];
 
       if (token) {
-        // Store the JWT and load user profile, then go to dashboard
-        this.auth.handleCallback(token);
-        this.router.navigate(['/dashboard']);
+        // Store the JWT, wait for user profile to load, then go to dashboard
+        this.auth.handleCallback(token).subscribe({
+          next: () => this.router.navigate(['/dashboard']),
+          error: () => this.router.navigate(['/login'])
+        });
       } else {
         // No token means something went wrong — back to login
         this.router.navigate(['/login']);
