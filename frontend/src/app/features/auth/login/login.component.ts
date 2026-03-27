@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, NgZone, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -25,15 +25,13 @@ export class LoginComponent implements OnInit {
   isAccountNotFound = false;
   showPassword = false;
 
-  // Toggle between email/password and OAuth2 sections
   showEmailForm = true;
 
   constructor(
     private auth: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-    private cd: ChangeDetectorRef,
-    private zone: NgZone
+    private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -64,22 +62,19 @@ export class LoginComponent implements OnInit {
             error: () => {
               this.emailLoading = false;
               this.emailError = 'Erreur lors du chargement du profil.';
-              this.cd.detectChanges();
+              this.cd.markForCheck();
             }
           });
         } else {
           this.emailLoading = false;
-          this.cd.detectChanges();
+          this.cd.markForCheck();
         }
       },
       error: (err) => {
-        this.zone.run(() => {
-          this.emailLoading = false;
-          const msg = err.error?.error ?? 'Identifiants incorrects.';
-          this.emailError = msg;
-          this.isAccountNotFound = msg.includes('Aucun compte');
-          this.cd.detectChanges();
-        });
+        this.emailLoading = false;
+        this.emailError = err?.error?.error ?? 'Identifiants incorrects.';
+        this.isAccountNotFound = (this.emailError ?? '').includes('Aucun compte');
+        this.cd.markForCheck();
       }
     });
   }
