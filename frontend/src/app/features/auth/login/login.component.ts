@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
 
@@ -48,29 +49,26 @@ export class LoginComponent implements OnInit {
   }
 
   onEmailLogin(): void {
+    if (this.emailLoading) return;
+
     this.emailLoading = true;
     this.emailError = null;
     this.isAccountNotFound = false;
 
-    this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).subscribe({
+    this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).pipe(
+      finalize(() => { this.emailLoading = false; })
+    ).subscribe({
       next: (res) => {
         if (res.token) {
           this.auth.handleCallback(res.token).subscribe({
-            next: () => {
-              this.emailLoading = false;
-              this.router.navigate(['/dashboard']);
-            },
+            next: () => this.router.navigate(['/dashboard']),
             error: () => {
-              this.emailLoading = false;
               this.emailError = 'Erreur lors du chargement du profil.';
             }
           });
-        } else {
-          this.emailLoading = false;
         }
       },
       error: (err) => {
-        this.emailLoading = false;
         const msg = err.error?.error ?? 'Identifiants incorrects.';
         this.emailError = msg;
         this.isAccountNotFound = msg.includes('Aucun compte');
