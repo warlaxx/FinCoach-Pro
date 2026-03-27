@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -31,7 +31,8 @@ export class RegisterComponent {
 
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private cd: ChangeDetectorRef
   ) {}
 
   get passwordsMatch(): boolean {
@@ -39,6 +40,8 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
+    if (this.loading) return;
+
     if (!this.passwordsMatch) {
       this.errorMessage = 'Les mots de passe ne correspondent pas.';
       return;
@@ -63,7 +66,8 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.errorMessage = err?.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.cd.markForCheck();
       }
     });
   }

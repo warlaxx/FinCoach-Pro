@@ -97,8 +97,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
             nombrePersonnes: data.nombrePersonnes ?? 0,
           };
         }
+        // null/empty response = new user without a profile yet — keep default zeros
       },
-      error: () => { /* pas de profil existant — on garde les valeurs à 0 */ }
+      error: () => { /* network error — keep default zeros */ }
     });
   }
 
