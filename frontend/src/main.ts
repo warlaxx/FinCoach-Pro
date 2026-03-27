@@ -5,12 +5,12 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app/app.routes';
 import { jwtInterceptor } from './app/core/interceptors/jwt.interceptor';
+import { authErrorInterceptor } from './app/core/interceptors/auth-error.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    // withInterceptors registers the JWT interceptor globally — it runs on every HTTP request
-    provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideHttpClient(withInterceptors([jwtInterceptor, authErrorInterceptor])),
     provideAnimations()
   ]
 }).catch(err => console.error(err));
