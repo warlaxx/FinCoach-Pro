@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
 
@@ -32,7 +31,9 @@ export class LoginComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cd: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -55,23 +56,30 @@ export class LoginComponent implements OnInit {
     this.emailError = null;
     this.isAccountNotFound = false;
 
-    this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).pipe(
-      finalize(() => { this.emailLoading = false; })
-    ).subscribe({
+    this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).subscribe({
       next: (res) => {
         if (res.token) {
           this.auth.handleCallback(res.token).subscribe({
             next: () => this.router.navigate(['/dashboard']),
             error: () => {
+              this.emailLoading = false;
               this.emailError = 'Erreur lors du chargement du profil.';
+              this.cd.detectChanges();
             }
           });
+        } else {
+          this.emailLoading = false;
+          this.cd.detectChanges();
         }
       },
       error: (err) => {
-        const msg = err.error?.error ?? 'Identifiants incorrects.';
-        this.emailError = msg;
-        this.isAccountNotFound = msg.includes('Aucun compte');
+        this.zone.run(() => {
+          this.emailLoading = false;
+          const msg = err.error?.error ?? 'Identifiants incorrects.';
+          this.emailError = msg;
+          this.isAccountNotFound = msg.includes('Aucun compte');
+          this.cd.detectChanges();
+        });
       }
     });
   }
