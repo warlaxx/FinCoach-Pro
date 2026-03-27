@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
 
   // Toggle between email/password and OAuth2 sections
-  showEmailForm = false;
+  showEmailForm = true;
 
   constructor(
     private auth: AuthService,
