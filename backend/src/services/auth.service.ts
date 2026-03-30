@@ -59,7 +59,8 @@ class AuthService {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) throw new AuthError('Aucun compte trouvé avec cette adresse e-mail.', 401);
 
-    if (user.provider !== 'LOCAL') {
+    // null provider = legacy LOCAL account (pre-migration data)
+    if (user.provider && user.provider !== 'LOCAL') {
       throw new AuthError(
         `Ce compte utilise la connexion via ${user.provider}. Utilisez le bouton correspondant sur la page de connexion.`,
         401,
@@ -70,7 +71,9 @@ class AuthService {
       throw new AuthError('Mot de passe incorrect.', 401);
     }
 
-    if (!user.emailVerified) {
+    // In development, skip email verification so you can log in without SMTP setup
+    const skipVerif = process.env.NODE_ENV === 'development' || process.env.SKIP_EMAIL_VERIFICATION === 'true';
+    if (!user.emailVerified && !skipVerif) {
       throw new AuthError('Veuillez vérifier votre adresse e-mail avant de vous connecter.', 403);
     }
 
