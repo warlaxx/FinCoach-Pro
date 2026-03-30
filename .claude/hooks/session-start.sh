@@ -10,10 +10,8 @@ echo "==> Installing frontend dependencies..."
 cd "$CLAUDE_PROJECT_DIR/frontend"
 npm install
 
-echo "==> Downloading backend Maven dependencies..."
+echo "==> Installing backend dependencies..."
 cd "$CLAUDE_PROJECT_DIR/backend"
-if ! mvn dependency:resolve -q --batch-mode; then
-  echo "WARNING: Maven dependency resolution failed. Backend build may require internet access." >&2
-fi
+npm install
 
 echo "==> Setup complete."
