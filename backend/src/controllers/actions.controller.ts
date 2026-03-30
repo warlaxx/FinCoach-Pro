@@ -63,7 +63,7 @@ export const actionsController = {
       return;
     }
 
-    const validStatuses = ['EN_COURS', 'TERMINE', 'ABANDONNED'];
+    const validStatuses = ['EN_COURS', 'TERMINE', 'ABANDONNE'];
     if (status && !validStatuses.includes(status)) {
       res.status(400).json({ error: `Statut invalide : ${status}` });
       return;
