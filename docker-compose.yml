@@ -22,7 +22,10 @@ services:
       #   auto-converts them to DATABASE_URL on startup.
       # docker-compose does NOT support nested variable substitution so we pass
       # each variable individually and let database.ts resolve the URL.
-      - DATABASE_URL=${DATABASE_URL:-}
+      # DATABASE_URL for Docker — must use host.docker.internal, NOT localhost.
+      # Set DOCKER_DATABASE_URL in your .env:
+      #   DOCKER_DATABASE_URL=postgresql://postgres:yourpass@host.docker.internal:5432/fincoach
+      - DATABASE_URL=${DOCKER_DATABASE_URL:-}
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-fincoach}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-fincoach}
