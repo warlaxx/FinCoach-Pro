@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env from the project root (one level above backend/).
-// In Docker, vars are already injected by docker-compose — dotenv gracefully no-ops if the file doesn't exist.
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+// Load .env from backend/ root (one level up from dist/).
+// Prisma CLI also reads backend/.env automatically when run from backend/.
+// In Docker, vars are injected by docker-compose — dotenv no-ops if file missing.
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 import { createApp } from './app';
 import prisma from './config/database';
