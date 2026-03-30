@@ -21,6 +21,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# OpenSSL is required by the Prisma query engine on Alpine
+RUN apk add --no-cache openssl
+
 # Install only production dependencies
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev --ignore-scripts
