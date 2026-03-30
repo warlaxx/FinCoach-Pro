@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# OpenSSL is required so that `prisma generate` resolves "native" to openssl-3.0.x on Alpine
+RUN apk add --no-cache openssl
+
 # Install dependencies first (better layer caching)
 COPY package.json package-lock.json* ./
 RUN npm ci --ignore-scripts
