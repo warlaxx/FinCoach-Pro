@@ -13,6 +13,10 @@ import { errorHandler, notFoundHandler } from './middleware/errors';
 export function createApp(): express.Application {
   const app = express();
 
+  // Trust the first proxy (Nginx) so express-rate-limit reads the real client IP
+  // from X-Forwarded-For instead of the Nginx container IP.
+  app.set('trust proxy', 1);
+
   // ─── Security headers ──────────────────────────────────────────────────────
   app.use(helmet({ crossOriginEmbedderPolicy: false }));
 
