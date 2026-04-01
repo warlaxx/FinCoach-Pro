@@ -31,7 +31,7 @@ export const authErrorInterceptor: HttpInterceptorFn = (
   );
 };
 
-/** Returns true if the request URL is an auth endpoint (login/register) */
+/** Returns true if the request URL is an auth endpoint (no redirect on 401) */
 function isAuthEndpoint(url: string): boolean {
-  return url.includes("/api/auth/login") || url.includes("/api/auth/register");
+  return url.includes("/api/auth/");
 }

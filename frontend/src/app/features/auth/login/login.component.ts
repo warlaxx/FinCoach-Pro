@@ -59,29 +59,33 @@ export class LoginComponent implements OnInit {
         next: (res: AuthResponse) => {
           this.emailLoading = false;
 
-          if (res.success === false) {
+          if (!res.success) {
             this.isAccountNotFound =
               res.message?.toLowerCase().includes("aucun compte") ?? false;
             this.showError(res.message ?? "Erreur lors de la connexion.");
             return;
           }
 
-          if (res.data?.token) {
-            this.auth.loginWithToken(res.data.token).subscribe({
-              next: () => {
-                this.router.navigate(["/dashboard"]);
-              },
-              error: (err) => {
-                this.showError(
-                  err?.message ?? "Erreur lors du chargement du profil.",
-                );
-              },
-            });
+          const token = res.data?.token;
+          if (!token) {
+            this.showError("Réponse inattendue du serveur. Veuillez réessayer.");
+            return;
           }
+
+          this.emailLoading = true;
+          this.auth.loginWithToken(token).subscribe({
+            next: () => {
+              this.router.navigate(["/dashboard"]);
+            },
+            error: () => {
+              this.emailLoading = false;
+              this.showError("Impossible de charger votre profil. Veuillez réessayer.");
+            },
+          });
         },
-        error: (err) => {
+        error: () => {
           this.emailLoading = false;
-          this.showError(err?.message ?? "Erreur réseau ou serveur.");
+          this.showError("Impossible de contacter le serveur. Vérifiez votre connexion.");
         },
       });
   }
