@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
     this.auth.login(provider);
   }
 
-  oonEmailLogin(): void {
+  onEmailLogin(): void {
     this.emailLoading = true;
     this.emailError = null;
     this.isAccountNotFound = false;

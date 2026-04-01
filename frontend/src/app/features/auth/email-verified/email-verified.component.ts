@@ -36,8 +36,8 @@ export class EmailVerifiedComponent implements OnInit {
         this.status = 'success';
         this.message = res.message ?? 'Votre e-mail a été vérifié avec succès !';
         // Store JWT and update user state, then redirect to dashboard
-        if (res.token) {
-          this.auth.handleCallback(res.token).subscribe({
+        if (res.data?.token) {
+          this.auth.handleCallback(res.data.token).subscribe({
             next: () => {
               setTimeout(() => this.router.navigate(['/dashboard']), 2000);
             },
@@ -47,9 +47,9 @@ export class EmailVerifiedComponent implements OnInit {
           });
         }
       },
-      error: (err) => {
+      error: () => {
         this.status = 'error';
-        this.message = err.error?.error ?? 'Le lien est invalide ou a expiré.';
+        this.message = 'Le lien est invalide ou a expiré.';
       }
     });
   }
