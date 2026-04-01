@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -24,6 +24,8 @@ export class ResetPasswordComponent implements OnInit {
   success = false;
   error: string | null = null;
 
+  @ViewChild('errorBanner') errorBanner?: ElementRef<HTMLElement>;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -32,9 +34,8 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
-
     if (!this.token) {
-      this.error = 'Lien de réinitialisation invalide.';
+      this.showError('Lien de réinitialisation invalide.');
     }
   }
 
@@ -42,12 +43,11 @@ export class ResetPasswordComponent implements OnInit {
     this.error = null;
 
     if (this.newPassword.length < 8) {
-      this.error = 'Le mot de passe doit contenir au moins 8 caractères.';
+      this.showError('Le mot de passe doit contenir au moins 8 caractères.');
       return;
     }
-
     if (this.newPassword !== this.confirmPassword) {
-      this.error = 'Les mots de passe ne correspondent pas.';
+      this.showError('Les mots de passe ne correspondent pas.');
       return;
     }
 
@@ -59,10 +59,17 @@ export class ResetPasswordComponent implements OnInit {
         this.success = true;
         setTimeout(() => this.router.navigate(['/login']), 3000);
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.loading = false;
-        this.error = err.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.showError(err?.message ?? 'Une erreur est survenue. Veuillez réessayer.');
       }
     });
+  }
+
+  private showError(message: string): void {
+    this.error = message;
+    setTimeout(() => {
+      this.errorBanner?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 0);
   }
 }

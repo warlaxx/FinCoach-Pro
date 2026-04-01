@@ -52,9 +52,9 @@ export class EmailConfirmationComponent implements OnInit {
         this.resendSuccess = true;
         this.startCountdown();
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.resending = false;
-        this.resendError = err.error?.error ?? 'Impossible de renvoyer l\'e-mail. Réessayez plus tard.';
+        this.resendError = err?.message ?? 'Impossible de renvoyer l\'e-mail. Réessayez plus tard.';
       }
     });
   }

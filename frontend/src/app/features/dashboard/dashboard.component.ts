@@ -136,10 +136,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.saving = false;
-        const msg = err?.error?.errors
-          ? Object.values(err.error.errors).join(' • ')
-          : 'Erreur lors de la sauvegarde';
-        this.showToast(msg, 'error');
+        this.showToast(err?.message ?? 'Erreur lors de la sauvegarde', 'error');
       },
     });
   }

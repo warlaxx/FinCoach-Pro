@@ -1,0 +1,107 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+// Supports both OAuth2 (Google, Microsoft, Apple) and email/password authentication.
+model User {
+  id                           String    @id @default(uuid())
+  email                        String    @unique
+  firstName                    String?   @map("first_name")
+  lastName                     String?   @map("last_name")
+  age                          Int?
+  passwordHash                 String?   @map("password_hash")
+  name                         String?
+  pictureUrl                   String?   @map("picture_url")
+  provider                     String?   @default("LOCAL")
+  providerId                   String?   @map("provider_id")
+  role                         String    @default("USER")
+  plan                         String    @default("FREEMIUM")
+  emailVerified                Boolean   @default(false) @map("email_verified")
+  emailVerificationToken       String?   @map("email_verification_token")
+  emailVerificationTokenExpiry DateTime? @map("email_verification_token_expiry")
+  passwordResetToken           String?   @map("password_reset_token")
+  passwordResetTokenExpiry     DateTime? @map("password_reset_token_expiry")
+  subscriptionStartedAt        DateTime? @map("subscription_started_at")
+  createdAt                    DateTime  @default(now()) @map("created_at")
+  updatedAt                    DateTime  @updatedAt @map("updated_at")
+
+  financialProfiles FinancialProfile[]
+  chatMessages      ChatMessage[]
+  actionPlans       ActionPlan[]
+
+  @@map("users")
+}
+
+// ─── Financial Profiles ───────────────────────────────────────────────────────
+// Upsert pattern: one profile per user (latest by updatedAt DESC).
+model FinancialProfile {
+  id                 BigInt   @id @default(autoincrement())
+  userId             String   @map("user_id")
+  monthlyIncome      Float    @default(0) @map("monthly_income")
+  otherIncome        Float    @default(0) @map("other_income")
+  rent               Float    @default(0)
+  utilities          Float    @default(0)
+  insurance          Float    @default(0)
+  loans              Float    @default(0)
+  subscriptions      Float    @default(0)
+  food               Float    @default(0)
+  transport          Float    @default(0)
+  leisure            Float    @default(0)
+  clothing           Float    @default(0)
+  health             Float    @default(0)
+  currentSavings     Float    @default(0) @map("current_savings")
+  totalDebt          Float    @default(0) @map("total_debt")
+  monthlySavingsGoal Float    @default(0) @map("monthly_savings_goal")
+  financialScore     String?  @map("financial_score")
+  savingsRate        Float?   @map("savings_rate")
+  debtRatio          Float?   @map("debt_ratio")
+  typeHabitation     String?  @map("type_habitation")
+  situationFamiliale String?  @map("situation_familiale")
+  nombrePersonnes    Int      @default(0) @map("nombre_personnes")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("financial_profiles")
+}
+
+// ─── Chat Messages ────────────────────────────────────────────────────────────
+model ChatMessage {
+  id        BigInt   @id @default(autoincrement())
+  userId    String   @map("user_id")
+  role      String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+// ─── Action Plans ─────────────────────────────────────────────────────────────
+model ActionPlan {
+  id            BigInt    @id @default(autoincrement())
+  userId        String    @map("user_id")
+  title         String
+  description   String?
+  category      String?
+  priority      String    @default("MEDIUM")
+  status        String    @default("EN_COURS")
+  targetAmount  Float?    @map("target_amount")
+  currentAmount Float     @default(0) @map("current_amount")
+  deadline      DateTime? @db.Date
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("action_plans")
+}

@@ -70,9 +70,9 @@ export class AccountSettingsComponent implements OnInit {
         this.successMessage = 'Profil mis à jour avec succès.';
         setTimeout(() => this.successMessage = null, 4000);
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.loading = false;
-        this.errorMessage = err.error?.error ?? 'Erreur lors de la mise à jour.';
+        this.errorMessage = err?.message ?? 'Erreur lors de la mise à jour.';
       }
     });
   }
@@ -102,9 +102,9 @@ export class AccountSettingsComponent implements OnInit {
         this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
         setTimeout(() => this.passwordSuccess = null, 4000);
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.passwordLoading = false;
-        this.passwordError = err.error?.error ?? 'Erreur lors du changement de mot de passe.';
+        this.passwordError = err?.message ?? 'Erreur lors du changement de mot de passe.';
       }
     });
   }

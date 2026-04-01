@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
-import { AuthService } from '../auth.service';
+import { AuthService, RegisterPayload } from '../auth.service';
 
 @Component({
   selector: 'app-register',
@@ -29,6 +29,8 @@ export class RegisterComponent {
   showPassword = false;
   showConfirmPassword = false;
 
+  @ViewChild('errorBanner') errorBanner?: ElementRef<HTMLElement>;
+
   constructor(
     private auth: AuthService,
     private router: Router
@@ -40,7 +42,7 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (!this.passwordsMatch) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
+      this.showError('Les mots de passe ne correspondent pas.');
       return;
     }
 
@@ -48,23 +50,32 @@ export class RegisterComponent {
     this.errorMessage = null;
     this.successMessage = null;
 
-    this.auth.register({
+    const payload: RegisterPayload = {
       email: this.form.email,
       firstName: this.form.firstName,
       lastName: this.form.lastName,
       age: this.form.age!,
-      password: this.form.password
-    }).subscribe({
+      password: this.form.password,
+    };
+
+    this.auth.register(payload).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/confirm-email'], {
           state: { email: this.form.email, firstName: this.form.firstName }
         });
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.loading = false;
-        this.errorMessage = err.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.showError(err?.message ?? 'Une erreur est survenue. Veuillez réessayer.');
       }
     });
+  }
+
+  private showError(message: string): void {
+    this.errorMessage = message;
+    setTimeout(() => {
+      this.errorBanner?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 0);
   }
 }

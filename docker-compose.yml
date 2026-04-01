@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
 
-  # ─── Backend (Spring Boot) ────────────────────────────────────────────────
+  # ─── Backend (Express + TypeScript) ──────────────────────────────────────
   backend:
     env_file:
       - .env
@@ -15,13 +15,23 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      # Database
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      # ── Database ──────────────────────────────────────────────────────────────
+      # Option A (recommended): set DATABASE_URL directly in your .env file.
+      #   DATABASE_URL=postgresql://user:pass@host:5432/fincoach
+      # Option B (backward compat): keep SPRING_DATASOURCE_* — the backend
+      #   auto-converts them to DATABASE_URL on startup.
+      # docker-compose does NOT support nested variable substitution so we pass
+      # each variable individually and let database.ts resolve the URL.
+      # DATABASE_URL is read from the root .env by docker-compose.
+      # Use host.docker.internal (not localhost) in the root .env for Docker:
+      #   DATABASE_URL=postgresql://user:pass@host.docker.internal:5432/fincoach
+      - DATABASE_URL=${DATABASE_URL:-}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-fincoach}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-fincoach}
       # App secrets
+      - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-demo}
-      - JWT_SECRET=${JWT_SECRET:-ZmluY29hY2gtcHJvLWp3dC1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudA==}
       # OAuth2
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
@@ -38,12 +48,14 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       # URLs
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4200}
-      - SPRING_PROFILES_ACTIVE=default
+      - BACKEND_URL=${BACKEND_URL:-http://localhost:8080}
+      - NODE_ENV=${NODE_ENV:-production}
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health", "||", "exit", "0"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     restart: unless-stopped
     networks:
       - fincoach-net
@@ -57,7 +69,8 @@ services:
     ports:
       - "4200:4200"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - fincoach-net
