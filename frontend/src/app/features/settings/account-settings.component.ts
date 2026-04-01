@@ -65,14 +65,18 @@ export class AccountSettingsComponent implements OnInit {
     };
 
     this.auth.updateProfile(payload).subscribe({
-      next: () => {
+      next: (res) => {
         this.loading = false;
+        if (!res.success) {
+          this.errorMessage = res.message ?? 'Erreur lors de la mise à jour.';
+          return;
+        }
         this.successMessage = 'Profil mis à jour avec succès.';
         setTimeout(() => this.successMessage = null, 4000);
       },
-      error: (err) => {
+      error: () => {
         this.loading = false;
-        this.errorMessage = err.error?.error ?? 'Erreur lors de la mise à jour.';
+        this.errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
       }
     });
   }
@@ -96,15 +100,19 @@ export class AccountSettingsComponent implements OnInit {
     };
 
     this.auth.updateProfile(payload).subscribe({
-      next: () => {
+      next: (res) => {
         this.passwordLoading = false;
+        if (!res.success) {
+          this.passwordError = res.message ?? 'Erreur lors du changement de mot de passe.';
+          return;
+        }
         this.passwordSuccess = 'Mot de passe modifié avec succès.';
         this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
         setTimeout(() => this.passwordSuccess = null, 4000);
       },
-      error: (err) => {
+      error: () => {
         this.passwordLoading = false;
-        this.passwordError = err.error?.error ?? 'Erreur lors du changement de mot de passe.';
+        this.passwordError = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
       }
     });
   }

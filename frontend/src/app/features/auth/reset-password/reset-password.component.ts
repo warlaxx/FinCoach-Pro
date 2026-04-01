@@ -2,10 +2,8 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
-import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 @Component({
   selector: 'app-reset-password',
@@ -58,14 +56,18 @@ export class ResetPasswordComponent implements OnInit {
     this.loading = true;
 
     this.auth.resetPassword(this.token, this.newPassword).subscribe({
-      next: () => {
+      next: (res: any) => {
         this.loading = false;
+        if (!res.success) {
+          this.showError(res.message ?? 'Une erreur est survenue. Veuillez réessayer.');
+          return;
+        }
         this.success = true;
         setTimeout(() => this.router.navigate(['/login']), 3000);
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.loading = false;
-        this.showError(apiErrorMessage(err, 'Une erreur est survenue. Veuillez réessayer.'));
+        this.showError('Impossible de contacter le serveur. Vérifiez votre connexion.');
       }
     });
   }

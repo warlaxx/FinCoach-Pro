@@ -1,8 +1,21 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subscription, of, throwError, catchError, tap, timeout } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { JWT_STORAGE_KEY, AUTH_REQUEST_TIMEOUT_MS } from '../../shared/config/app.config';
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import {
+  BehaviorSubject,
+  Observable,
+  Subscription,
+  of,
+  throwError,
+  catchError,
+  tap,
+  timeout,
+  map,
+} from "rxjs";
+import { environment } from "../../../environments/environment";
+import {
+  JWT_STORAGE_KEY,
+  AUTH_REQUEST_TIMEOUT_MS,
+} from "../../shared/config/app.config";
 
 export interface AuthUser {
   id: string;
@@ -33,13 +46,16 @@ export interface RegisterPayload {
 }
 
 export interface AuthResponse {
-  token?: string;
-  userId?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  role?: string;
-  emailVerified?: boolean;
+  success: boolean;
+  data?: {
+    token?: string;
+    userId?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    emailVerified?: boolean;
+  };
   message?: string;
 }
 
@@ -51,14 +67,14 @@ export interface AuthResponse {
  *  - Email/password registration and login via REST API
  *  - Email verification via token link
  */
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class AuthService {
-
   private readonly TOKEN_KEY = JWT_STORAGE_KEY;
   private readonly API = environment.apiBaseUrl;
 
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
-  currentUser$: Observable<AuthUser | null> = this.currentUserSubject.asObservable();
+  currentUser$: Observable<AuthUser | null> =
+    this.currentUserSubject.asObservable();
 
   /** Emits true once the initial auth check (GET /api/auth/me) has completed or was skipped. */
   private authReadySubject = new BehaviorSubject<boolean>(false);
@@ -87,19 +103,20 @@ export class AuthService {
     localStorage.setItem(this.TOKEN_KEY, token);
     // Explicitly send the token — don't rely on the interceptor for this critical call
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get<AuthUser>(`${this.API}/api/auth/me`, { headers }).pipe(
+    return this.http.get<{ success: boolean; data?: AuthUser }>(`${this.API}/api/auth/me`, { headers }).pipe(
       timeout(AUTH_REQUEST_TIMEOUT_MS),
-      tap(user => {
+      map((res) => res.data!),
+      tap((user) => {
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
       }),
-      catchError(err => {
+      catchError((err) => {
         if (err.status === 401 || err.status === 403) {
           this.logout();
         }
         this.authReadySubject.next(true);
         return throwError(() => err);
-      })
+      }),
     );
   }
 
@@ -109,14 +126,15 @@ export class AuthService {
     const headers = tokenAtRequest
       ? new HttpHeaders({ Authorization: `Bearer ${tokenAtRequest}` })
       : new HttpHeaders();
-    return this.http.get<AuthUser>(`${this.API}/api/auth/me`, { headers }).pipe(
+    return this.http.get<{ success: boolean; data?: AuthUser }>(`${this.API}/api/auth/me`, { headers }).pipe(
       timeout(AUTH_REQUEST_TIMEOUT_MS),
-      tap(user => {
+      map((res) => res.data ?? null),
+      tap((user) => {
         if (this.getToken() !== tokenAtRequest) return; // stale response — discard
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
       }),
-      catchError(err => {
+      catchError((err) => {
         if (this.getToken() !== tokenAtRequest) {
           // Token changed while request was in flight — don't touch state.
           this.authReadySubject.next(true);
@@ -129,7 +147,7 @@ export class AuthService {
         }
         this.authReadySubject.next(true);
         return of(null);
-      })
+      }),
     );
   }
 
@@ -142,34 +160,52 @@ export class AuthService {
   }
 
   getCurrentUserId(): string {
-    return this.currentUserSubject.getValue()?.id ?? 'user-demo';
+    return this.currentUserSubject.getValue()?.id ?? "user-demo";
   }
 
   /** Initiates an OAuth2 login (full browser redirect). */
-  login(provider: 'google' | 'microsoft' | 'apple'): void {
+  login(provider: "google" | "microsoft" | "apple"): void {
     window.location.href = `${this.API}/oauth2/authorization/${provider}`;
   }
 
   /** Registers a new email/password account. */
   register(payload: RegisterPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/api/auth/register`, payload);
+    return this.http.post<AuthResponse>(
+      `${this.API}/api/auth/register`,
+      payload,
+    );
   }
 
   /** Authenticates an email/password account. */
   loginWithEmail(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/api/auth/login`, { email, password });
+    return this.http.post<AuthResponse>(`${this.API}/api/auth/login`, {
+      email,
+      password,
+    });
+  }
+
+  loginWithToken(token: string): Observable<AuthUser> {
+    localStorage.setItem(this.TOKEN_KEY, token);
+    return this.loadCurrentUser().pipe(
+      map((user) => {
+        if (!user) throw new Error("Failed to load user");
+        return user;
+      }),
+    );
   }
 
   /** Verifies an email address using the token from the verification link. */
   verifyEmail(token: string): Observable<AuthResponse> {
     return this.http.get<AuthResponse>(`${this.API}/api/auth/verify-email`, {
-      params: { token }
+      params: { token },
     });
   }
 
   /** Resends the verification email. */
   resendVerification(email: string): Observable<any> {
-    return this.http.post(`${this.API}/api/auth/resend-verification`, { email });
+    return this.http.post(`${this.API}/api/auth/resend-verification`, {
+      email,
+    });
   }
 
   /** Requests a password reset email. */
@@ -179,19 +215,25 @@ export class AuthService {
 
   /** Resets the password using the token from the email. */
   resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.API}/api/auth/reset-password`, { token, newPassword });
+    return this.http.post(`${this.API}/api/auth/reset-password`, {
+      token,
+      newPassword,
+    });
   }
 
   /** Updates the current user's profile. */
   updateProfile(payload: UpdateProfilePayload): Observable<AuthResponse> {
-    return this.http.put<AuthResponse>(`${this.API}/api/auth/profile`, payload).pipe(
-      tap(res => {
-        if (res.token) {
-          localStorage.setItem(this.TOKEN_KEY, res.token);
-          this.loadCurrentUser().subscribe();
-        }
-      })
-    );
+    return this.http
+      .put<AuthResponse>(`${this.API}/api/auth/profile`, payload)
+      .pipe(
+        tap((res) => {
+          const token = res.data?.token;
+          if (token) {
+            localStorage.setItem(this.TOKEN_KEY, token);
+            this.loadCurrentUser().subscribe();
+          }
+        }),
+      );
   }
 
   logout(): void {

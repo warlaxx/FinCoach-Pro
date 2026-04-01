@@ -20,13 +20,18 @@ export const chatController = {
   async getHistory(req: AuthRequest, res: Response): Promise<void> {
     logger.debug('GET /api/chat/history', { userId: req.userId });
 
-    const messages = await prisma.chatMessage.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'asc' },
-    });
+    try {
+      const messages = await prisma.chatMessage.findMany({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'asc' },
+      });
 
-    logger.debug('Chat history fetched', { userId: req.userId, messageCount: messages.length });
-    res.json(messages.map(toResponse));
+      logger.debug('Chat history fetched', { userId: req.userId, messageCount: messages.length });
+      res.json({ success: true, data: messages.map(toResponse) });
+    } catch (err) {
+      logger.error('Get chat history unexpected error', { userId: req.userId, error: (err as Error).message });
+      res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
+    }
   },
 
   // POST /api/chat
@@ -40,7 +45,7 @@ export const chatController = {
 
     if (!message.trim()) {
       logger.warn('Chat message rejected — empty message', { userId: req.userId });
-      res.status(400).json({ error: 'Le message ne peut pas être vide.' });
+      res.json({ success: false, message: 'Le message ne peut pas être vide.' });
       return;
     }
     if (message.length > CONSTANTS.MAX_MESSAGE_LENGTH) {
@@ -49,49 +54,57 @@ export const chatController = {
         messageLength: message.length,
         maxLength: CONSTANTS.MAX_MESSAGE_LENGTH,
       });
-      res.status(400).json({
-        error: `Le message est trop long. Maximum ${CONSTANTS.MAX_MESSAGE_LENGTH} caractères.`,
+      res.json({
+        success: false,
+        message: `Le message est trop long. Maximum ${CONSTANTS.MAX_MESSAGE_LENGTH} caractères.`,
       });
       return;
     }
 
-    // Save the user message
-    await prisma.chatMessage.create({
-      data: { userId: req.userId, role: 'user', content: message },
-    });
-    logger.debug('User message saved to database', { userId: req.userId });
+    try {
+      await prisma.chatMessage.create({
+        data: { userId: req.userId, role: 'user', content: message },
+      });
+      logger.debug('User message saved to database', { userId: req.userId });
 
-    // Fetch recent history for context (last 20, reversed for chronological order)
-    const history = await prisma.chatMessage.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    });
-    history.reverse();
-    logger.debug('Chat history loaded for AI context', { userId: req.userId, historySize: history.length });
+      const history = await prisma.chatMessage.findMany({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      });
+      history.reverse();
+      logger.debug('Chat history loaded for AI context', { userId: req.userId, historySize: history.length });
 
-    // Call the AI service
-    logger.debug('Calling AI chat service', { userId: req.userId });
-    const aiResponse = await chatService.chat(history, message);
-    logger.info('AI response received', {
-      userId: req.userId,
-      responseLength: aiResponse.length,
-    });
+      logger.debug('Calling AI chat service', { userId: req.userId });
+      const aiResponse = await chatService.chat(history, message);
+      logger.info('AI response received', {
+        userId: req.userId,
+        responseLength: aiResponse.length,
+      });
 
-    // Save the assistant message
-    const assistantMsg = await prisma.chatMessage.create({
-      data: { userId: req.userId, role: 'assistant', content: aiResponse },
-    });
+      const assistantMsg = await prisma.chatMessage.create({
+        data: { userId: req.userId, role: 'assistant', content: aiResponse },
+      });
 
-    res.json(toResponse(assistantMsg));
+      res.json({ success: true, data: toResponse(assistantMsg) });
+    } catch (err) {
+      logger.error('Send message unexpected error', { userId: req.userId, error: (err as Error).message });
+      res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
+    }
   },
 
   // DELETE /api/chat
   async clearHistory(req: AuthRequest, res: Response): Promise<void> {
     logger.info('DELETE /api/chat — clearing chat history', { userId: req.userId });
-    await prisma.chatMessage.deleteMany({ where: { userId: req.userId } });
-    logger.info('Chat history cleared', { userId: req.userId });
-    res.status(204).send();
+
+    try {
+      await prisma.chatMessage.deleteMany({ where: { userId: req.userId } });
+      logger.info('Chat history cleared', { userId: req.userId });
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Clear chat history unexpected error', { userId: req.userId, error: (err as Error).message });
+      res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
+    }
   },
 };
 

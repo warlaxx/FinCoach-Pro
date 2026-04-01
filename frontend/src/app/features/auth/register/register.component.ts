@@ -2,10 +2,8 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
-import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 @Component({
   selector: 'app-register',
@@ -59,15 +57,19 @@ export class RegisterComponent {
       age: this.form.age!,
       password: this.form.password
     }).subscribe({
-      next: () => {
+      next: (res) => {
         this.loading = false;
+        if (!res.success) {
+          this.showError(res.message ?? 'Une erreur est survenue. Veuillez réessayer.');
+          return;
+        }
         this.router.navigate(['/confirm-email'], {
           state: { email: this.form.email, firstName: this.form.firstName }
         });
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.loading = false;
-        this.showError(apiErrorMessage(err, 'Une erreur est survenue. Veuillez réessayer.'));
+        this.showError('Impossible de contacter le serveur. Vérifiez votre connexion.');
       }
     });
   }
