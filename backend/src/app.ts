@@ -1,10 +1,13 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import passport from './config/passport';
 import router from './routes';
 import { errorHandler, notFoundHandler } from './middleware/errors';
+import { createLogger } from './utils/logger';
+
+const httpLogger = createLogger('HTTP');
 
 /**
  * Express application factory.
@@ -16,6 +19,34 @@ export function createApp(): express.Application {
   // Trust the first proxy (Nginx) so express-rate-limit reads the real client IP
   // from X-Forwarded-For instead of the Nginx container IP.
   app.set('trust proxy', 1);
+
+  // ─── HTTP request/response logging ────────────────────────────────────────
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const start = Date.now();
+    const ip = req.ip ?? req.socket.remoteAddress ?? 'unknown';
+
+    httpLogger.info('Incoming request', {
+      method: req.method,
+      path: req.path,
+      ip,
+      userAgent: req.headers['user-agent'],
+      contentLength: req.headers['content-length'],
+    });
+
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
+      httpLogger[level]('Response sent', {
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        durationMs: duration,
+        ip,
+      });
+    });
+
+    next();
+  });
 
   // ─── Security headers ──────────────────────────────────────────────────────
   app.use(helmet({ crossOriginEmbedderPolicy: false }));
@@ -34,6 +65,7 @@ export function createApp(): express.Application {
         if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
+          httpLogger.warn('CORS blocked request from disallowed origin', { origin });
           callback(new Error(`CORS: origin ${origin} not allowed.`));
         }
       },

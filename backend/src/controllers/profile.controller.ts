@@ -4,6 +4,9 @@ import prisma from '../config/database';
 import { scoringService } from '../services/scoring.service';
 import { actionPlanService } from '../services/action-plan.service';
 import { FinancialProfile } from '@prisma/client';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('ProfileController');
 
 /**
  * Profile controller — port of Java ProfileController.java.
@@ -17,32 +20,40 @@ import { FinancialProfile } from '@prisma/client';
 export const profileController = {
   // GET /api/profile
   async getMyProfile(req: AuthRequest, res: Response): Promise<void> {
+    logger.debug('GET /api/profile', { userId: req.userId });
+
     const profile = await prisma.financialProfile.findFirst({
       where: { userId: req.userId },
       orderBy: { updatedAt: 'desc' },
     });
 
     if (!profile) {
+      logger.warn('Profile not found', { userId: req.userId });
       res.status(404).json({ error: 'Profil introuvable.' });
       return;
     }
 
+    logger.debug('Profile fetched', { userId: req.userId, profileId: profile.id });
     res.json(buildProfileResponse(profile));
   },
 
   // GET /api/profile/:userId
   async getProfileByUserId(req: AuthRequest, res: Response): Promise<void> {
     const { userId } = req.params as { userId: string };
+    logger.debug('GET /api/profile/:userId', { requestedUserId: userId, callerUserId: req.userId });
+
     const profile = await prisma.financialProfile.findFirst({
       where: { userId },
       orderBy: { updatedAt: 'desc' },
     });
 
     if (!profile) {
+      logger.warn('Profile not found by userId', { requestedUserId: userId });
       res.status(404).json({ error: 'Profil introuvable.' });
       return;
     }
 
+    logger.debug('Profile fetched by userId', { requestedUserId: userId, profileId: profile.id });
     res.json(buildProfileResponse(profile));
   },
 
@@ -51,7 +62,13 @@ export const profileController = {
     const userId = req.userId;
     const body = req.body as FinancialProfilePayload;
 
+    logger.info('POST /api/profile — saving financial profile', {
+      userId,
+      monthlyIncome: body.monthlyIncome,
+    });
+
     if (body.monthlyIncome === undefined || body.monthlyIncome === null) {
+      logger.warn('Save profile validation failed — missing monthlyIncome', { userId });
       res.status(400).json({ error: 'Le revenu mensuel est requis.' });
       return;
     }
@@ -97,7 +114,12 @@ export const profileController = {
           data: { userId, ...profileData, ...scores },
         });
 
-    console.info(`[ProfileController] Profile upserted id=${savedProfile.id}, score=${savedProfile.financialScore}`);
+    logger.info('Profile upserted successfully', {
+      userId,
+      profileId: savedProfile.id,
+      financialScore: savedProfile.financialScore,
+      isUpdate: !!existing,
+    });
 
     // Auto-generate action plans based on the new profile
     await actionPlanService.generateFromProfile(savedProfile);
@@ -108,6 +130,7 @@ export const profileController = {
   // GET /api/dashboard/:userId
   async getDashboard(req: AuthRequest, res: Response): Promise<void> {
     const { userId } = req.params as { userId: string };
+    logger.debug('GET /api/dashboard/:userId', { requestedUserId: userId, callerUserId: req.userId });
 
     const profile = await prisma.financialProfile.findFirst({
       where: { userId },
@@ -121,6 +144,12 @@ export const profileController = {
       .map(actionPlanService.toResponse.bind(actionPlanService));
 
     const stats = await actionPlanService.buildStats(userId);
+
+    logger.debug('Dashboard data loaded', {
+      userId,
+      hasProfile: !!profile,
+      topActionsCount: topActions.length,
+    });
 
     res.json({
       profile: profile ? buildProfileResponse(profile) : null,

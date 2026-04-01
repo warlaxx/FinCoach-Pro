@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
+import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 @Component({
   selector: 'app-login',
@@ -27,6 +29,8 @@ export class LoginComponent implements OnInit {
 
   // Toggle between email/password and OAuth2 sections
   showEmailForm = false;
+
+  @ViewChild('emailErrorBanner') emailErrorBanner?: ElementRef<HTMLElement>;
 
   constructor(
     private auth: AuthService,
@@ -60,21 +64,29 @@ export class LoginComponent implements OnInit {
               this.emailLoading = false;
               this.router.navigate(['/dashboard']);
             },
-            error: () => {
+            error: (err: HttpErrorResponse) => {
               this.emailLoading = false;
-              this.emailError = 'Erreur lors du chargement du profil.';
+              this.showError(apiErrorMessage(err, 'Erreur lors du chargement du profil.'));
             }
           });
         } else {
           this.emailLoading = false;
         }
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.emailLoading = false;
-        const msg = err.error?.error ?? 'Identifiants incorrects.';
-        this.emailError = msg;
-        this.isAccountNotFound = msg.includes('Aucun compte');
+        const msg = apiErrorMessage(err, 'Identifiants incorrects.');
+        this.isAccountNotFound = msg.toLowerCase().includes('aucun compte');
+        this.showError(msg);
       }
     });
+  }
+
+  private showError(message: string): void {
+    this.emailError = message;
+    // Make sure the error banner is visible on screen, even if the form scrolled it away
+    setTimeout(() => {
+      this.emailErrorBanner?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 0);
   }
 }

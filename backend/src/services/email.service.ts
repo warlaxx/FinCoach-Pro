@@ -1,4 +1,7 @@
 import nodemailer from 'nodemailer';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('EmailService');
 
 /**
  * Email service — port of Java EmailService.java.
@@ -26,9 +29,15 @@ class EmailService {
         tls: { rejectUnauthorized: false },
       });
       this.isConfigured = true;
-      console.log(`[EmailService] Configured with SMTP host=${host}:${port}`);
+      logger.info('SMTP transport configured', { host, port, secure: port === 465, user });
     } else {
-      console.warn('[EmailService] MAIL_HOST/USERNAME/PASSWORD not set — emails will be logged to console only.');
+      logger.warn('SMTP not configured — emails will be printed to console only', {
+        missingVars: [
+          !host && 'MAIL_HOST',
+          !user && 'MAIL_USERNAME',
+          !pass && 'MAIL_PASSWORD',
+        ].filter(Boolean),
+      });
     }
   }
 
@@ -36,20 +45,32 @@ class EmailService {
     const from = process.env.MAIL_USERNAME ?? 'noreply@fincoach.pro';
 
     if (!this.isConfigured || !this.transporter) {
+      logger.warn('Email not sent — SMTP not configured, printing to console instead', {
+        to,
+        subject,
+      });
       console.log(`\n[EmailService] --- EMAIL (console fallback) ---`);
       console.log(`To: ${to}\nSubject: ${subject}\n${html.replace(/<[^>]+>/g, '')}\n---`);
       return;
     }
 
     try {
+      logger.debug('Sending email via SMTP', { from, to, subject });
       await this.transporter.sendMail({ from, to, subject, html });
-      console.log(`[EmailService] Email sent to ${to} (${subject})`);
+      logger.info('Email sent successfully', { to, subject });
     } catch (err) {
-      console.error(`[EmailService] Failed to send email to ${to}:`, err);
+      const smtpErr = err as Error;
+      logger.error('Failed to send email via SMTP', {
+        to,
+        subject,
+        reason: smtpErr.message,
+        stack: smtpErr.stack,
+      });
     }
   }
 
   async sendVerificationEmail(email: string, firstName: string, token: string): Promise<void> {
+    logger.debug('Preparing verification email', { email, firstName });
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200';
     const verifyUrl = `${frontendUrl}/auth/verify-email?token=${token}`;
 
@@ -80,6 +101,7 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, firstName: string, token: string): Promise<void> {
+    logger.debug('Preparing password reset email', { email, firstName });
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200';
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 

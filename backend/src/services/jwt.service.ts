@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { JwtClaims } from '../types';
 import { CONSTANTS } from '../config/constants';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('JwtService');
 
 /**
  * JWT service — exact port of Java JwtService.java.
@@ -14,7 +17,10 @@ import { CONSTANTS } from '../config/constants';
 class JwtService {
   private get secret(): Buffer {
     const s = process.env.JWT_SECRET;
-    if (!s) throw new Error('JWT_SECRET environment variable is not set.');
+    if (!s) {
+      logger.error('JWT_SECRET environment variable is not set — token operations will fail');
+      throw new Error('JWT_SECRET environment variable is not set.');
+    }
     return Buffer.from(s, 'base64');
   }
 
@@ -43,18 +49,34 @@ class JwtService {
       emailVerified: user.emailVerified ?? false,
     };
 
-    return jwt.sign(payload, this.secret, {
+    const token = jwt.sign(payload, this.secret, {
       subject: user.id,
       expiresIn: CONSTANTS.JWT_EXPIRY_MS / 1000, // jwt library expects seconds
       algorithm: 'HS256',
     });
+
+    const expiresAt = new Date(Date.now() + CONSTANTS.JWT_EXPIRY_MS).toISOString();
+    logger.debug('JWT generated', { userId: user.id, email: user.email, expiresAt });
+
+    return token;
   }
 
   /**
    * Verifies and decodes a JWT. Throws if invalid or expired.
    */
   verify(token: string): JwtClaims {
-    return jwt.verify(token, this.secret) as JwtClaims;
+    try {
+      const claims = jwt.verify(token, this.secret) as JwtClaims;
+      logger.debug('JWT verified', { userId: claims.sub, email: claims.email });
+      return claims;
+    } catch (err) {
+      const jwtErr = err as Error;
+      logger.warn('JWT verification failed', {
+        reason: jwtErr.name,
+        message: jwtErr.message,
+      });
+      throw err;
+    }
   }
 
   isValid(token: string): boolean {

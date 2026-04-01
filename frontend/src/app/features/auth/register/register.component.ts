@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { AuthService } from '../auth.service';
+import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 @Component({
   selector: 'app-register',
@@ -29,6 +31,8 @@ export class RegisterComponent {
   showPassword = false;
   showConfirmPassword = false;
 
+  @ViewChild('errorBanner') errorBanner?: ElementRef<HTMLElement>;
+
   constructor(
     private auth: AuthService,
     private router: Router
@@ -40,7 +44,7 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (!this.passwordsMatch) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
+      this.showError('Les mots de passe ne correspondent pas.');
       return;
     }
 
@@ -61,10 +65,17 @@ export class RegisterComponent {
           state: { email: this.form.email, firstName: this.form.firstName }
         });
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading = false;
-        this.errorMessage = err.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.showError(apiErrorMessage(err, 'Une erreur est survenue. Veuillez réessayer.'));
       }
     });
+  }
+
+  private showError(message: string): void {
+    this.errorMessage = message;
+    setTimeout(() => {
+      this.errorBanner?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 0);
   }
 }
