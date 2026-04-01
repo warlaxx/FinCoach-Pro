@@ -47,9 +47,15 @@ export const profileController = {
     const { userId } = req.params as { userId: string };
     logger.debug('GET /api/profile/:userId', { requestedUserId: userId, callerUserId: req.userId });
 
+    if (userId !== req.userId) {
+      logger.warn('Get profile forbidden — userId mismatch', { requestedUserId: userId, callerUserId: req.userId });
+      res.json({ success: false, message: 'Accès refusé.' });
+      return;
+    }
+
     try {
       const profile = await prisma.financialProfile.findFirst({
-        where: { userId },
+        where: { userId: req.userId },
         orderBy: { updatedAt: 'desc' },
       });
 
@@ -141,8 +147,9 @@ export const profileController = {
 
   // GET /api/dashboard/:userId
   async getDashboard(req: AuthRequest, res: Response): Promise<void> {
-    const { userId } = req.params as { userId: string };
-    logger.debug('GET /api/dashboard/:userId', { requestedUserId: userId, callerUserId: req.userId });
+    // Always use the authenticated user's ID from the JWT — ignore the URL param to prevent IDOR.
+    const userId = req.userId;
+    logger.debug('GET /api/dashboard/:userId', { userId });
 
     try {
       const profile = await prisma.financialProfile.findFirst({

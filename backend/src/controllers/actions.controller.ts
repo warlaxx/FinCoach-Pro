@@ -50,8 +50,8 @@ export const actionsController = {
       priority,
     });
 
-    if (!title?.trim()) {
-      logger.warn('Create action validation failed — missing title', { userId: req.userId });
+    if (typeof title !== 'string' || !title.trim()) {
+      logger.warn('Create action validation failed — missing or invalid title', { userId: req.userId });
       res.json({ success: false, message: 'Le titre est requis.' });
       return;
     }
@@ -77,7 +77,12 @@ export const actionsController = {
 
   // PUT /api/actions/:id/status
   async updateStatus(req: AuthRequest, res: Response): Promise<void> {
-    const id = BigInt(req.params['id'] as string);
+    const rawId = req.params['id'];
+    if (!/^\d+$/.test(rawId)) {
+      res.json({ success: false, message: 'Identifiant d\'action invalide.' });
+      return;
+    }
+    const id = BigInt(rawId);
     const { status, currentAmount } = req.body;
 
     logger.info('PUT /api/actions/:id/status', {
@@ -138,7 +143,12 @@ export const actionsController = {
 
   // DELETE /api/actions/:id
   async deleteAction(req: AuthRequest, res: Response): Promise<void> {
-    const id = BigInt(req.params['id'] as string);
+    const rawId = req.params['id'];
+    if (!/^\d+$/.test(rawId)) {
+      res.json({ success: false, message: 'Identifiant d\'action invalide.' });
+      return;
+    }
+    const id = BigInt(rawId);
     logger.info('DELETE /api/actions/:id', { userId: req.userId, actionId: id.toString() });
 
     try {
