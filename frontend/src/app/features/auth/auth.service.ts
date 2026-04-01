@@ -45,27 +45,22 @@ export interface RegisterPayload {
   password: string;
 }
 
-export interface AuthResponse {
+/** Shape of every backend response envelope */
+interface ApiEnvelope {
   success: boolean;
-  data?: {
-    token?: string;
-    userId?: string;
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    role?: string;
-    emailVerified?: boolean;
-  };
+  data?: any;
   message?: string;
 }
 
 /**
  * Manages authentication state for the entire Angular application.
  *
- * Supports:
- *  - OAuth2 login (Google, Microsoft, Apple) via browser redirect
- *  - Email/password registration and login via REST API
- *  - Email verification via token link
+ * All public methods either:
+ *  - emit the resolved value in `next` on success
+ *  - throw a plain Error (with a user-facing message) that lands in `error`
+ *
+ * Components only need to handle `next` (success) and `error` (failure) —
+ * never inspect `res.success` directly.
  */
 @Injectable({ providedIn: "root" })
 export class AuthService {
@@ -96,59 +91,63 @@ export class AuthService {
   }
 
   handleCallback(token: string): Observable<AuthUser> {
-    // Cancel any in-flight bootstrap request so its stale response can't clobber the new token.
     this.bootstrapSub?.unsubscribe();
     this.bootstrapSub = null;
 
     localStorage.setItem(this.TOKEN_KEY, token);
-    // Explicitly send the token — don't rely on the interceptor for this critical call
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get<{ success: boolean; data?: AuthUser }>(`${this.API}/api/auth/me`, { headers }).pipe(
-      timeout(AUTH_REQUEST_TIMEOUT_MS),
-      map((res) => res.data!),
-      tap((user) => {
-        this.currentUserSubject.next(user);
-        this.authReadySubject.next(true);
-      }),
-      catchError((err) => {
-        if (err.status === 401 || err.status === 403) {
-          this.logout();
-        }
-        this.authReadySubject.next(true);
-        return throwError(() => err);
-      }),
-    );
+    return this.http
+      .get<{ success: boolean; data?: AuthUser }>(
+        `${this.API}/api/auth/me`,
+        { headers },
+      )
+      .pipe(
+        timeout(AUTH_REQUEST_TIMEOUT_MS),
+        map((res) => res.data!),
+        tap((user) => {
+          this.currentUserSubject.next(user);
+          this.authReadySubject.next(true);
+        }),
+        catchError((err) => {
+          if (err.status === 401 || err.status === 403) {
+            this.logout();
+          }
+          this.authReadySubject.next(true);
+          return throwError(() => err);
+        }),
+      );
   }
 
   loadCurrentUser(): Observable<AuthUser | null> {
-    // Snapshot the token now — ignore the response if the token changed while in flight.
     const tokenAtRequest = this.getToken();
     const headers = tokenAtRequest
       ? new HttpHeaders({ Authorization: `Bearer ${tokenAtRequest}` })
       : new HttpHeaders();
-    return this.http.get<{ success: boolean; data?: AuthUser }>(`${this.API}/api/auth/me`, { headers }).pipe(
-      timeout(AUTH_REQUEST_TIMEOUT_MS),
-      map((res) => res.data ?? null),
-      tap((user) => {
-        if (this.getToken() !== tokenAtRequest) return; // stale response — discard
-        this.currentUserSubject.next(user);
-        this.authReadySubject.next(true);
-      }),
-      catchError((err) => {
-        if (this.getToken() !== tokenAtRequest) {
-          // Token changed while request was in flight — don't touch state.
+    return this.http
+      .get<{ success: boolean; data?: AuthUser }>(
+        `${this.API}/api/auth/me`,
+        { headers },
+      )
+      .pipe(
+        timeout(AUTH_REQUEST_TIMEOUT_MS),
+        map((res) => res.data ?? null),
+        tap((user) => {
+          if (this.getToken() !== tokenAtRequest) return;
+          this.currentUserSubject.next(user);
+          this.authReadySubject.next(true);
+        }),
+        catchError((err) => {
+          if (this.getToken() !== tokenAtRequest) {
+            this.authReadySubject.next(true);
+            return of(null);
+          }
+          if (err.status === 401 || err.status === 403) {
+            this.logout();
+          }
           this.authReadySubject.next(true);
           return of(null);
-        }
-        // Only clear the session when the token is truly invalid (401/403).
-        // Network errors, timeouts, 500s etc. should NOT wipe the token.
-        if (err.status === 401 || err.status === 403) {
-          this.logout();
-        }
-        this.authReadySubject.next(true);
-        return of(null);
-      }),
-    );
+        }),
+      );
   }
 
   isAuthenticated(): boolean {
@@ -168,71 +167,150 @@ export class AuthService {
     window.location.href = `${this.API}/oauth2/authorization/${provider}`;
   }
 
-  /** Registers a new email/password account. */
-  register(payload: RegisterPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
-      `${this.API}/api/auth/register`,
-      payload,
-    );
+  /**
+   * Authenticates with email + password.
+   * Emits the JWT token on success; throws an Error with a user-facing message on failure.
+   */
+  loginWithEmail(email: string, password: string): Observable<string> {
+    return this.http
+      .post<ApiEnvelope>(`${this.API}/api/auth/login`, { email, password })
+      .pipe(
+        map((res) => {
+          if (!res.success) {
+            throw new Error(res.message ?? "Identifiants incorrects.");
+          }
+          const token: string | undefined = res.data?.token;
+          if (!token) {
+            throw new Error("Réponse inattendue du serveur. Veuillez réessayer.");
+          }
+          return token;
+        }),
+      );
   }
 
-  /** Authenticates an email/password account. */
-  loginWithEmail(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/api/auth/login`, {
-      email,
-      password,
-    });
-  }
-
+  /** Stores the token and loads the user profile from /api/auth/me. */
   loginWithToken(token: string): Observable<AuthUser> {
     localStorage.setItem(this.TOKEN_KEY, token);
     return this.loadCurrentUser().pipe(
       map((user) => {
-        if (!user) throw new Error("Failed to load user");
+        if (!user) {
+          throw new Error(
+            "Impossible de charger votre profil. Veuillez réessayer.",
+          );
+        }
         return user;
       }),
     );
   }
 
-  /** Verifies an email address using the token from the verification link. */
-  verifyEmail(token: string): Observable<AuthResponse> {
-    return this.http.get<AuthResponse>(`${this.API}/api/auth/verify-email`, {
-      params: { token },
-    });
-  }
-
-  /** Resends the verification email. */
-  resendVerification(email: string): Observable<any> {
-    return this.http.post(`${this.API}/api/auth/resend-verification`, {
-      email,
-    });
-  }
-
-  /** Requests a password reset email. */
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.API}/api/auth/forgot-password`, { email });
-  }
-
-  /** Resets the password using the token from the email. */
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.API}/api/auth/reset-password`, {
-      token,
-      newPassword,
-    });
-  }
-
-  /** Updates the current user's profile. */
-  updateProfile(payload: UpdateProfilePayload): Observable<AuthResponse> {
+  /**
+   * Registers a new email/password account.
+   * Completes (void) on success; throws an Error with a user-facing message on failure.
+   */
+  register(payload: RegisterPayload): Observable<void> {
     return this.http
-      .put<AuthResponse>(`${this.API}/api/auth/profile`, payload)
+      .post<ApiEnvelope>(`${this.API}/api/auth/register`, payload)
       .pipe(
+        map((res) => {
+          if (!res.success) {
+            throw new Error(res.message ?? "Erreur lors de l'inscription.");
+          }
+          return void 0;
+        }),
+      );
+  }
+
+  /**
+   * Verifies an email address using the token from the verification link.
+   * Emits the full envelope on success (caller may extract token); throws on failure.
+   */
+  verifyEmail(token: string): Observable<ApiEnvelope> {
+    return this.http
+      .get<ApiEnvelope>(`${this.API}/api/auth/verify-email`, {
+        params: { token },
+      })
+      .pipe(
+        map((res) => {
+          if (!res.success) {
+            throw new Error(res.message ?? "Lien invalide ou expiré.");
+          }
+          return res;
+        }),
+      );
+  }
+
+  /**
+   * Resends the verification email.
+   * Throws an Error with a user-facing message on failure.
+   */
+  resendVerification(email: string): Observable<void> {
+    return this.http
+      .post<ApiEnvelope>(`${this.API}/api/auth/resend-verification`, { email })
+      .pipe(
+        map((res) => {
+          if (!res.success) {
+            throw new Error(res.message ?? "Impossible de renvoyer l'e-mail.");
+          }
+          return void 0;
+        }),
+      );
+  }
+
+  /**
+   * Requests a password-reset email.
+   * Always completes (void) — never throws, to prevent email enumeration.
+   */
+  forgotPassword(email: string): Observable<void> {
+    return this.http
+      .post<ApiEnvelope>(`${this.API}/api/auth/forgot-password`, { email })
+      .pipe(map(() => void 0));
+  }
+
+  /**
+   * Resets the password using the token from the email.
+   * Completes (void) on success; throws an Error with a user-facing message on failure.
+   */
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http
+      .post<ApiEnvelope>(`${this.API}/api/auth/reset-password`, {
+        token,
+        newPassword,
+      })
+      .pipe(
+        map((res) => {
+          if (!res.success) {
+            throw new Error(
+              res.message ?? "Erreur lors de la réinitialisation.",
+            );
+          }
+          return void 0;
+        }),
+      );
+  }
+
+  /**
+   * Updates the current user's profile (name, age, password).
+   * Refreshes the JWT automatically on success.
+   * Completes (void) on success; throws an Error with a user-facing message on failure.
+   */
+  updateProfile(payload: UpdateProfilePayload): Observable<void> {
+    return this.http
+      .put<ApiEnvelope>(`${this.API}/api/auth/profile`, payload)
+      .pipe(
+        map((res) => {
+          if (!res.success) {
+            throw new Error(res.message ?? "Erreur lors de la mise à jour.");
+          }
+          return res;
+        }),
         tap((res) => {
-          const token = res.data?.token;
+          const token: string | undefined = res.data?.token;
           if (token) {
             localStorage.setItem(this.TOKEN_KEY, token);
             this.loadCurrentUser().subscribe();
           }
         }),
+        map(() => void 0),
       );
   }
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
-import { AuthService } from '../auth.service';
+import { AuthService, RegisterPayload } from '../auth.service';
 
 @Component({
   selector: 'app-register',
@@ -50,26 +50,24 @@ export class RegisterComponent {
     this.errorMessage = null;
     this.successMessage = null;
 
-    this.auth.register({
+    const payload: RegisterPayload = {
       email: this.form.email,
       firstName: this.form.firstName,
       lastName: this.form.lastName,
       age: this.form.age!,
-      password: this.form.password
-    }).subscribe({
-      next: (res) => {
+      password: this.form.password,
+    };
+
+    this.auth.register(payload).subscribe({
+      next: () => {
         this.loading = false;
-        if (!res.success) {
-          this.showError(res.message ?? 'Une erreur est survenue. Veuillez réessayer.');
-          return;
-        }
         this.router.navigate(['/confirm-email'], {
           state: { email: this.form.email, firstName: this.form.firstName }
         });
       },
-      error: () => {
+      error: (err: Error) => {
         this.loading = false;
-        this.showError('Impossible de contacter le serveur. Vérifiez votre connexion.');
+        this.showError(err?.message ?? 'Une erreur est survenue. Veuillez réessayer.');
       }
     });
   }

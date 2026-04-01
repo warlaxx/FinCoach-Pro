@@ -34,22 +34,20 @@ export class EmailVerifiedComponent implements OnInit {
     this.auth.verifyEmail(token).subscribe({
       next: (res) => {
         this.status = 'success';
-        this.message = res.message ?? 'Votre e-mail a été vérifié avec succès !';
-        // Store JWT and update user state, then redirect to dashboard
-        if (res.data?.token) {
-          this.auth.handleCallback(res.data.token).subscribe({
-            next: () => {
-              setTimeout(() => this.router.navigate(['/dashboard']), 2000);
-            },
+        this.message = 'Votre e-mail a été vérifié avec succès !';
+        const jwt: string | undefined = res.data?.token;
+        if (jwt) {
+          this.auth.handleCallback(jwt).subscribe({
+            next: () => setTimeout(() => this.router.navigate(['/dashboard']), 2000),
             error: () => {
-              this.message = 'Votre e-mail a été vérifié, mais la connexion automatique a échoué. Veuillez vous reconnecter.';
+              this.message = 'E-mail vérifié. Connexion automatique échouée — veuillez vous reconnecter.';
             }
           });
         }
       },
-      error: () => {
+      error: (err: Error) => {
         this.status = 'error';
-        this.message = 'Le lien est invalide ou a expiré.';
+        this.message = err?.message ?? 'Le lien est invalide ou a expiré.';
       }
     });
   }

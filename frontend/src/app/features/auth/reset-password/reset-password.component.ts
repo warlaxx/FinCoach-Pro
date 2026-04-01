@@ -34,7 +34,6 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
-
     if (!this.token) {
       this.showError('Lien de réinitialisation invalide.');
     }
@@ -47,7 +46,6 @@ export class ResetPasswordComponent implements OnInit {
       this.showError('Le mot de passe doit contenir au moins 8 caractères.');
       return;
     }
-
     if (this.newPassword !== this.confirmPassword) {
       this.showError('Les mots de passe ne correspondent pas.');
       return;
@@ -56,18 +54,14 @@ export class ResetPasswordComponent implements OnInit {
     this.loading = true;
 
     this.auth.resetPassword(this.token, this.newPassword).subscribe({
-      next: (res: any) => {
+      next: () => {
         this.loading = false;
-        if (!res.success) {
-          this.showError(res.message ?? 'Une erreur est survenue. Veuillez réessayer.');
-          return;
-        }
         this.success = true;
         setTimeout(() => this.router.navigate(['/login']), 3000);
       },
-      error: () => {
+      error: (err: Error) => {
         this.loading = false;
-        this.showError('Impossible de contacter le serveur. Vérifiez votre connexion.');
+        this.showError(err?.message ?? 'Une erreur est survenue. Veuillez réessayer.');
       }
     });
   }

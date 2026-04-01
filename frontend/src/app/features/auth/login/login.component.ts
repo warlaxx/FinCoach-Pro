@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { LogoComponent } from "../../../shared/components/logo/logo.component";
-import { AuthService, AuthResponse } from "../auth.service";
+import { AuthService } from "../auth.service";
 
 @Component({
   selector: "app-login",
@@ -24,7 +24,6 @@ export class LoginComponent implements OnInit {
   isAccountNotFound = false;
   showPassword = false;
 
-  // Toggle between email/password and OAuth2 sections
   showEmailForm = false;
 
   @ViewChild("emailErrorBanner") emailErrorBanner?: ElementRef<HTMLElement>;
@@ -56,36 +55,26 @@ export class LoginComponent implements OnInit {
     this.auth
       .loginWithEmail(this.emailForm.email, this.emailForm.password)
       .subscribe({
-        next: (res: AuthResponse) => {
-          this.emailLoading = false;
-
-          if (!res.success) {
-            this.isAccountNotFound =
-              res.message?.toLowerCase().includes("aucun compte") ?? false;
-            this.showError(res.message ?? "Erreur lors de la connexion.");
-            return;
-          }
-
-          const token = res.data?.token;
-          if (!token) {
-            this.showError("Réponse inattendue du serveur. Veuillez réessayer.");
-            return;
-          }
-
-          this.emailLoading = true;
+        next: (token) => {
+          // Login OK — now load the user profile
           this.auth.loginWithToken(token).subscribe({
-            next: () => {
-              this.router.navigate(["/dashboard"]);
-            },
-            error: () => {
+            next: () => this.router.navigate(["/dashboard"]),
+            error: (err: Error) => {
               this.emailLoading = false;
-              this.showError("Impossible de charger votre profil. Veuillez réessayer.");
+              this.showError(
+                err?.message ?? "Impossible de charger votre profil.",
+              );
             },
           });
         },
-        error: () => {
+        error: (err: Error) => {
           this.emailLoading = false;
-          this.showError("Impossible de contacter le serveur. Vérifiez votre connexion.");
+          this.isAccountNotFound = err?.message
+            ?.toLowerCase()
+            .includes("aucun compte") ?? false;
+          this.showError(
+            err?.message ?? "Une erreur est survenue. Veuillez réessayer.",
+          );
         },
       });
   }
