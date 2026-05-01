@@ -1,24 +1,25 @@
-import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
-import { LogoComponent } from "../../../shared/components/logo/logo.component";
-import { AuthService } from "../auth.service";
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LogoComponent } from '../../../shared/components/logo/logo.component';
+import { AuthService } from '../auth.service';
 
 @Component({
-  selector: "app-login",
+  selector: 'app-login',
   standalone: true,
   imports: [CommonModule, LogoComponent, FormsModule, RouterLink],
-  templateUrl: "./login.component.html",
-  styleUrls: ["./login.component.scss"],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+
   // OAuth2
   errorMessage: string | null = null;
   loading: string | null = null;
 
   // Email/password
-  emailForm = { email: "", password: "" };
+  emailForm = { email: '', password: '' };
   emailLoading = false;
   emailError: string | null = null;
   isAccountNotFound = false;
@@ -26,23 +27,23 @@ export class LoginComponent implements OnInit {
 
   showEmailForm = false;
 
-  @ViewChild("emailErrorBanner") emailErrorBanner?: ElementRef<HTMLElement>;
+  @ViewChild('emailErrorBanner') emailErrorBanner?: ElementRef<HTMLElement>;
 
   constructor(
     private auth: AuthService,
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      if (params["error"]) {
-        this.errorMessage = decodeURIComponent(params["error"]);
+    this.route.queryParams.subscribe(params => {
+      if (params['error']) {
+        this.errorMessage = decodeURIComponent(params['error']);
       }
     });
   }
 
-  loginWith(provider: "google" | "microsoft" | "apple"): void {
+  loginWith(provider: 'google' | 'microsoft' | 'apple'): void {
     this.loading = provider;
     this.auth.login(provider);
   }
@@ -52,40 +53,36 @@ export class LoginComponent implements OnInit {
     this.emailError = null;
     this.isAccountNotFound = false;
 
-    this.auth
-      .loginWithEmail(this.emailForm.email, this.emailForm.password)
-      .subscribe({
-        next: (token) => {
-          // Login OK — now load the user profile
-          this.auth.loginWithToken(token).subscribe({
-            next: () => this.router.navigate(["/dashboard"]),
-            error: (err: Error) => {
-              this.emailLoading = false;
-              this.showError(
-                err?.message ?? "Impossible de charger votre profil.",
-              );
-            },
-          });
-        },
-        error: (err: Error) => {
+    this.auth.loginWithEmail(this.emailForm.email, this.emailForm.password).subscribe({
+      next: (res) => {
+        if (!res.token) {
           this.emailLoading = false;
-          this.isAccountNotFound = err?.message
-            ?.toLowerCase()
-            .includes("aucun compte") ?? false;
-          this.showError(
-            err?.message ?? "Une erreur est survenue. Veuillez réessayer.",
-          );
-        },
-      });
+          return;
+        }
+        this.auth.handleCallback(res.token).subscribe({
+          next: () => {
+            this.emailLoading = false;
+            this.router.navigate(['/dashboard']);
+          },
+          error: () => {
+            this.emailLoading = false;
+            this.showError('Impossible de charger votre profil.');
+          }
+        });
+      },
+      error: (err: any) => {
+        this.emailLoading = false;
+        const msg: string = err?.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.isAccountNotFound = msg.toLowerCase().includes('aucun compte');
+        this.showError(msg);
+      }
+    });
   }
 
   private showError(message: string): void {
     this.emailError = message;
     setTimeout(() => {
-      this.emailErrorBanner?.nativeElement.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
+      this.emailErrorBanner?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 0);
   }
 }
