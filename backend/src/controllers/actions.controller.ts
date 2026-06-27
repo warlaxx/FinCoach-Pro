@@ -125,8 +125,19 @@ export const actionsController = {
         return;
       }
 
-      const updatedAmount =
-        currentAmount !== undefined && currentAmount !== null ? Number(currentAmount) : undefined;
+      let updatedAmount: number | undefined;
+      if (currentAmount !== undefined && currentAmount !== null) {
+        updatedAmount = Number(currentAmount);
+        if (Number.isNaN(updatedAmount)) {
+          logger.warn('Update action status failed — currentAmount is not a number', {
+            userId: req.userId,
+            actionId: id.toString(),
+            currentAmount,
+          });
+          res.json({ success: false, message: 'Le montant actuel est invalide.' });
+          return;
+        }
+      }
 
       const updated = await actionPlanService.updateStatus(id, status, updatedAmount, !!status);
       logger.info('Action status updated', {
