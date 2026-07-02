@@ -33,6 +33,7 @@ class JwtService {
     name?: string | null;
     pictureUrl?: string | null;
     role?: string | null;
+    plan?: string | null;
     firstName?: string | null;
     lastName?: string | null;
     age?: number | null;
@@ -43,6 +44,7 @@ class JwtService {
       name: user.name ?? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
       picture: user.pictureUrl ?? undefined,
       role: user.role ?? 'USER',
+      plan: user.plan ?? 'FREEMIUM',
       firstName: user.firstName ?? undefined,
       lastName: user.lastName ?? undefined,
       age: user.age ?? undefined,

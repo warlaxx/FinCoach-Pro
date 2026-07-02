@@ -53,6 +53,21 @@ export class AccountSettingsComponent implements OnInit {
     return this.passwordForm.newPassword === this.passwordForm.confirmPassword;
   }
 
+  /** Human-readable subscription plan name (TICKET-16) */
+  get planLabel(): string {
+    const plan = (this.user?.plan ?? 'FREEMIUM').toUpperCase();
+    if (plan === 'PRO') return 'Pro';
+    if (plan === 'PREMIUM') return 'Premium';
+    return 'Freemium';
+  }
+
+  get planIcon(): string {
+    const plan = (this.user?.plan ?? 'FREEMIUM').toUpperCase();
+    if (plan === 'PRO') return '💎';
+    if (plan === 'PREMIUM') return '🏆';
+    return '🆓';
+  }
+
   onSaveProfile(): void {
     this.loading = true;
     this.successMessage = null;

@@ -4,12 +4,13 @@ import { CommonModule } from '@angular/common';
 import { AuthService, AuthUser } from './features/auth/auth.service';
 import { GalaxyBgComponent } from './shared/components/galaxy-bg/galaxy-bg.component';
 import { LogoComponent } from './shared/components/logo/logo.component';
+import { UpgradeModalComponent } from './shared/components/upgrade-modal/upgrade-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule,
-            GalaxyBgComponent, LogoComponent],
+            GalaxyBgComponent, LogoComponent, UpgradeModalComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
