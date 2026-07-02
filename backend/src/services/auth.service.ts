@@ -399,6 +399,7 @@ class AuthService {
       firstName: user.firstName ?? '',
       lastName: user.lastName ?? '',
       role: user.role,
+      plan: user.plan,
       emailVerified: user.emailVerified,
     };
   }

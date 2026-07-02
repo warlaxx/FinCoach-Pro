@@ -8,6 +8,35 @@
   margin-bottom: 32px;
 }
 
+.settings-header-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+// ─── Plan badge (TICKET-16) ──────────────────────────────────────────────────
+.plan-badge {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--gold-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border, #1a1a1a);
+  color: var(--text-secondary, #888);
+
+  &.plan-pro {
+    border-color: var(--blue, #3b82f6);
+    color: var(--blue, #3b82f6);
+  }
+
+  &.plan-premium {
+    border-color: var(--score-c, #eab308);
+    color: var(--score-c, #eab308);
+  }
+}
+
 .settings-title {
   font-size: 26px;
   font-weight: 700;

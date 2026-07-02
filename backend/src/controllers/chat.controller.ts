@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { CONSTANTS } from '../config/constants';
 import { chatService } from '../services/chat.service';
+import { planService, QuotaExceededError } from '../services/plan.service';
 import prisma from '../config/database';
 import { createLogger } from '../utils/logger';
 
@@ -62,6 +63,8 @@ export const chatController = {
     }
 
     try {
+      await planService.assertCanSendChatMessage(req.userId);
+
       // Load the prior conversation BEFORE persisting the new message. The chat
       // service appends the current message itself, so including it here would
       // send it to the model twice.
@@ -91,6 +94,15 @@ export const chatController = {
 
       res.json({ success: true, data: toResponse(assistantMsg) });
     } catch (err) {
+      if (err instanceof QuotaExceededError) {
+        res.json({
+          success: false,
+          code: err.code,
+          requiredPlan: err.requiredPlan,
+          message: err.message,
+        });
+        return;
+      }
       logger.error('Send message unexpected error', { userId: req.userId, error: (err as Error).message });
       res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
     }

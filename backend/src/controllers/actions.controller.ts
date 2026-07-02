@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { actionPlanService } from '../services/action-plan.service';
+import { planService, QuotaExceededError } from '../services/plan.service';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('ActionsController');
@@ -57,6 +58,8 @@ export const actionsController = {
     }
 
     try {
+      await planService.assertCanCreateActionPlan(req.userId);
+
       const action = await actionPlanService.create(req.userId, {
         title,
         description,
@@ -70,6 +73,15 @@ export const actionsController = {
       logger.info('Action created successfully', { userId: req.userId, actionId: action.id.toString(), title });
       res.json({ success: true, data: actionPlanService.toResponse(action) });
     } catch (err) {
+      if (err instanceof QuotaExceededError) {
+        res.json({
+          success: false,
+          code: err.code,
+          requiredPlan: err.requiredPlan,
+          message: err.message,
+        });
+        return;
+      }
       logger.error('Create action unexpected error', { userId: req.userId, error: (err as Error).message });
       res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
     }

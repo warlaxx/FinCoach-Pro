@@ -1,7 +1,12 @@
 <div class="settings-page">
 
   <div class="settings-header">
-    <h1 class="settings-title">Paramètres du compte</h1>
+    <div class="settings-header-row">
+      <h1 class="settings-title">Paramètres du compte</h1>
+      <span class="plan-badge" [class.plan-pro]="planLabel === 'Pro'" [class.plan-premium]="planLabel === 'Premium'">
+        {{ planIcon }} Plan {{ planLabel }}
+      </span>
+    </div>
     <p class="settings-subtitle">Gérez vos informations personnelles et votre sécurité.</p>
   </div>
 

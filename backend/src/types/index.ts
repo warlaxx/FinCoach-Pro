@@ -8,6 +8,7 @@ export interface JwtClaims {
   name: string;
   picture?: string;
   role: string;
+  plan?: string;
   firstName?: string;
   lastName?: string;
   age?: number;
@@ -53,6 +54,7 @@ export interface AuthResponse {
   firstName?: string;
   lastName?: string;
   role?: string;
+  plan?: string;
   emailVerified?: boolean;
   message?: string;
 }

@@ -40,6 +40,11 @@ export const CONSTANTS = {
   // ─── Chat ───────────────────────────────────────────────────────────────────
   MAX_MESSAGE_LENGTH: 2_000,
 
+  // ─── Subscription Plans & Quotas (TICKET-16) ────────────────────────────────
+  PLAN_FREEMIUM_MAX_ACTION_PLANS: 3,     // max simultaneous action plans on Freemium
+  PLAN_FREEMIUM_DAILY_CHAT_MESSAGES: 10, // AI messages per day on Freemium
+  PLAN_PRO_DAILY_CHAT_MESSAGES: 100,     // AI messages per day on Pro (Premium: unlimited)
+
   // ─── Apple OAuth2 ───────────────────────────────────────────────────────────
   APPLE_CLIENT_SECRET_EXPIRY_SECONDS: 15_777_000, // ~6 months (Apple maximum)
 } as const;

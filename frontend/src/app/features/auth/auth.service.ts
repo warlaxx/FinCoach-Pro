@@ -23,6 +23,7 @@ export interface AuthUser {
   name: string;
   picture: string;
   role: string;
+  plan?: string;
   firstName: string;
   lastName: string;
   age?: number;

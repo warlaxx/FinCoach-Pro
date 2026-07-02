@@ -25,6 +25,7 @@ export const authController = {
         name: claims.name,
         picture: claims.picture ?? "",
         role: claims.role ?? "USER",
+        plan: claims.plan ?? "FREEMIUM",
         firstName: claims.firstName ?? "",
         lastName: claims.lastName ?? "",
         age: claims.age ?? null,

@@ -1,5 +1,6 @@
 import prisma from '../config/database';
 import { CONSTANTS } from '../config/constants';
+import { planService } from './plan.service';
 import { ActionPlan, FinancialProfile, Prisma } from '@prisma/client';
 import { ActionPlanPayload } from '../types';
 
@@ -204,8 +205,14 @@ class ActionPlanService {
     }
 
     if (toCreate.length > 0) {
-      await prisma.actionPlan.createMany({ data: toCreate });
-      console.log(`[ActionPlanService] ${toCreate.length} action(s) generated for userId=${profile.userId}`);
+      // Auto-generation also respects the Freemium cap (TICKET-16): never push
+      // a Freemium user beyond their max simultaneous action plans.
+      const slots = await planService.remainingActionPlanSlots(profile.userId);
+      const capped = Number.isFinite(slots) ? toCreate.slice(0, slots) : toCreate;
+      if (capped.length > 0) {
+        await prisma.actionPlan.createMany({ data: capped });
+        console.log(`[ActionPlanService] ${capped.length} action(s) generated for userId=${profile.userId}`);
+      }
     }
   }
 
