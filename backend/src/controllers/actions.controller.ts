@@ -127,8 +127,16 @@ export const actionsController = {
 
       let updatedAmount: number | undefined;
       if (currentAmount !== undefined && currentAmount !== null) {
-        updatedAmount = Number(currentAmount);
-        if (Number.isNaN(updatedAmount)) {
+        // Only accept genuine numbers or non-empty numeric strings — Number()
+        // silently coerces '', booleans, and arrays to 0/1.
+        const parsedAmount =
+          typeof currentAmount === 'number'
+            ? currentAmount
+            : typeof currentAmount === 'string' && currentAmount.trim() !== ''
+              ? Number(currentAmount)
+              : NaN;
+
+        if (!Number.isFinite(parsedAmount)) {
           logger.warn('Update action status failed — currentAmount is not a number', {
             userId: req.userId,
             actionId: id.toString(),
@@ -137,6 +145,7 @@ export const actionsController = {
           res.json({ success: false, message: 'Le montant actuel est invalide.' });
           return;
         }
+        updatedAmount = parsedAmount;
       }
 
       const updated = await actionPlanService.updateStatus(id, status, updatedAmount, !!status);
