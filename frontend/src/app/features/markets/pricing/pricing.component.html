@@ -1,0 +1,151 @@
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar">
+  <a class="nav-logo" routerLink="/" aria-label="FinCoach Pro — accueil">
+    <app-logo [size]="30" />
+    <div>
+      <span class="logo-name">FinCoach</span>
+      <span class="logo-pro">PRO</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a routerLink="/">Accueil</a>
+    <a routerLink="/markets">Marchés</a>
+  </div>
+  <div class="nav-actions">
+    <a class="nav-btn-ghost" routerLink="/login">Connexion</a>
+    <a class="btn-gold" routerLink="/register">Démarrer →</a>
+  </div>
+</nav>
+
+<main class="pricing-page">
+
+  <!-- ========== HERO ========== -->
+  <header class="pricing-hero">
+    <h1 class="pricing-title">Des tarifs simples,<br /><span class="tg">sans surprise.</span></h1>
+    <p class="pricing-sub">
+      Commencez gratuitement. Passez au niveau supérieur quand vos finances le méritent.
+    </p>
+
+    <!-- Billing toggle -->
+    <div class="billing-toggle" role="group" aria-label="Période de facturation">
+      <button
+        class="toggle-option"
+        [class.active]="billing === 'monthly'"
+        (click)="billing = 'monthly'"
+      >
+        Mensuel
+      </button>
+      <button
+        class="toggle-option"
+        [class.active]="billing === 'annual'"
+        (click)="billing = 'annual'"
+      >
+        Annuel <span class="discount-pill">−20%</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== PLAN CARDS ========== -->
+  <section class="plans-grid">
+    <article
+      *ngFor="let plan of plans"
+      class="plan-card"
+      [class.plan-popular]="plan.popular"
+    >
+      <div class="popular-badge" *ngIf="plan.popular">Le plus populaire</div>
+
+      <div class="plan-icon">{{ plan.icon }}</div>
+      <h2 class="plan-name">{{ plan.name }}</h2>
+      <p class="plan-tagline">{{ plan.tagline }}</p>
+
+      <div class="plan-price">
+        <span class="price-amount">{{ priceFor(plan) }} €</span>
+        <span class="price-period">/mois</span>
+      </div>
+      <div class="price-note" *ngIf="billing === 'annual' && plan.monthlyPrice > 0">
+        facturé {{ annualTotalFor(plan) }} €/an
+      </div>
+      <div class="price-note" *ngIf="plan.monthlyPrice === 0">gratuit, pour toujours</div>
+
+      <button
+        class="plan-cta"
+        [class.cta-primary]="plan.popular"
+        (click)="selectPlan(plan)"
+      >
+        {{ plan.cta }}
+      </button>
+
+      <ul class="plan-features">
+        <li *ngFor="let f of plan.features">{{ f }}</li>
+      </ul>
+    </article>
+  </section>
+
+  <!-- ========== COMPARISON TABLE ========== -->
+  <section class="comparison-section">
+    <h2 class="section-title">Comparez les plans en détail</h2>
+    <div class="comparison-scroll">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Fonctionnalité</th>
+            <th>🆓 Freemium</th>
+            <th class="col-pro">💎 Pro</th>
+            <th>🏆 Premium</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of comparison">
+            <td>{{ row.feature }}</td>
+            <td>{{ row.freemium }}</td>
+            <td class="col-pro">{{ row.pro }}</td>
+            <td>{{ row.premium }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== TESTIMONIALS ========== -->
+  <section class="testimonials-section">
+    <h2 class="section-title">Ils ont repris le contrôle</h2>
+    <div class="testimonials-grid">
+      <figure class="testimonial-card" *ngFor="let t of testimonials">
+        <blockquote>« {{ t.quote }} »</blockquote>
+        <figcaption>
+          <span class="testimonial-author">{{ t.author }}</span>
+          <span class="testimonial-role">{{ t.role }}</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ========== FAQ ========== -->
+  <section class="faq-section">
+    <h2 class="section-title">Questions fréquentes</h2>
+    <div class="faq-list">
+      <div class="faq-item" *ngFor="let item of faq" [class.open]="item.open">
+        <button class="faq-question" (click)="toggleFaq(item)" [attr.aria-expanded]="item.open">
+          {{ item.question }}
+          <span class="faq-chevron">{{ item.open ? '−' : '+' }}</span>
+        </button>
+        <p class="faq-answer" *ngIf="item.open">{{ item.answer }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FINAL CTA ========== -->
+  <section class="final-cta">
+    <h2>Prêt à améliorer votre score financier ?</h2>
+    <p>Créez votre compte gratuit en 2 minutes — sans carte bancaire.</p>
+    <a class="btn-gold btn-large" routerLink="/register">Commencer gratuitement →</a>
+  </section>
+
+  <footer class="pricing-footer">
+    <div>© 2026 FinCoach Pro · Tous droits réservés</div>
+    <div class="footer-note">
+      FinCoach Pro est un outil d'aide à la décision, non un conseiller financier agréé.
+    </div>
+  </footer>
+
+</main>

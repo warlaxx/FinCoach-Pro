@@ -9,6 +9,7 @@ import { EmailVerifiedComponent } from './features/auth/email-verified/email-ver
 import { EmailConfirmationComponent } from './features/auth/email-confirmation/email-confirmation.component';
 import { LandingComponent } from './features/markets/landing/landing.component';
 import { MarketsComponent } from './features/markets/markets.component';
+import { PricingComponent } from './features/markets/pricing/pricing.component';
 import { AccountSettingsComponent } from './features/settings/account-settings.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
@@ -18,6 +19,7 @@ export const routes: Routes = [
   // Public routes — no JWT required
   { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'markets', component: MarketsComponent },
+  { path: 'pricing', component: PricingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'auth/callback', component: AuthCallbackComponent },
