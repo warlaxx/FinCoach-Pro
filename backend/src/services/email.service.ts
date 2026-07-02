@@ -21,15 +21,21 @@ class EmailService {
     const pass = process.env.MAIL_PASSWORD;
 
     if (host && user && pass) {
+      // Validate the SMTP server's TLS certificate by default. Only opt out
+      // explicitly (e.g. for a self-signed dev server) via MAIL_TLS_REJECT_UNAUTHORIZED=false.
+      const rejectUnauthorized = process.env.MAIL_TLS_REJECT_UNAUTHORIZED !== 'false';
+      if (!rejectUnauthorized) {
+        logger.warn('SMTP TLS certificate validation is DISABLED (MAIL_TLS_REJECT_UNAUTHORIZED=false) — do not use in production');
+      }
       this.transporter = nodemailer.createTransport({
         host,
         port,
         secure: port === 465,
         auth: { user, pass },
-        tls: { rejectUnauthorized: false },
+        tls: { rejectUnauthorized },
       });
       this.isConfigured = true;
-      logger.info('SMTP transport configured', { host, port, secure: port === 465, user });
+      logger.info('SMTP transport configured', { host, port, secure: port === 465, user, rejectUnauthorized });
     } else {
       logger.warn('SMTP not configured — emails will be printed to console only', {
         missingVars: [

@@ -65,18 +65,21 @@ export const chatController = {
     try {
       await planService.assertCanSendChatMessage(req.userId);
 
+      // Load the prior conversation BEFORE persisting the new message. The chat
+      // service appends the current message itself, so including it here would
+      // send it to the model twice.
+      const history = await prisma.chatMessage.findMany({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'desc' },
+        take: CONSTANTS.CHAT_HISTORY_WINDOW,
+      });
+      history.reverse();
+      logger.debug('Chat history loaded for AI context', { userId: req.userId, historySize: history.length });
+
       await prisma.chatMessage.create({
         data: { userId: req.userId, role: 'user', content: message },
       });
       logger.debug('User message saved to database', { userId: req.userId });
-
-      const history = await prisma.chatMessage.findMany({
-        where: { userId: req.userId },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-      });
-      history.reverse();
-      logger.debug('Chat history loaded for AI context', { userId: req.userId, historySize: history.length });
 
       logger.debug('Calling AI chat service', { userId: req.userId });
       const aiResponse = await chatService.chat(history, message);
