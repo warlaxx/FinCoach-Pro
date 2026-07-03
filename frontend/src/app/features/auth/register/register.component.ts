@@ -41,6 +41,9 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
+    // Guard against double submission while a request is in flight.
+    if (this.loading) return;
+
     if (!this.passwordsMatch) {
       this.showError('Les mots de passe ne correspondent pas.');
       return;
