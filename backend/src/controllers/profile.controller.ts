@@ -3,6 +3,7 @@ import { AuthRequest, FinancialProfilePayload } from '../types';
 import prisma from '../config/database';
 import { scoringService } from '../services/scoring.service';
 import { actionPlanService } from '../services/action-plan.service';
+import { historyService } from '../services/history.service';
 import { FinancialProfile } from '@prisma/client';
 import { createLogger } from '../utils/logger';
 
@@ -137,10 +138,29 @@ export const profileController = {
       });
 
       await actionPlanService.generateFromProfile(savedProfile);
+      // Monthly snapshot for the evolution charts (never throws)
+      await historyService.recordSnapshot(savedProfile);
 
       res.json({ success: true, data: buildProfileResponse(savedProfile) });
     } catch (err) {
       logger.error('Save profile unexpected error', { userId, error: (err as Error).message });
+      res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
+    }
+  },
+
+  // GET /api/profile/history?months=6
+  async getHistory(req: AuthRequest, res: Response): Promise<void> {
+    const rawMonths = parseInt(String(req.query['months'] ?? '6'), 10);
+    // Clamp to a sane window: 1–24 months, default 6
+    const months = Number.isFinite(rawMonths) ? Math.min(24, Math.max(1, rawMonths)) : 6;
+
+    logger.debug('GET /api/profile/history', { userId: req.userId, months });
+
+    try {
+      const snapshots = await historyService.getHistory(req.userId, months);
+      res.json({ success: true, data: snapshots.map((s) => historyService.toResponse(s)) });
+    } catch (err) {
+      logger.error('Get history unexpected error', { userId: req.userId, error: (err as Error).message });
       res.json({ success: false, message: 'Erreur serveur. Veuillez réessayer plus tard.' });
     }
   },

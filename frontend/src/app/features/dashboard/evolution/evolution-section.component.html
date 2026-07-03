@@ -1,0 +1,45 @@
+<!-- Hidden entirely while the user has no history at all -->
+<section class="evolution-section animate-in" *ngIf="hasHistory">
+
+  <div class="evolution-header">
+    <div>
+      <h2 class="evolution-title">📊 Mon évolution</h2>
+      <p class="evolution-subtitle">Votre progression financière mois après mois.</p>
+    </div>
+
+    <div class="period-selector" *ngIf="hasEnoughData" role="group" aria-label="Période">
+      <button [class.active]="period === 3"  (click)="setPeriod(3)">3 mois</button>
+      <button [class.active]="period === 6"  (click)="setPeriod(6)">6 mois</button>
+      <button [class.active]="period === 12" (click)="setPeriod(12)">12 mois</button>
+    </div>
+  </div>
+
+  <!-- Only one snapshot: charts would be a single dot -->
+  <div class="evolution-empty" *ngIf="!hasEnoughData">
+    <span class="empty-icon">📈</span>
+    <p>
+      Mettez à jour votre profil régulièrement pour voir votre progression.
+      Votre premier point de mesure est enregistré — revenez le mois prochain !
+    </p>
+  </div>
+
+  <div class="charts-grid" *ngIf="hasEnoughData">
+    <div class="chart-card">
+      <h3>Score financier</h3>
+      <div class="chart-wrap"><canvas #scoreCanvas></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Revenus vs Charges</h3>
+      <div class="chart-wrap"><canvas #incomeCanvas></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Épargne totale</h3>
+      <div class="chart-wrap"><canvas #savingsCanvas></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Dettes totales</h3>
+      <div class="chart-wrap"><canvas #debtCanvas></canvas></div>
+    </div>
+  </div>
+
+</section>

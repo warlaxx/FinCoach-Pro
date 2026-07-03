@@ -423,6 +423,9 @@
         <span class="stat-label">Taux de complétion</span>
       </div>
     </div>
+
+    <!-- Mon évolution (TICKET-09) — hidden while there is no history -->
+    <app-evolution-section [refreshToken]="historyRefreshToken" />
   </ng-container>
 
   <!-- Loading -->

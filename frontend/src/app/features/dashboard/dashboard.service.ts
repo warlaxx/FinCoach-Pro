@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DashboardData } from '../../shared/models/dashboard-data.model';
+import { FinancialSnapshot } from '../../shared/models/financial-snapshot.model';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -26,5 +27,17 @@ export class DashboardService {
         return res.data!;
       })
     );
+  }
+
+  /** Monthly snapshots for the evolution charts (TICKET-09), oldest first. */
+  getHistory(months: number): Observable<FinancialSnapshot[]> {
+    return this.http
+      .get<ApiResponse<FinancialSnapshot[]>>(`${this.base}/profile/history`, { params: { months } })
+      .pipe(
+        map(res => {
+          if (!res.success) throw new Error(res.message ?? 'Erreur lors du chargement de l\'historique');
+          return res.data ?? [];
+        })
+      );
   }
 }
