@@ -53,3 +53,8 @@ PDF bilan (TICKET-32), simulateur crédit/retraite, PWA, déploiement
 fincoach.pro (TICKET-27).
 
 Cible de mise en production publique : fincoach.pro, prod visée Janvier 2027.
+
+## Langue des briefings
+
+Les briefings de suivi (catch-up, statut des PR, actions du jour, etc.) sur ce
+projet doivent toujours être rédigés en français.
