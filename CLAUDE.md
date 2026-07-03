@@ -54,6 +54,17 @@ fincoach.pro (TICKET-27).
 
 Cible de mise en production publique : fincoach.pro, prod visée Janvier 2027.
 
+## Workflow de merge des PR
+
+Pour **ce projet uniquement** : une fois qu'une PR est ouverte et que tous ses
+threads de revue (CodeRabbit ou autre) sont résolus et vérifiés (CI verte,
+findings traités), **merger/pousser directement sur la branche principale
+(`main`) sans attendre d'approbation supplémentaire de l'utilisateur.**
+
+Ne pas demander confirmation avant ce merge une fois les conditions ci-dessus
+remplies — c'est le comportement par défaut attendu ici, spécifiquement pour
+FinCoach Pro.
+
 ## Langue des briefings
 
 Les briefings de suivi (catch-up, statut des PR, actions du jour, etc.) sur ce
