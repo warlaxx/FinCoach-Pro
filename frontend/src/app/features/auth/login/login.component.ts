@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit {
   isAccountNotFound = false;
   showPassword = false;
 
-  showEmailForm = false;
+  showEmailForm = true;
 
   @ViewChild("emailErrorBanner") emailErrorBanner?: ElementRef<HTMLElement>;
 
@@ -48,6 +48,9 @@ export class LoginComponent implements OnInit {
   }
 
   onEmailLogin(): void {
+    // Guard against double submission while a request is in flight.
+    if (this.emailLoading) return;
+
     this.emailLoading = true;
     this.emailError = null;
     this.isAccountNotFound = false;

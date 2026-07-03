@@ -37,7 +37,15 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     isBackendRequest = false;
   }
 
-  if (token && isBackendRequest) {
+  // Never attach the JWT to public auth endpoints. Sending a stale token on
+  // login/register/verify/reset just pollutes logs and can leak session info;
+  // these routes derive nothing from the caller's identity.
+  const isPublicAuthEndpoint =
+    /\/api\/auth\/(login|register|verify-email|forgot-password|reset-password|resend-verification)\b/.test(
+      req.url,
+    );
+
+  if (token && isBackendRequest && !isPublicAuthEndpoint) {
     const authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });

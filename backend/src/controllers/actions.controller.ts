@@ -18,17 +18,11 @@ const logger = createLogger('ActionsController');
 export const actionsController = {
   // GET /api/actions/:userId
   async getActions(req: AuthRequest, res: Response): Promise<void> {
-    const { userId } = req.params as { userId: string };
-    logger.debug('GET /api/actions/:userId', { requestedUserId: userId, callerUserId: req.userId });
-
-    if (userId !== req.userId) {
-      logger.warn('Get actions forbidden — userId mismatch', {
-        requestedUserId: userId,
-        callerUserId: req.userId,
-      });
-      res.json({ success: false, message: 'Accès refusé.' });
-      return;
-    }
+    // Always use the authenticated user's ID from the JWT — ignore the URL param
+    // to prevent IDOR (consistent with the dashboard endpoint). This also means a
+    // client that hasn't hydrated its user yet cannot accidentally be rejected.
+    const userId = req.userId;
+    logger.debug('GET /api/actions/:userId', { userId });
 
     try {
       const actions = await actionPlanService.getActionsForUser(userId);
