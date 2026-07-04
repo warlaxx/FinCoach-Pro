@@ -1,11 +1,15 @@
-version: '3.9'
+# Docker Compose v2 no longer needs a top-level `version` key (it is obsolete
+# and emits a warning), so it has been removed.
 
 services:
 
   # ─── Backend (Express + TypeScript) ──────────────────────────────────────
   backend:
     env_file:
-      - .env
+      # Root .env is optional: the individual variables below already have
+      # sensible defaults, so `docker compose up` won't hard-fail if it's missing.
+      - path: .env
+        required: false
     build:
       context: ./backend
       dockerfile: Dockerfile
