@@ -106,6 +106,27 @@ class EmailService {
     await this.send(email, 'Vérifiez votre adresse e-mail — FinCoach Pro', html);
   }
 
+  /**
+   * Generic notification email (TICKET-10) — objective reached, reminders, etc.
+   * `subject` doubles as the email subject and the in-app title.
+   */
+  async sendNotificationEmail(email: string, firstName: string, subject: string, body: string): Promise<void> {
+    logger.debug('Preparing notification email', { email, subject });
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #4f46e5;">${subject}</h2>
+        <p>Bonjour ${firstName},</p>
+        <p style="font-size: 15px; line-height: 1.6;">${body}</p>
+        <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">
+          Vous recevez cet e-mail car vous avez activé les notifications FinCoach Pro.
+        </p>
+      </div>
+    `;
+
+    await this.send(email, `${subject} — FinCoach Pro`, html);
+  }
+
   async sendPasswordResetEmail(email: string, firstName: string, token: string): Promise<void> {
     logger.debug('Preparing password reset email', { email, firstName });
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200';

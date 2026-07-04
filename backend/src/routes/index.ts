@@ -4,6 +4,7 @@ import profileRoutes from './profile.routes';
 import actionsRoutes from './actions.routes';
 import chatRoutes from './chat.routes';
 import dashboardRoutes from './dashboard.routes';
+import notificationsRoutes from './notifications.routes';
 import healthRoutes from './health.routes';
 
 const router = Router();
@@ -25,6 +26,9 @@ router.use('/api/actions', actionsRoutes);
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 router.use('/api/chat', chatRoutes);
+
+// ─── Notifications ──────────────────────────────────────────────────────────────
+router.use('/api/notifications', notificationsRoutes);
 
 // ─── OAuth2 (Google / Microsoft / Apple) — désactivé temporairement ──────────
 // Pour réactiver : décommenter les blocs ci-dessous et restaurer les imports

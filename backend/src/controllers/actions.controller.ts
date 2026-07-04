@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { actionPlanService } from '../services/action-plan.service';
 import { planService, QuotaExceededError } from '../services/plan.service';
+import { notificationService } from '../services/notification.service';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('ActionsController');
@@ -166,6 +167,21 @@ export const actionsController = {
         actionId: id.toString(),
         newStatus: updated.status,
       });
+
+      // Notify once when an objective transitions to completed (TICKET-10)
+      if (action.status !== 'TERMINE' && updated.status === 'TERMINE') {
+        const claims = req.userClaims;
+        await notificationService.notify({
+          userId: req.userId,
+          title: `🎉 Objectif atteint : ${updated.title}`,
+          message: `Félicitations ! Vous avez terminé votre objectif « ${updated.title} ». Continuez sur cette lancée !`,
+          type: 'SUCCESS',
+          email: claims?.email
+            ? { to: claims.email, firstName: claims.firstName ?? '' }
+            : undefined,
+        });
+      }
+
       res.json({ success: true, data: actionPlanService.toResponse(updated) });
     } catch (err) {
       logger.error('Update action status unexpected error', { userId: req.userId, actionId: id.toString(), error: (err as Error).message });

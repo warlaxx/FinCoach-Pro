@@ -35,6 +35,7 @@ model User {
   financialProfiles FinancialProfile[]
   chatMessages      ChatMessage[]
   actionPlans       ActionPlan[]
+  notifications     Notification[]
 
   @@map("users")
 }
@@ -84,6 +85,24 @@ model ChatMessage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+// In-app notifications (TICKET-10). Table created by migration V8.
+// type: INFO | SUCCESS | WARNING | ALERT
+model Notification {
+  id        BigInt   @id @default(autoincrement())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)], map: "idx_notifications_user")
+  @@map("notifications")
 }
 
 // ─── Action Plans ─────────────────────────────────────────────────────────────

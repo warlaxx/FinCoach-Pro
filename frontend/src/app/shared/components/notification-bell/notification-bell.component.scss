@@ -1,0 +1,148 @@
+.bell-wrap {
+  position: relative;
+}
+
+// ─── Bell button ─────────────────────────────────────────────────────────────
+.bell-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--border, #1a1a1a);
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--text-primary, #fff);
+    border-color: var(--border-glow, #2e2e2e);
+  }
+}
+
+.bell-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--red, #ef4444);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+// ─── Dropdown panel ──────────────────────────────────────────────────────────
+.bell-panel {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 40px);
+  background: var(--bg-card, #0a0a0a);
+  border: 1px solid var(--border-glow, #2e2e2e);
+  border-radius: 14px;
+  box-shadow: var(--glow-card, 0 8px 40px rgba(0, 0, 0, 0.95));
+  overflow: hidden;
+  z-index: 200;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border, #1a1a1a);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+}
+
+.mark-all {
+  background: none;
+  border: none;
+  color: var(--text-muted, #666);
+  font-size: 12px;
+  cursor: pointer;
+  &:hover { color: var(--text-primary, #fff); }
+}
+
+.panel-list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  padding: 13px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border, #1a1a1a);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover { background: var(--bg-card-hover, #111); }
+  &:last-child { border-bottom: none; }
+  &.unread { background: rgba(255, 255, 255, 0.02); }
+}
+
+.notif-icon { font-size: 17px; line-height: 1.3; }
+
+.notif-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.notif-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+}
+
+.notif-message {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary, #888);
+}
+
+.notif-date {
+  font-size: 11px;
+  color: var(--text-muted, #555);
+  margin-top: 2px;
+}
+
+.unread-dot {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue, #3b82f6);
+}
+
+.panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 34px 20px;
+  color: var(--text-muted, #555);
+
+  span { font-size: 26px; }
+  p { margin: 0; font-size: 13px; }
+}

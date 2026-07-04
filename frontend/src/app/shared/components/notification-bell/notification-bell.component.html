@@ -1,0 +1,40 @@
+<div class="bell-wrap">
+  <button class="bell-btn" (click)="toggle()" [attr.aria-expanded]="open" aria-label="Notifications">
+    <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 01-3.46 0" />
+    </svg>
+    <span class="bell-badge" *ngIf="unread > 0">{{ unread > 9 ? '9+' : unread }}</span>
+  </button>
+
+  <div class="bell-panel" *ngIf="open">
+    <div class="panel-header">
+      <span>Notifications</span>
+      <button *ngIf="unread > 0" class="mark-all" (click)="markAllRead()">Tout marquer comme lu</button>
+    </div>
+
+    <div class="panel-list" *ngIf="notifications.length > 0; else empty">
+      <button
+        *ngFor="let n of notifications"
+        class="notif-item"
+        [class.unread]="!n.read"
+        (click)="onNotificationClick(n)"
+      >
+        <span class="notif-icon">{{ iconFor(n.type) }}</span>
+        <span class="notif-body">
+          <span class="notif-title">{{ n.title }}</span>
+          <span class="notif-message">{{ n.message }}</span>
+          <span class="notif-date">{{ n.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </span>
+        <span class="unread-dot" *ngIf="!n.read"></span>
+      </button>
+    </div>
+
+    <ng-template #empty>
+      <div class="panel-empty">
+        <span>🔔</span>
+        <p>Aucune notification pour le moment.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

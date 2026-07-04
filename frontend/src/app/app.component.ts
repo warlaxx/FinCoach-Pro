@@ -5,12 +5,14 @@ import { AuthService, AuthUser } from './features/auth/auth.service';
 import { GalaxyBgComponent } from './shared/components/galaxy-bg/galaxy-bg.component';
 import { LogoComponent } from './shared/components/logo/logo.component';
 import { UpgradeModalComponent } from './shared/components/upgrade-modal/upgrade-modal.component';
+import { NotificationBellComponent } from './shared/components/notification-bell/notification-bell.component';
+import { NotificationService } from './shared/services/notification.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule,
-            GalaxyBgComponent, LogoComponent, UpgradeModalComponent],
+            GalaxyBgComponent, LogoComponent, UpgradeModalComponent, NotificationBellComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -31,7 +33,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     public auth: AuthService,
-    private router: Router
+    private router: Router,
+    private notifications: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +44,7 @@ export class AppComponent implements OnInit {
   }
 
   logout(): void {
+    this.notifications.reset();
     this.auth.logout();
     this.router.navigate(['/login']);
   }
