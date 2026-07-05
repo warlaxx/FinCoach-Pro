@@ -3,6 +3,39 @@
 
 services:
 
+  # ─── Database (PostgreSQL) ────────────────────────────────────────────────
+  # Bundled so `docker compose up` works out of the box with no external DB.
+  # The SQL migrations in backend/migrations are applied automatically on the
+  # first startup (empty volume) via docker/init-db.sh.
+  # Using your own managed Postgres instead? Set DATABASE_URL in the root .env
+  # and this service can be ignored.
+  postgres:
+    image: postgres:16-alpine
+    container_name: fincoach-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fincoach}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fincoach}
+      POSTGRES_DB: ${POSTGRES_DB:-fincoach}
+    # Port not published to the host on purpose: the backend reaches Postgres
+    # over the internal compose network (postgres:5432), and NOT publishing it
+    # avoids a clash if you already run Postgres on 5432 locally. To inspect the
+    # DB from your host, uncomment the mapping below (use 5433 if 5432 is taken):
+    # ports:
+    #   - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/migrations:/migrations:ro
+      - ./backend/docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fincoach} -d ${POSTGRES_DB:-fincoach}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - fincoach-net
+
   # ─── Backend (Express + TypeScript) ──────────────────────────────────────
   backend:
     env_file:
@@ -14,6 +47,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: fincoach-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8080:8080"
     extra_hosts:
@@ -27,9 +63,10 @@ services:
       # docker-compose does NOT support nested variable substitution so we pass
       # each variable individually and let database.ts resolve the URL.
       # DATABASE_URL is read from the root .env by docker-compose.
-      # Use host.docker.internal (not localhost) in the root .env for Docker:
-      #   DATABASE_URL=postgresql://user:pass@host.docker.internal:5432/fincoach
-      - DATABASE_URL=${DATABASE_URL:-}
+      # Defaults to the bundled `postgres` service above. Override in the root
+      # .env to point at an external/managed database. (If you change
+      # POSTGRES_USER/PASSWORD/DB, set a matching DATABASE_URL too.)
+      - DATABASE_URL=${DATABASE_URL:-postgresql://fincoach:fincoach@postgres:5432/fincoach}
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-fincoach}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-fincoach}
@@ -82,3 +119,7 @@ services:
 networks:
   fincoach-net:
     driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
