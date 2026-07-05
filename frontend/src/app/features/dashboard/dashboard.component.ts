@@ -7,6 +7,7 @@ import { of } from "rxjs";
 import { ApiService } from "../api.service";
 import { ProfileService } from "../settings/profile.service";
 import { AuthService } from "../auth/auth.service";
+import { EvolutionSectionComponent } from "./evolution/evolution-section.component";
 import { FinancialProfile } from "../../shared/models/financial-profile.model";
 import { DashboardData } from "../../shared/models/dashboard-data.model";
 import { FinancialSummary } from "../../shared/models/financial-summary.model";
@@ -32,7 +33,7 @@ interface ScoreCriteriaItem {
 @Component({
   selector: "app-dashboard",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EvolutionSectionComponent],
   templateUrl: "./dashboard.component.html",
   styleUrls: ["./dashboard.component.scss"],
 })
@@ -42,6 +43,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadError = false;
   showForm = false;
   saving = false;
+
+  /** Bumped after each profile save so the evolution section reloads (TICKET-09) */
+  historyRefreshToken = 0;
 
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
@@ -132,6 +136,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.saving = false;
         this.showForm = false;
         this.showToast('Profil sauvegardé avec succès', 'success');
+        this.historyRefreshToken++;
         this.loadDashboard();
       },
       error: (err) => {

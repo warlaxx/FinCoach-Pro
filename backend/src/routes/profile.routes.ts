@@ -12,6 +12,11 @@ router.get('/', (req: Request, res: Response, next: NextFunction) =>
   profileController.getMyProfile(req as AuthRequest, res).catch(next),
 );
 
+// Must be registered BEFORE /:userId, otherwise "history" is captured as a userId
+router.get('/history', (req: Request, res: Response, next: NextFunction) =>
+  profileController.getHistory(req as AuthRequest, res).catch(next),
+);
+
 router.get('/:userId', (req: Request, res: Response, next: NextFunction) =>
   profileController.getProfileByUserId(req as AuthRequest, res).catch(next),
 );

@@ -35,6 +35,7 @@ model User {
   financialProfiles FinancialProfile[]
   chatMessages      ChatMessage[]
   actionPlans       ActionPlan[]
+  financialHistory  FinancialHistory[]
 
   @@map("users")
 }
@@ -71,6 +72,27 @@ model FinancialProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("financial_profiles")
+}
+
+// ─── Financial History ────────────────────────────────────────────────────────
+// Monthly snapshots of the financial profile (one per user per month) used by
+// the dashboard evolution charts. Table created by migration V7.
+model FinancialHistory {
+  id        BigInt   @id @default(autoincrement())
+  userId    String   @map("user_id")
+  month     DateTime @db.Date
+  income    Float    @default(0)
+  expenses  Float    @default(0)
+  savings   Float    @default(0)
+  debt      Float    @default(0)
+  score     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month], map: "uq_financial_history_user_month")
+  @@index([userId, month(sort: Desc)], map: "idx_financial_history_user")
+  @@map("financial_history")
 }
 
 // ─── Chat Messages ────────────────────────────────────────────────────────────

@@ -1,0 +1,103 @@
+.evolution-section {
+  margin-top: 24px;
+}
+
+// ─── Header ──────────────────────────────────────────────────────────────────
+.evolution-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.evolution-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0 0 4px;
+}
+
+.evolution-subtitle {
+  font-size: 13px;
+  color: var(--text-muted, #444);
+  margin: 0;
+}
+
+// ─── Period selector ─────────────────────────────────────────────────────────
+.period-selector {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg-card, #0a0a0a);
+  border: 1px solid var(--border, #1a1a1a);
+
+  button {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary, #888);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &.active {
+      background: var(--gold, #fff);
+      color: #000;
+    }
+  }
+}
+
+// ─── Empty state (single snapshot) ───────────────────────────────────────────
+.evolution-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 24px;
+  border-radius: 14px;
+  background: var(--bg-card, #0a0a0a);
+  border: 1px dashed var(--border-glow, #2e2e2e);
+
+  .empty-icon { font-size: 26px; }
+
+  p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-secondary, #888);
+  }
+}
+
+// ─── Charts grid ─────────────────────────────────────────────────────────────
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.chart-card {
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--bg-card, #0a0a0a);
+  border: 1px solid var(--border, #1a1a1a);
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+    margin: 0 0 14px;
+  }
+}
+
+.chart-wrap {
+  position: relative;
+  height: 220px;
+}
+
+// ─── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: 860px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
