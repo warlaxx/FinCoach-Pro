@@ -69,3 +69,21 @@ FinCoach Pro.
 
 Les briefings de suivi (catch-up, statut des PR, actions du jour, etc.) sur ce
 projet doivent toujours être rédigés en français.
+
+## Routine quotidienne — mise à jour du board Notion
+
+Avant de produire le récapitulatif/briefing quotidien pour ce projet, toujours
+mettre à jour le board Notion (base "🎫 Tickets — FinCoach Pro") d'abord :
+
+1. Vérifier ce qui a été livré/mergé sur `main` depuis la dernière mise à jour
+   (git log, PRs mergées) et passer les tickets correspondants en "Terminé".
+2. Identifier les 2 prochains tickets à traiter en priorité (cohérence avec la
+   roadmap, dépendances, valeur business) et les passer en "En cours".
+3. Créer de nouveaux tickets pour les manques repérés — toujours plus détaillés
+   et précis que les tickets existants (objectif clair, tâches backend/frontend
+   décomposées, critères d'acceptation), dans le même style que les tickets déjà
+   présents sur le board, et alignés avec la direction du projet (roadmap,
+   business model, priorités des sprints).
+
+Ne pas se contenter de signaler les manques dans le récapitulatif : les tickets
+correspondants doivent être créés sur le board avant de livrer le récapitulatif.
