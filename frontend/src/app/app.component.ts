@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, AuthUser } from './features/auth/auth.service';
 import { GalaxyBgComponent } from './shared/components/galaxy-bg/galaxy-bg.component';
@@ -17,6 +17,9 @@ import { UpgradeModalComponent } from './shared/components/upgrade-modal/upgrade
 export class AppComponent implements OnInit {
 
   currentUser: AuthUser | null = null;
+
+  /** Menu latéral mobile (burger) — fermé par défaut, se referme à chaque navigation. */
+  menuOpen = false;
 
   /**
    * The sidebar should only appear on authenticated pages.
@@ -38,9 +41,21 @@ export class AppComponent implements OnInit {
     this.auth.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) this.menuOpen = false;
+    });
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
   }
 
   logout(): void {
+    this.menuOpen = false;
     this.auth.logout();
     this.router.navigate(['/login']);
   }

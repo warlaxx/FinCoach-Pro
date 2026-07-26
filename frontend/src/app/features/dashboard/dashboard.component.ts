@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { RouterLink } from "@angular/router";
 import { Subscription } from "rxjs";
 import { filter, take, switchMap, timeout, catchError } from "rxjs/operators";
 import { of } from "rxjs";
@@ -33,7 +34,7 @@ interface ScoreCriteriaItem {
 @Component({
   selector: "app-dashboard",
   standalone: true,
-  imports: [CommonModule, FormsModule, EvolutionSectionComponent],
+  imports: [CommonModule, FormsModule, RouterLink, EvolutionSectionComponent],
   templateUrl: "./dashboard.component.html",
   styleUrls: ["./dashboard.component.scss"],
 })

@@ -28,7 +28,7 @@
         <label
           >Salaire net mensuel (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.monthlyIncome"
             placeholder="2500"
           />
@@ -36,7 +36,7 @@
         <label
           >Autres revenus (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.otherIncome"
             placeholder="0"
           />
@@ -47,12 +47,12 @@
         <h3>🏠 Charges fixes</h3>
         <label
           >Loyer / Crédit immobilier (€)
-          <input type="number" [(ngModel)]="profile.rent" placeholder="800" />
+          <input type="number" min="0" [(ngModel)]="profile.rent" placeholder="800" />
         </label>
         <label
           >Énergie / Internet (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.utilities"
             placeholder="120"
           />
@@ -60,19 +60,19 @@
         <label
           >Assurances (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.insurance"
             placeholder="80"
           />
         </label>
         <label
           >Crédits à la consommation (€)
-          <input type="number" [(ngModel)]="profile.loans" placeholder="0" />
+          <input type="number" min="0" [(ngModel)]="profile.loans" placeholder="0" />
         </label>
         <label
           >Abonnements (streaming, salle...) (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.subscriptions"
             placeholder="50"
           />
@@ -83,12 +83,12 @@
         <h3>🛒 Charges variables</h3>
         <label
           >Alimentation (€)
-          <input type="number" [(ngModel)]="profile.food" placeholder="300" />
+          <input type="number" min="0" [(ngModel)]="profile.food" placeholder="300" />
         </label>
         <label
           >Transport (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.transport"
             placeholder="100"
           />
@@ -96,7 +96,7 @@
         <label
           >Loisirs / Sorties (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.leisure"
             placeholder="150"
           />
@@ -104,14 +104,14 @@
         <label
           >Vêtements (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.clothing"
             placeholder="60"
           />
         </label>
         <label
           >Santé (€)
-          <input type="number" [(ngModel)]="profile.health" placeholder="40" />
+          <input type="number" min="0" [(ngModel)]="profile.health" placeholder="40" />
         </label>
       </div>
 
@@ -120,7 +120,7 @@
         <label
           >Épargne actuelle (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.currentSavings"
             placeholder="5000"
           />
@@ -128,7 +128,7 @@
         <label
           >Total des dettes (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.totalDebt"
             placeholder="0"
           />
@@ -136,7 +136,7 @@
         <label
           >Objectif épargne mensuelle (€)
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.monthlySavingsGoal"
             placeholder="200"
           />
@@ -163,10 +163,9 @@
         </label>
         <label>Personnes à charge
           <input
-            type="number"
+            type="number" min="0"
             [(ngModel)]="profile.nombrePersonnes"
             placeholder="0"
-            min="0"
           />
         </label>
       </div>
@@ -367,7 +366,7 @@
     <div class="card animate-in" *ngIf="data?.topActions?.length">
       <div class="card-header">
         <h3 class="card-title">🎯 Actions prioritaires</h3>
-        <a href="/actions" class="link-see-all">Voir toutes →</a>
+        <a routerLink="/actions" class="link-see-all">Voir toutes →</a>
       </div>
       <div class="actions-mini-grid">
         <div class="action-mini-card" *ngFor="let action of data!.topActions">

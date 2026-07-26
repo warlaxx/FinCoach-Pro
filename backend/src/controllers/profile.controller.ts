@@ -96,27 +96,32 @@ export const profileController = {
         orderBy: { updatedAt: 'desc' },
       });
 
-      const orZero = (v: number | undefined | null) => v ?? 0;
+      // Montants : coercition numérique stricte + rejet des négatifs — un montant
+      // négatif ou non numérique fausserait le score et les graphiques.
+      const toAmount = (v: unknown): number => {
+        const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : 0;
+        return Number.isFinite(n) && n > 0 ? n : 0;
+      };
 
       const profileData = {
-        monthlyIncome: orZero(body.monthlyIncome),
-        otherIncome: orZero(body.otherIncome),
-        rent: orZero(body.rent),
-        utilities: orZero(body.utilities),
-        insurance: orZero(body.insurance),
-        loans: orZero(body.loans),
-        subscriptions: orZero(body.subscriptions),
-        food: orZero(body.food),
-        transport: orZero(body.transport),
-        leisure: orZero(body.leisure),
-        clothing: orZero(body.clothing),
-        health: orZero(body.health),
-        currentSavings: orZero(body.currentSavings),
-        totalDebt: orZero(body.totalDebt),
-        monthlySavingsGoal: orZero(body.monthlySavingsGoal),
+        monthlyIncome: toAmount(body.monthlyIncome),
+        otherIncome: toAmount(body.otherIncome),
+        rent: toAmount(body.rent),
+        utilities: toAmount(body.utilities),
+        insurance: toAmount(body.insurance),
+        loans: toAmount(body.loans),
+        subscriptions: toAmount(body.subscriptions),
+        food: toAmount(body.food),
+        transport: toAmount(body.transport),
+        leisure: toAmount(body.leisure),
+        clothing: toAmount(body.clothing),
+        health: toAmount(body.health),
+        currentSavings: toAmount(body.currentSavings),
+        totalDebt: toAmount(body.totalDebt),
+        monthlySavingsGoal: toAmount(body.monthlySavingsGoal),
         typeHabitation: body.typeHabitation ?? null,
         situationFamiliale: body.situationFamiliale ?? null,
-        nombrePersonnes: body.nombrePersonnes ?? 0,
+        nombrePersonnes: Math.floor(toAmount(body.nombrePersonnes)),
       };
 
       const scores = scoringService.computeScores(profileData);

@@ -26,6 +26,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   typing = false;
   inputMessage = "";
 
+  /** Nombre d'éléments affichés au dernier scroll auto — évite de voler le
+   *  scroll de l'utilisateur à chaque cycle de détection de changements. */
+  private lastRenderedCount = -1;
+
   suggestions = [
     "Comment établir un budget ?",
     "Comment rembourser mes dettes ?",
@@ -99,7 +103,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    // Ne scrolle que lorsqu'un message (ou l'indicateur de frappe) est ajouté,
+    // pas à chaque cycle — sinon impossible de relire le haut de la conversation.
+    const count = this.messages.length + (this.typing ? 1 : 0);
+    if (count !== this.lastRenderedCount) {
+      this.lastRenderedCount = count;
+      this.scrollToBottom();
+    }
   }
 
   private scrollToBottom() {
@@ -162,9 +172,24 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  /** Initiale du prénom de l'utilisateur pour l'avatar des messages. */
+  get userInitial(): string {
+    return this.auth.getCurrentUser()?.name?.charAt(0)?.toUpperCase() ?? "U";
+  }
+
   formatMessage(content: string): string {
-    return content
+    // Échappe le HTML avant la mise en forme : le contenu (utilisateur ou IA)
+    // doit s'afficher littéralement, jamais être interprété comme du HTML.
+    return this.escapeHtml(content)
       .replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>')
       .replace(/\n/g, "<br>");
+  }
+
+  private escapeHtml(s: string): string {
+    return s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 }
