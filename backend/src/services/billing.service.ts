@@ -102,6 +102,16 @@ class BillingService {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new BillingError('Utilisateur introuvable.');
 
+    // Garde anti-double abonnement : un abonné actif doit passer par le
+    // portail client (changement d'offre) — pas par un nouveau checkout,
+    // qui créerait une seconde souscription facturée en parallèle.
+    if (user.stripeSubscriptionId && (user.plan === 'PRO' || user.plan === 'PREMIUM')) {
+      throw new BillingError(
+        'Vous avez déjà un abonnement actif. Gérez-le (ou changez d\'offre) depuis ' +
+          'Paramètres → Abonnement.',
+      );
+    }
+
     let customerId = user.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -228,16 +238,13 @@ class BillingService {
     }
     if (sub.status !== 'active' && sub.status !== 'trialing') return;
 
-    // Plan depuis les metadata, sinon depuis le price (changement d'offre
-    // effectué dans le portail client).
+    // Le price facturé fait foi (un changement d'offre via le portail client
+    // met à jour le price mais PAS les metadata posées au checkout initial).
     const metaPlan = sub.metadata?.['plan'];
     const priceId = sub.items.data[0]?.price?.id;
+    const planFromPrice = priceId ? this.planForPriceId(priceId) : null;
     const plan =
-      metaPlan === 'PRO' || metaPlan === 'PREMIUM'
-        ? metaPlan
-        : priceId
-          ? this.planForPriceId(priceId)
-          : null;
+      planFromPrice ?? (metaPlan === 'PRO' || metaPlan === 'PREMIUM' ? metaPlan : null);
 
     if (!plan) {
       logger.error('subscription.updated with unknown plan/price', {
