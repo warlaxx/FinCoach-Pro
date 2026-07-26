@@ -1,3 +1,9 @@
+<div class="toast-container" *ngIf="toastMessage">
+  <div class="toast" [class.toast-success]="toastType === 'success'" [class.toast-error]="toastType === 'error'">
+    {{ toastMessage }}
+  </div>
+</div>
+
 <div class="actions-page">
   <!-- Confetti overlay -->
   <div class="confetti-overlay" *ngIf="showConfetti">
@@ -47,6 +53,7 @@
         >Montant cible (€)
         <input
           type="number"
+          min="0"
           [(ngModel)]="newAction.targetAmount"
           placeholder="1000"
         />
@@ -55,6 +62,7 @@
         >Montant actuel (€)
         <input
           type="number"
+          min="0"
           [(ngModel)]="newAction.currentAmount"
           placeholder="0"
         />
@@ -77,9 +85,9 @@
       <button
         class="btn-gold"
         (click)="createAction()"
-        [disabled]="!newAction.title"
+        [disabled]="!newAction.title?.trim() || creating"
       >
-        Créer l'action
+        {{ creating ? "Création..." : "Créer l'action" }}
       </button>
     </div>
   </div>
@@ -310,6 +318,7 @@
       <div class="progress-update" *ngIf="editingId === action.id">
         <input
           type="number"
+          min="0"
           [(ngModel)]="editAmount"
           placeholder="Montant actuel"
           class="small-input"

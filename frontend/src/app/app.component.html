@@ -11,7 +11,25 @@
 
 <!-- App shell with sidebar for authenticated pages -->
 <div class="app-shell" *ngIf="showSidebar">
-  <aside class="sidebar">
+  <!-- Mobile top bar (visible < 900px) -->
+  <header class="mobile-topbar">
+    <button #burgerBtn class="burger-btn" (click)="toggleMenu()"
+            [attr.aria-expanded]="menuOpen"
+            [attr.aria-label]="menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="mobile-brand">
+      <app-logo [size]="26" />
+      <span>FinCoach <em>Pro</em></span>
+    </div>
+  </header>
+
+  <!-- Backdrop behind the mobile sidebar -->
+  <div class="sidebar-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
+
+  <aside class="sidebar" [class.open]="menuOpen">
     <div class="sidebar-logo">
       <app-logo [size]="38" />
       <div>

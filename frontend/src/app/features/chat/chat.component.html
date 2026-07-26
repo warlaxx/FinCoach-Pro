@@ -64,7 +64,7 @@
             <div class="msg-time">{{ msg.createdAt | date : "HH:mm" }}</div>
           </div>
 
-          <div class="msg-avatar user-av" *ngIf="msg.role === 'user'">U</div>
+          <div class="msg-avatar user-av" *ngIf="msg.role === 'user'">{{ userInitial }}</div>
         </div>
       </ng-container>
 
@@ -96,8 +96,8 @@
         (keydown.enter)="onEnter($event)"
         placeholder="Posez votre question financière... (Entrée pour envoyer)"
         rows="2"
-        [disabled]="typing"
         class="chat-input"
+        aria-label="Votre message"
       ></textarea>
       <button
         class="send-btn"

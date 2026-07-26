@@ -29,6 +29,8 @@ model User {
   passwordResetToken           String?   @map("password_reset_token")
   passwordResetTokenExpiry     DateTime? @map("password_reset_token_expiry")
   subscriptionStartedAt        DateTime? @map("subscription_started_at")
+  stripeCustomerId             String?   @unique(map: "uq_users_stripe_customer_id") @map("stripe_customer_id")
+  stripeSubscriptionId         String?   @map("stripe_subscription_id")
   createdAt                    DateTime  @default(now()) @map("created_at")
   updatedAt                    DateTime  @updatedAt @map("updated_at")
 

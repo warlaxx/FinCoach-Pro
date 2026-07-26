@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActionService } from "./action.service";
@@ -11,16 +11,22 @@ import { ActionPlan } from "../../shared/models/action-plan.model";
   templateUrl: "./action-plan.component.html",
   styleUrls: ["./action-plan.component.scss"],
 })
-export class ActionPlanComponent implements OnInit {
+export class ActionPlanComponent implements OnInit, OnDestroy {
   actions: ActionPlan[] = [];
   filtered: ActionPlan[] = [];
   loading = true;
   showNew = false;
+  creating = false;
   filter = "all";
   categoryFilter = "all";
   editingId: number | null = null;
   editAmount: number = 0;
   showConfetti = false;
+
+  toastMessage = "";
+  toastType: "success" | "error" = "success";
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private confettiTimer: ReturnType<typeof setTimeout> | null = null;
 
   newAction: Partial<ActionPlan> = {
     title: "",
@@ -37,6 +43,11 @@ export class ActionPlanComponent implements OnInit {
     this.load();
   }
 
+  ngOnDestroy() {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    if (this.confettiTimer) clearTimeout(this.confettiTimer);
+  }
+
   load() {
     this.loading = true;
     this.actionService.getActions().subscribe({
@@ -45,8 +56,9 @@ export class ActionPlanComponent implements OnInit {
         this.applyFilter();
         this.loading = false;
       },
-      error: () => {
+      error: (err: Error) => {
         this.loading = false;
+        this.showToast(err?.message ?? "Impossible de charger vos objectifs.", "error");
       },
     });
   }
@@ -78,40 +90,62 @@ export class ActionPlanComponent implements OnInit {
   }
 
   createAction() {
+    const title = (this.newAction.title ?? "").trim();
+    if (!title || this.creating) return;
+
+    this.creating = true;
     this.actionService
-      .createAction(this.newAction as ActionPlan)
-      .subscribe(() => {
-        this.showNew = false;
-        this.newAction = {
-          title: "",
-          description: "",
-          category: "EPARGNE",
-          priority: "MOYENNE",
-          currentAmount: 0,
-        };
-        this.load();
+      .createAction({ ...this.newAction, title } as ActionPlan)
+      .subscribe({
+        next: () => {
+          this.creating = false;
+          this.showNew = false;
+          this.newAction = {
+            title: "",
+            description: "",
+            category: "EPARGNE",
+            priority: "MOYENNE",
+            currentAmount: 0,
+          };
+          this.showToast("Objectif créé avec succès.", "success");
+          this.load();
+        },
+        error: (err: Error) => {
+          // La modale d'upgrade s'ouvre déjà via le service en cas de quota atteint ;
+          // le formulaire reste ouvert pour ne pas perdre la saisie.
+          this.creating = false;
+          this.showToast(err?.message ?? "Erreur lors de la création.", "error");
+        },
       });
   }
 
   markDone(a: ActionPlan) {
     this.actionService
       .updateActionStatus(a.id!, "TERMINE", a.targetAmount || undefined)
-      .subscribe(() => {
-        this.triggerConfetti();
-        this.load();
+      .subscribe({
+        next: () => {
+          this.triggerConfetti();
+          this.load();
+        },
+        error: (err: Error) =>
+          this.showToast(err?.message ?? "Erreur lors de la mise à jour.", "error"),
       });
   }
 
   reopen(a: ActionPlan) {
-    this.actionService
-      .updateActionStatus(a.id!, "EN_COURS")
-      .subscribe(() => this.load());
+    this.actionService.updateActionStatus(a.id!, "EN_COURS").subscribe({
+      next: () => this.load(),
+      error: (err: Error) =>
+        this.showToast(err?.message ?? "Erreur lors de la mise à jour.", "error"),
+    });
   }
 
   abandon(a: ActionPlan) {
-    this.actionService
-      .updateActionStatus(a.id!, "ABANDONNE")
-      .subscribe(() => this.load());
+    this.actionService.updateActionStatus(a.id!, "ABANDONNE").subscribe({
+      next: () => this.load(),
+      error: (err: Error) =>
+        this.showToast(err?.message ?? "Erreur lors de la mise à jour.", "error"),
+    });
   }
 
   startEdit(a: ActionPlan) {
@@ -122,20 +156,35 @@ export class ActionPlanComponent implements OnInit {
   updateProgress(a: ActionPlan) {
     const wasNotDone = a.status !== "TERMINE";
     this.actionService
-      .updateActionStatus(a.id!, a.status!, this.editAmount)
-      .subscribe((updated) => {
-        this.editingId = null;
-        if (wasNotDone && updated.status === "TERMINE") {
-          this.triggerConfetti();
-        }
-        this.load();
+      .updateActionStatus(a.id!, a.status!, Math.max(0, this.editAmount || 0))
+      .subscribe({
+        next: (updated) => {
+          this.editingId = null;
+          if (wasNotDone && updated.status === "TERMINE") {
+            this.triggerConfetti();
+          }
+          this.load();
+        },
+        error: (err: Error) =>
+          this.showToast(err?.message ?? "Erreur lors de la mise à jour.", "error"),
       });
   }
 
   deleteAction(a: ActionPlan) {
     if (confirm("Supprimer cette action ?")) {
-      this.actionService.deleteAction(a.id!).subscribe(() => this.load());
+      this.actionService.deleteAction(a.id!).subscribe({
+        next: () => this.load(),
+        error: (err: Error) =>
+          this.showToast(err?.message ?? "Erreur lors de la suppression.", "error"),
+      });
     }
+  }
+
+  private showToast(message: string, type: "success" | "error"): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastMessage = message;
+    this.toastType = type;
+    this.toastTimer = setTimeout(() => (this.toastMessage = ""), 4000);
   }
 
   countByStatus(s: string) {
@@ -216,7 +265,8 @@ export class ActionPlanComponent implements OnInit {
   }
 
   triggerConfetti() {
+    if (this.confettiTimer) clearTimeout(this.confettiTimer);
     this.showConfetti = true;
-    setTimeout(() => (this.showConfetti = false), 3000);
+    this.confettiTimer = setTimeout(() => (this.showConfetti = false), 3000);
   }
 }

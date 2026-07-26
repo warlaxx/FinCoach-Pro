@@ -266,6 +266,23 @@
     border-color: var(--gold, #fff);
     &:hover { background: var(--gold-light, #ddd); }
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+}
+
+.checkout-error {
+  max-width: 640px;
+  margin: 0 auto 24px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-size: 14px;
+  text-align: center;
 }
 
 .plan-features {

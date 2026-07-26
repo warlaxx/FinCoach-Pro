@@ -2,25 +2,91 @@
 .app-shell {
   display: flex;
   height: 100vh;
+  height: 100dvh; // mobile : tient compte des barres du navigateur
   overflow: hidden;
   position: relative;
   z-index: 1;
+}
+
+// ── Mobile top bar (cachée sur desktop) ──────────────────────
+.mobile-topbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  z-index: 60;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: rgba(5, 5, 5, 0.92);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid var(--border);
+
+  .burger-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+
+    &:hover { border-color: var(--border-glow); background: rgba(255,255,255,0.04); }
+    &:focus-visible { outline: 2px solid rgba(255,255,255,0.4); outline-offset: 2px; }
+  }
+
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--text-primary);
+
+    em {
+      font-style: normal;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+  }
+}
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  animation: backdrop-in 0.2s ease;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
 .sidebar {
   width: 248px;
   min-width: 248px;
-  background: rgba(2, 1, 12, 0.95);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  border-right: 1px solid rgba(139, 92, 246, 0.15);
+  background: rgba(5, 5, 5, 0.92);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 24px 0;
   position: relative;
 
-  // Subtle top gradient line
+  // Fine ligne lumineuse en haut
   &::before {
     content: '';
     position: absolute;
@@ -28,8 +94,7 @@
     height: 1px;
     background: linear-gradient(90deg,
       transparent,
-      rgba(139, 92, 246, 0.5),
-      rgba(6, 182, 212, 0.5),
+      rgba(255, 255, 255, 0.25),
       transparent);
   }
 }
@@ -40,25 +105,20 @@
   align-items: center;
   gap: 12px;
   padding: 0 20px 24px;
-  border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+  border-bottom: 1px solid var(--border);
 
   .logo-name {
     font-family: var(--font-display);
     font-size: 17px;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: brightness(0.85);
+    color: var(--text-primary);
   }
   .logo-sub {
     font-size: 10px;
-    color: var(--purple);
+    color: var(--text-muted);
     letter-spacing: 3px;
     text-transform: uppercase;
     margin-top: -2px;
-    opacity: 0.8;
   }
 }
 
@@ -88,58 +148,53 @@
   svg { flex-shrink: 0; }
 
   &:hover {
-    background: rgba(139, 92, 246, 0.08);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-primary);
-    border-color: rgba(139, 92, 246, 0.15);
+    border-color: var(--border);
   }
 
   &:focus-visible {
     outline: none;
-    background: rgba(139, 92, 246, 0.08);
-    border-color: rgba(139, 92, 246, 0.4);
-    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
   }
 
   &.active {
-    background: linear-gradient(135deg,
-      rgba(91, 33, 182, 0.1),
-      rgba(91, 33, 182, 0.06));
-    color: var(--gold);
-    border-color: rgba(91, 33, 182, 0.25);
-    box-shadow: 0 0 16px rgba(91, 33, 182, 0.08) inset;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.12);
 
-    svg { color: var(--gold); }
+    svg { color: var(--text-primary); }
 
-    // Accent bar on left
+    // Barre d'accent à gauche
     &::before {
       content: '';
       position: absolute;
       left: 0; top: 25%; bottom: 25%;
       width: 2px;
-      background: linear-gradient(180deg, var(--gold-light), var(--gold));
+      background: var(--text-primary);
       border-radius: 1px;
     }
   }
 
   .nav-badge {
     margin-left: auto;
-    background: linear-gradient(135deg,
-      rgba(139, 92, 246, 0.2),
-      rgba(6, 182, 212, 0.15));
-    color: var(--cyan);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
     padding: 2px 7px;
     border-radius: 6px;
-    border: 1px solid rgba(6, 182, 212, 0.25);
+    border: 1px solid var(--border-glow);
   }
 }
 
 // ── Footer ───────────────────────────────────────────────────
 .sidebar-footer {
   padding: 14px 20px;
-  border-top: 1px solid rgba(139, 92, 246, 0.1);
+  border-top: 1px solid var(--border);
 }
 
 .user-info {
@@ -150,17 +205,15 @@
   .user-avatar {
     width: 34px;
     height: 34px;
-    background: linear-gradient(135deg,
-      rgba(139, 92, 246, 0.2),
-      rgba(6, 182, 212, 0.15));
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-glow);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-display);
     font-weight: 700;
-    color: var(--purple);
+    color: var(--text-primary);
     font-size: 14px;
     flex-shrink: 0;
   }
@@ -224,4 +277,30 @@
   overflow-x: hidden;
   position: relative;
   z-index: 1;
+}
+
+// ── Responsive : sidebar off-canvas sous 900px ──────────────
+@media (max-width: 900px) {
+  .mobile-topbar { display: flex; }
+  .sidebar-backdrop { display: block; }
+
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 80;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.6);
+
+    &.open { transform: translateX(0); }
+  }
+
+  .main-content {
+    padding-top: 56px; // hauteur de la top bar mobile
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar { transition: none; }
+  .sidebar-backdrop { animation: none; }
 }

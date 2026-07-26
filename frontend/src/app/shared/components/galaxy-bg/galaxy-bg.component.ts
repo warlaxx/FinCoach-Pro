@@ -131,7 +131,7 @@ export class GalaxyBgComponent implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
     cancelAnimationFrame(this.animId);
     window.removeEventListener('resize', this.resizeHandler);
-    [this.galaxyPoints, this.nebulaPoints].forEach((points: any) => {
+    [this.starPoints, this.galaxyPoints, this.nebulaPoints].forEach((points: any) => {
       points?.geometry?.dispose?.();
       const material = points?.material;
       const materials = Array.isArray(material) ? material : [material];
