@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, AuthUser, UpdateProfilePayload } from '../auth/auth.service';
+import { BillingService, BillingDisabledError } from '../../shared/services/billing.service';
 
 @Component({
   selector: 'app-account-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './account-settings.component.html',
   styleUrls: ['./account-settings.component.scss']
 })
@@ -36,7 +38,17 @@ export class AccountSettingsComponent implements OnInit {
   showNewPassword = false;
   showConfirmPassword = false;
 
-  constructor(private auth: AuthService) {}
+  /** Abonnement (TICKET-15) */
+  portalLoading = false;
+  billingMessage: string | null = null;
+  billingError: string | null = null;
+
+  constructor(
+    private auth: AuthService,
+    private billing: BillingService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.auth.currentUser$.subscribe(user => {
@@ -46,6 +58,41 @@ export class AccountSettingsComponent implements OnInit {
         this.form.lastName = user.lastName || '';
         this.form.age = user.age ?? null;
       }
+    });
+
+    // Retour de Stripe Checkout : le plan est activé par webhook (asynchrone),
+    // on recharge donc le profil et on confirme à l'utilisateur.
+    const checkout = this.route.snapshot.queryParamMap.get('checkout');
+    if (checkout === 'success') {
+      this.billingMessage =
+        'Paiement confirmé ! Votre abonnement sera actif d\'ici quelques secondes.';
+      this.auth.loadCurrentUser().subscribe();
+      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    }
+  }
+
+  get isPaidPlan(): boolean {
+    const plan = (this.user?.plan ?? 'FREEMIUM').toUpperCase();
+    return plan === 'PRO' || plan === 'PREMIUM';
+  }
+
+  /** Ouvre le portail client Stripe (gestion carte, factures, annulation). */
+  openBillingPortal(): void {
+    if (this.portalLoading) return;
+    this.portalLoading = true;
+    this.billingError = null;
+
+    this.billing.openPortal().subscribe({
+      next: (url) => {
+        window.location.href = url;
+      },
+      error: (err: Error) => {
+        this.portalLoading = false;
+        this.billingError =
+          err instanceof BillingDisabledError
+            ? "Le paiement en ligne n'est pas encore activé sur ce serveur."
+            : err?.message ?? "Impossible d'ouvrir le portail d'abonnement.";
+      },
     });
   }
 

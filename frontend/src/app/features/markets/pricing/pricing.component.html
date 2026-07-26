@@ -45,6 +45,11 @@
     </div>
   </header>
 
+  <!-- Erreur de paiement (création de session Stripe) -->
+  <div class="checkout-error" *ngIf="checkoutError" role="alert">
+    ⚠️ {{ checkoutError }}
+  </div>
+
   <!-- ========== PLAN CARDS ========== -->
   <section class="plans-grid">
     <article
@@ -71,8 +76,9 @@
         class="plan-cta"
         [class.cta-primary]="plan.popular"
         (click)="selectPlan(plan)"
+        [disabled]="checkoutLoading !== null"
       >
-        {{ plan.cta }}
+        {{ checkoutLoading === plan.id ? "Redirection vers le paiement…" : plan.cta }}
       </button>
 
       <ul class="plan-features">

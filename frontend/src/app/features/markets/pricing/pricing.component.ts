@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
+import { AuthService } from '../../auth/auth.service';
+import { BillingService, BillingDisabledError } from '../../../shared/services/billing.service';
 
 interface PlanCard {
   id: 'FREEMIUM' | 'PRO' | 'PREMIUM';
@@ -43,6 +45,10 @@ export class PricingComponent {
   readonly ANNUAL_DISCOUNT = 0.2;
 
   billing: 'monthly' | 'annual' = 'monthly';
+
+  /** Plan dont la session Stripe Checkout est en cours de création. */
+  checkoutLoading: 'PRO' | 'PREMIUM' | null = null;
+  checkoutError = '';
 
   plans: PlanCard[] = [
     {
@@ -163,7 +169,11 @@ export class PricingComponent {
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private billingService: BillingService,
+  ) {}
 
   /** Displayed €/month price for the current billing period */
   priceFor(plan: PlanCard): string {
@@ -186,13 +196,41 @@ export class PricingComponent {
   }
 
   /**
-   * Freemium → direct registration.
-   * Pro/Premium → registration too for now: Stripe Checkout arrives with
-   * TICKET-15 and will replace this navigation.
+   * Freemium → inscription directe.
+   * Pro/Premium (TICKET-15) :
+   *  - visiteur non connecté → inscription avec le plan en paramètre
+   *    (il faut un compte avant de payer) ;
+   *  - utilisateur connecté → session Stripe Checkout, redirection vers le
+   *    paiement hébergé. Si Stripe n'est pas configuré (BILLING_DISABLED),
+   *    retour au comportement historique /register?plan=...
    */
   selectPlan(plan: PlanCard): void {
-    this.router.navigate(['/register'], {
-      queryParams: plan.id === 'FREEMIUM' ? {} : { plan: plan.id.toLowerCase() },
+    this.checkoutError = '';
+
+    if (plan.id === 'FREEMIUM' || !this.auth.isAuthenticated()) {
+      this.router.navigate(['/register'], {
+        queryParams: plan.id === 'FREEMIUM' ? {} : { plan: plan.id.toLowerCase() },
+      });
+      return;
+    }
+
+    if (this.checkoutLoading) return;
+    this.checkoutLoading = plan.id;
+
+    this.billingService.createCheckout(plan.id, this.billing).subscribe({
+      next: (url) => {
+        window.location.href = url;
+      },
+      error: (err: Error) => {
+        this.checkoutLoading = null;
+        if (err instanceof BillingDisabledError) {
+          this.router.navigate(['/register'], {
+            queryParams: { plan: plan.id.toLowerCase() },
+          });
+          return;
+        }
+        this.checkoutError = err?.message ?? 'Erreur lors de la création du paiement.';
+      },
     });
   }
 }

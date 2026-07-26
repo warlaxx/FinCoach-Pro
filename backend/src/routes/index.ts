@@ -5,6 +5,7 @@ import actionsRoutes from './actions.routes';
 import chatRoutes from './chat.routes';
 import dashboardRoutes from './dashboard.routes';
 import healthRoutes from './health.routes';
+import billingRoutes from './billing.routes';
 
 const router = Router();
 
@@ -25,6 +26,9 @@ router.use('/api/actions', actionsRoutes);
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 router.use('/api/chat', chatRoutes);
+
+// ─── Billing (Stripe — TICKET-15) ────────────────────────────────────────────
+router.use('/api/billing', billingRoutes);
 
 // ─── OAuth2 (Google / Microsoft / Apple) — désactivé temporairement ──────────
 // Pour réactiver : décommenter les blocs ci-dessous et restaurer les imports

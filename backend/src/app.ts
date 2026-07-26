@@ -78,6 +78,9 @@ export function createApp(): express.Application {
   );
 
   // ─── Body parsing ──────────────────────────────────────────────────────────
+  // Le webhook Stripe doit recevoir le body BRUT (Buffer) pour vérifier la
+  // signature — monté avant express.json qui saute les bodies déjà parsés.
+  app.use('/api/billing/webhook', express.raw({ type: 'application/json', limit: '1mb' }));
   // express.urlencoded is required for Apple OAuth2 (POST body with form data)
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));

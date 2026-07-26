@@ -1,7 +1,7 @@
 {
   "name": "fincoach-api",
   "version": "1.0.0",
-  "description": "FinCoach Pro API \u2014 Express + TypeScript",
+  "description": "FinCoach Pro API — Express + TypeScript",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
@@ -24,7 +24,8 @@
     "openai": "^4.28.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "passport-oauth2": "^1.8.0"
+    "passport-oauth2": "^1.8.0",
+    "stripe": "^22.3.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

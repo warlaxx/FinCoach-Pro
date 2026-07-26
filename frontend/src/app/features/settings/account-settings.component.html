@@ -218,6 +218,56 @@
       </form>
     </div>
 
+    <!-- Subscription card (TICKET-15) -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Abonnement</h2>
+          <p class="card-desc">Gérez votre plan et votre facturation.</p>
+        </div>
+      </div>
+
+      <div class="msg-success" *ngIf="billingMessage">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        {{ billingMessage }}
+      </div>
+
+      <div class="msg-error" *ngIf="billingError">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ billingError }}
+      </div>
+
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-label">Plan actuel</span>
+          <span class="info-value">{{ planIcon }} {{ planLabel }}</span>
+        </div>
+        <div class="info-row" *ngIf="!isPaidPlan">
+          <span class="info-label">Envie de plus ?</span>
+          <a routerLink="/pricing" class="info-value link-upgrade">Découvrir les plans Pro & Premium →</a>
+        </div>
+      </div>
+
+      <button
+        *ngIf="isPaidPlan"
+        type="button"
+        class="btn-primary"
+        (click)="openBillingPortal()"
+        [disabled]="portalLoading"
+      >
+        {{ portalLoading ? 'Ouverture…' : 'Gérer mon abonnement' }}
+      </button>
+    </div>
+
     <!-- Account info card -->
     <div class="settings-card info-card">
       <div class="card-header">
@@ -239,7 +289,7 @@
         </div>
         <div class="info-row">
           <span class="info-label">Abonnement</span>
-          <span class="info-value">{{ user?.role === 'PREMIUM' ? 'Premium' : 'Gratuit' }}</span>
+          <span class="info-value">{{ planIcon }} {{ planLabel }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">E-mail vérifié</span>

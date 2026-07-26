@@ -34,8 +34,11 @@ Board Notion : "🗂️ Board — Tickets FinCoach Pro" (tickets `TICKET-N`).
 | Support prioritaire | ❌ | ❌ | ✅ |
 
 - Toggle mensuel/annuel : −20 % sur l'annuel.
-- Paiement récurrent : Stripe Checkout (TICKET-15, pas encore intégré — le CTA
-  Pro/Premium redirige vers `/register?plan=...` en attendant).
+- Paiement récurrent : Stripe Checkout (TICKET-15) — abonnements Pro/Premium
+  mensuels ou annuels, portail client Stripe dans les settings, plan activé
+  uniquement par webhook signé (`/api/billing/webhook`). Sans clés Stripe
+  (`STRIPE_SECRET_KEY`…), l'API répond `BILLING_DISABLED` et le CTA Pro/Premium
+  retombe sur `/register?plan=...`.
 - Quotas appliqués côté backend par `PlanService` (lit le plan en DB, jamais
   depuis le JWT qui peut être périmé 24h) ; réponse API `{ code: 'UPGRADE_REQUIRED' }`
   déclenche une modale d'upgrade globale côté Angular.
@@ -46,11 +49,11 @@ Board Notion : "🗂️ Board — Tickets FinCoach Pro" (tickets `TICKET-N`).
 
 Fait : auth JWT/OAuth2, email verification, dashboard + score A–F, action
 plans, chat IA, page Markets, landing page, settings, plans/quotas (TICKET-16),
-pricing page (TICKET-14), CI/CD.
+pricing page (TICKET-14), Stripe Checkout (TICKET-15), CI/CD.
 
-À venir : Stripe (TICKET-15), notifications email objectifs atteints, export
-PDF bilan (TICKET-32), simulateur crédit/retraite, PWA, déploiement
-fincoach.pro (TICKET-27).
+À venir : notifications email objectifs atteints, export PDF bilan
+(TICKET-32), simulateur crédit/retraite, PWA, déploiement fincoach.pro
+(TICKET-27).
 
 Cible de mise en production publique : fincoach.pro, prod visée Janvier 2027.
 
