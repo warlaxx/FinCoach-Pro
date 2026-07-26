@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, AuthUser } from './features/auth/auth.service';
@@ -20,6 +20,8 @@ export class AppComponent implements OnInit {
 
   /** Menu latéral mobile (burger) — fermé par défaut, se referme à chaque navigation. */
   menuOpen = false;
+
+  @ViewChild('burgerBtn') private burgerBtn?: ElementRef<HTMLButtonElement>;
 
   /**
    * The sidebar should only appear on authenticated pages.
@@ -44,6 +46,15 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) this.menuOpen = false;
     });
+  }
+
+  /** Ferme le menu mobile au clavier et rend le focus au bouton burger. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.menuOpen) {
+      this.closeMenu();
+      this.burgerBtn?.nativeElement.focus();
+    }
   }
 
   toggleMenu(): void {

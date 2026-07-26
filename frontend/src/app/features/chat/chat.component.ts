@@ -26,9 +26,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   typing = false;
   inputMessage = "";
 
-  /** Nombre d'éléments affichés au dernier scroll auto — évite de voler le
-   *  scroll de l'utilisateur à chaque cycle de détection de changements. */
-  private lastRenderedCount = -1;
+  /** État affiché (nb de messages + frappe) au dernier scroll auto — évite de
+   *  voler le scroll de l'utilisateur à chaque cycle de détection de
+   *  changements, tout en scrollant quand l'indicateur de frappe est remplacé
+   *  par la réponse (le total seul ne change pas dans ce cas). */
+  private lastRenderedState = "";
 
   suggestions = [
     "Comment établir un budget ?",
@@ -103,11 +105,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   ngAfterViewChecked() {
-    // Ne scrolle que lorsqu'un message (ou l'indicateur de frappe) est ajouté,
+    // Ne scrolle que lorsqu'un message ou l'indicateur de frappe change,
     // pas à chaque cycle — sinon impossible de relire le haut de la conversation.
-    const count = this.messages.length + (this.typing ? 1 : 0);
-    if (count !== this.lastRenderedCount) {
-      this.lastRenderedCount = count;
+    const renderedState = `${this.messages.length}:${this.typing}`;
+    if (renderedState !== this.lastRenderedState) {
+      this.lastRenderedState = renderedState;
       this.scrollToBottom();
     }
   }

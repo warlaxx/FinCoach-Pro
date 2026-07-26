@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { BillingService, BillingDisabledError } from '../../shared/services/bill
   templateUrl: './account-settings.component.html',
   styleUrls: ['./account-settings.component.scss']
 })
-export class AccountSettingsComponent implements OnInit {
+export class AccountSettingsComponent implements OnInit, OnDestroy {
 
   user: AuthUser | null = null;
 
@@ -42,6 +42,7 @@ export class AccountSettingsComponent implements OnInit {
   portalLoading = false;
   billingMessage: string | null = null;
   billingError: string | null = null;
+  private planPollTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private auth: AuthService,
@@ -60,14 +61,52 @@ export class AccountSettingsComponent implements OnInit {
       }
     });
 
-    // Retour de Stripe Checkout : le plan est activé par webhook (asynchrone),
-    // on recharge donc le profil et on confirme à l'utilisateur.
+    // Retour de Stripe Checkout : le plan est activé par webhook (asynchrone).
+    // On affiche un état d'attente et on recharge le profil jusqu'à ce que le
+    // backend reflète le nouveau plan — la confirmation ne repose jamais sur
+    // le seul paramètre d'URL.
     const checkout = this.route.snapshot.queryParamMap.get('checkout');
     if (checkout === 'success') {
-      this.billingMessage =
-        'Paiement confirmé ! Votre abonnement sera actif d\'ici quelques secondes.';
-      this.auth.loadCurrentUser().subscribe();
       this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.waitForPlanActivation();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopPlanPolling();
+  }
+
+  /** Recharge le profil toutes les 2 s (30 s max) jusqu'à voir le plan payé. */
+  private waitForPlanActivation(): void {
+    if (this.isPaidPlan) {
+      this.billingMessage = 'Votre abonnement est actif. Merci !';
+      return;
+    }
+
+    this.billingMessage = 'Paiement reçu — activation de votre abonnement en cours…';
+    const startedAt = Date.now();
+
+    this.planPollTimer = setInterval(() => {
+      if (this.isPaidPlan) {
+        this.stopPlanPolling();
+        this.billingMessage = 'Votre abonnement est actif. Merci !';
+        return;
+      }
+      if (Date.now() - startedAt > 30_000) {
+        this.stopPlanPolling();
+        this.billingMessage =
+          'Paiement reçu. L\'activation prend plus de temps que prévu — ' +
+          'elle se terminera automatiquement, réactualisez la page dans un instant.';
+        return;
+      }
+      this.auth.loadCurrentUser().subscribe();
+    }, 2000);
+  }
+
+  private stopPlanPolling(): void {
+    if (this.planPollTimer) {
+      clearInterval(this.planPollTimer);
+      this.planPollTimer = null;
     }
   }
 

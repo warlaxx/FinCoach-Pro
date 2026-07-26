@@ -49,7 +49,11 @@ class BillingService {
   private stripe: Stripe | null = null;
 
   get isConfigured(): boolean {
-    return !!process.env.STRIPE_SECRET_KEY?.trim();
+    // Les deux clés sont requises : sans webhook secret, l'utilisateur pourrait
+    // payer sans que son plan soit jamais activé en DB.
+    return (
+      !!process.env.STRIPE_SECRET_KEY?.trim() && !!process.env.STRIPE_WEBHOOK_SECRET?.trim()
+    );
   }
 
   private getClient(): Stripe {
